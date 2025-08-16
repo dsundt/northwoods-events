@@ -3,19 +3,18 @@ import os
 from datetime import datetime
 from urllib.parse import urljoin
 
+import requests
 import pytz
 import yaml
-import requests
 
-from fetch import get
-from render import render_url
+from fetch import get                           # static HTTP fetch -> (html, final_url, status)
+from render import render_url                   # headless render -> (html, final_url)
 from parse_modern_tribe import parse as parse_mt
 from parse_growthzone import parse as parse_gz
+from parse_ics import parse as parse_ics
 from normalize import clean_text, parse_datetime_range
 from dedupe import stable_id
 from icsbuild import build_ics
-from parse_ics import parse as parse_ics  # <-- add this
-
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 STATE = os.path.join(ROOT, "state", "seen.json")
@@ -23,9 +22,11 @@ ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
 REPORT = os.path.join(ROOT, "state", "last_run_report.json")
 SNAPDIR = os.path.join(ROOT, "state", "snapshots")
 
+
 def load_yaml():
     with open(os.path.join(ROOT, "src", "sources.yaml"), "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
 
 def load_seen():
     if not os.path.exists(STATE):
@@ -33,14 +34,17 @@ def load_seen():
     with open(STATE, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
 def save_seen(seen):
     with open(STATE, "w", encoding="utf-8") as f:
         json.dump(seen, f, indent=2, sort_keys=True)
+
 
 def absolutize(url, source_url):
     if url.startswith(("http://", "https://")):
         return url
     return urljoin(source_url, url)
+
 
 def _parse_by_type(kind, html_or_text):
     if kind == "modern_tribe":
@@ -50,6 +54,7 @@ def _parse_by_type(kind, html_or_text):
     if kind == "ics":
         return parse_ics(html_or_text)
     return []
+
 
 def main():
     cfg = load_yaml()
@@ -76,84 +81,74 @@ def main():
         }
 
         try:
-           if s["type"] == "ics":
-    # Simple GET of ICS text (no rendering)
-    r = requests.get(s["url"], timeout=30)
-    r.raise_for_status()
-    ics_text = r.text
-    rows = _parse_by_type("ics", ics_text)
-    src_report["fetched"] = len(rows)
-else:
-    # HTML path (static → optional rendered)
-    html_static, final_url_static, status = get(s["url"])
-    rows = _parse_by_type(s["type"], html_static)
+            if s["type"] == "ics":
+                # Simple GET of ICS text (no rendering)
+                r = requests.get(s["url"], timeout=30)
+                r.raise_for_status()
+                ics_text = r.text
+                rows = _parse_by_type("ics", ics_text)
+                src_report["fetched"] = len(rows)
 
-    # Try headless render if nothing parsed
-    if not rows:
-        try:
-            wait_sel = s.get("wait_selector")
-            html_dyn, final_url_dyn = render_url(s["url"], wait_selector=wait_sel, timeout_ms=25000)
-            rows = _parse_by_type(s["type"], html_dyn)
-            # save rendered snapshot
-            slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
-            snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
-            with open(snap_path_dyn, "w", encoding="utf-8") as f:
-                f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
-                f.write(html_dyn[:300000])
-            src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
-        except Exception:
-            pass
+            else:
+                # HTML path (static → optional rendered)
+                html_static, final_url_static, status = get(s["url"])
+                rows = _parse_by_type(s["type"], html_static)
 
-    src_report["fetched"] = len(rows)
+                # Try headless render if nothing parsed
+                if not rows:
+                    try:
+                        wait_sel = s.get("wait_selector")
+                        html_dyn, final_url_dyn = render_url(
+                            s["url"],
+                            wait_selector=wait_sel,
+                            timeout_ms=25000
+                        )
+                        rows = _parse_by_type(s["type"], html_dyn)
 
-    # If still zero, save static snapshot for debugging
-    if len(rows) == 0:
-        slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
-        snap_path = os.path.join(SNAPDIR, f"{slug}.html")
-        try:
-            with open(snap_path, "w", encoding="utf-8") as f:
-                f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
-                f.write(html_static[:200000])
-            src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
-        except Exception:
-            pass
+                        # save rendered snapshot
+                        slug = (
+                            s["name"].lower()
+                            .replace(" ", "_")
+                            .replace("(", "")
+                            .replace(")", "")
+                            .replace("–", "-")
+                            .replace("—", "-")
+                            .replace("&", "and")
+                        )
+                        snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
+                        with open(snap_path_dyn, "w", encoding="utf-8") as f:
+                            f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
+                            f.write(html_dyn[:300000])
+                        src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
+                    except Exception:
+                        pass
 
+                src_report["fetched"] = len(rows)
 
-            used_renderer = False
-            # 2) If nothing parsed, try headless render
-            if not rows:
-                try:
-                    html_dyn, final_url_dyn = render_url(s["url"], wait_selector=None, timeout_ms=25000)
-                    used_renderer = True
-                    rows = _parse_by_type(s["type"], html_dyn)
+                # If still zero, save static snapshot for debugging
+                if len(rows) == 0:
+                    slug = (
+                        s["name"].lower()
+                        .replace(" ", "_")
+                        .replace("(", "")
+                        .replace(")", "")
+                        .replace("–", "-")
+                        .replace("—", "-")
+                        .replace("&", "and")
+                    )
+                    snap_path = os.path.join(SNAPDIR, f"{slug}.html")
+                    try:
+                        with open(snap_path, "w", encoding="utf-8") as f:
+                            f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
+                            f.write(html_static[:200000])
+                        src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
+                    except Exception:
+                        pass
 
-                    # Save dynamic snapshot
-                    slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
-                    snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
-                    with open(snap_path_dyn, "w", encoding="utf-8") as f:
-                        f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
-                        f.write(html_dyn[:300000])
-                    src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
-                except Exception as _:
-                    pass
-
-            src_report["fetched"] = len(rows)
-
-            # Always save a static snapshot if nothing parsed on the first try
-            if len(rows) == 0:
-                slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
-                snap_path = os.path.join(SNAPDIR, f"{slug}.html")
-                try:
-                    with open(snap_path, "w", encoding="utf-8") as f:
-                        f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
-                        f.write(html_static[:200000])
-                    src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
-                except Exception:
-                    pass
-
+            # Post-parse normalization & filtering
             for r in rows:
                 title = clean_text(r.get("title"))
-                url = absolutize(r.get("url",""), s["url"])
+                url = absolutize(r.get("url", ""), s["url"])
                 location = clean_text(r.get("venue_text") or "")
                 date_text = clean_text(r.get("date_text") or "")
                 iso_from_attr = r.get("iso_datetime")
@@ -167,8 +162,10 @@ else:
                     src_report["skipped_nodate"] += 1
                     if len(src_report["samples"]) < 5:
                         src_report["samples"].append({
-                            "reason":"nodate", "title": title,
-                            "date_text": date_text, "iso_hint": iso_from_attr
+                            "reason": "nodate",
+                            "title": title,
+                            "date_text": date_text,
+                            "iso_hint": iso_from_attr
                         })
                     continue
 
@@ -177,8 +174,10 @@ else:
                     src_report["skipped_past"] += 1
                     if len(src_report["samples"]) < 5:
                         src_report["samples"].append({
-                            "reason":"past", "title": title,
-                            "start": start.isoformat(), "date_text": date_text
+                            "reason": "past",
+                            "title": title,
+                            "start": start.isoformat(),
+                            "date_text": date_text
                         })
                     continue
 
@@ -234,6 +233,7 @@ else:
         ]
     }
     print("SUMMARY:", json.dumps(summary, indent=2))
+
 
 if __name__ == "__main__":
     main()

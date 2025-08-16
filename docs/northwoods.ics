@@ -2,10 +2,17 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:ics.py - http://git.io/lLljaA
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/vacation-bible-school-at-northern-lakes-baptist-church/
-DTEND:20250816T160000Z
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T050000Z
 DTSTART:20250816T150000Z
-SUMMARY:Vacation Bible School at Northern Lakes Baptist Church
-UID:bb51950a-f575-4328-b1b1-6c468fb522c6@bb51.org
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:31e67160-f823-49d3-85ff-74f8aa54d0a5@31e6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T060000Z
+DTSTART:20250828T050000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:c2f1703c-0e2b-4212-b236-8446d793e2bc@c2f1.org
 END:VEVENT
 END:VCALENDAR

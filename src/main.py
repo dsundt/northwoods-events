@@ -7,6 +7,7 @@ import pytz
 import yaml
 
 from fetch import get
+from render import render_url
 from parse_modern_tribe import parse as parse_mt
 from parse_growthzone import parse as parse_gz
 from normalize import clean_text, parse_datetime_range
@@ -34,9 +35,16 @@ def save_seen(seen):
         json.dump(seen, f, indent=2, sort_keys=True)
 
 def absolutize(url, source_url):
-    if url.startswith("http://") or url.startswith("https://"):
+    if url.startswith(("http://", "https://")):
         return url
     return urljoin(source_url, url)
+
+def _parse_by_type(kind, html):
+    if kind == "modern_tribe":
+        return parse_mt(html)
+    if kind == "growthzone":
+        return parse_gz(html)
+    return []
 
 def main():
     cfg = load_yaml()
@@ -63,25 +71,38 @@ def main():
         }
 
         try:
-            html, final_url, status = get(s["url"])
+            # 1) Static fetch first
+            html_static, final_url_static, status = get(s["url"])
+            rows = _parse_by_type(s["type"], html_static)
 
-            if s["type"] == "modern_tribe":
-                rows = parse_mt(html)
-            elif s["type"] == "growthzone":
-                rows = parse_gz(html)
-            else:
-                rows = []
+            used_renderer = False
+            # 2) If nothing parsed, try headless render
+            if not rows:
+                try:
+                    html_dyn, final_url_dyn = render_url(s["url"], wait_selector=None, timeout_ms=25000)
+                    used_renderer = True
+                    rows = _parse_by_type(s["type"], html_dyn)
+
+                    # Save dynamic snapshot
+                    slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
+                    snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
+                    with open(snap_path_dyn, "w", encoding="utf-8") as f:
+                        f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
+                        f.write(html_dyn[:300000])
+                    src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
+                except Exception as _:
+                    pass
 
             src_report["fetched"] = len(rows)
 
-            # Save snapshot if nothing parsed
+            # Always save a static snapshot if nothing parsed on the first try
             if len(rows) == 0:
-                slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-")
+                slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
                 snap_path = os.path.join(SNAPDIR, f"{slug}.html")
                 try:
                     with open(snap_path, "w", encoding="utf-8") as f:
-                        f.write(f"<!-- URL: {s['url']} | Final: {final_url} | Status: {status} -->\n")
-                        f.write(html[:200000])  # cap snapshot size
+                        f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
+                        f.write(html_static[:200000])
                     src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
                 except Exception:
                     pass
@@ -161,7 +182,9 @@ def main():
                 "added": s["added"],
                 "skipped_past": s["skipped_past"],
                 "skipped_nodate": s["skipped_nodate"],
-                "skipped_dupe": s["skipped_dupe"]
+                "skipped_dupe": s["skipped_dupe"],
+                **({"snapshot": s.get("snapshot")} if s.get("snapshot") else {}),
+                **({"snapshot_rendered": s.get("snapshot_rendered")} if s.get("snapshot_rendered") else {}),
             }
             for s in report["sources"]
         ]

@@ -14,6 +14,7 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
     Strategy:
       1) If ISO hints provided (from <time datetime> or JSON-LD), use those.
       2) Else parse visible text, supporting common Modern Tribe / GrowthZone formats.
+    Always guarantees end > start.
     """
     tz = pytz.timezone(tzname)
 
@@ -27,8 +28,13 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
                 end = dp.parse(iso_end_hint)
                 if not end.tzinfo:
                     end = tz.localize(end)
+                # SAFETY: ensure end > start
+                if end <= start:
+                    end = start + timedelta(minutes=max(1, default_minutes or 60))
                 return start, end, False
-            return start, start + timedelta(minutes=default_minutes), False
+            # no end provided
+            end = start + timedelta(minutes=max(1, default_minutes or 60))
+            return start, end, False
         except Exception:
             pass
 
@@ -44,6 +50,8 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
             day = dp.parse(dmatch.group(0))
             start = tz.localize(dp.parse(f"{day:%Y-%m-%d} {m.group(1)}"))
             end = tz.localize(dp.parse(f"{day:%Y-%m-%d} {m.group(2)}"))
+            if end <= start:
+                end = start + timedelta(minutes=max(1, default_minutes or 60))
             return start, end, False
 
         # With start time only + year
@@ -51,7 +59,8 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
         if m:
             day = dp.parse(m.group(1))
             start = tz.localize(dp.parse(f"{day:%Y-%m-%d} {m.group(2)}"))
-            return start, start + timedelta(minutes=default_minutes), False
+            end = start + timedelta(minutes=max(1, default_minutes or 60))
+            return start, end, False
 
         # Yearless like "Aug 24 5:00 pm" or "Aug 24"
         m = re.search(rf"({MONTHS}\w*\s+\d{{1,2}})(?:\s+(\d{{1,2}}:\d{{2}}\s*[ap]m))?", text, re.I)
@@ -60,10 +69,14 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
             day = dp.parse(f"{m.group(1)} {yr}")
             if m.group(2):
                 start = tz.localize(dp.parse(f"{day:%Y-%m-%d} {m.group(2)}"))
-                return start, start + timedelta(minutes=default_minutes), False
+                end = start + timedelta(minutes=max(1, default_minutes or 60))
+                return start, end, False
             # all-day
             start = tz.localize(dp.parse(day.strftime("%Y-%m-%d")))
-            return start, start + timedelta(days=1), True
+            end = start + timedelta(days=1)
+            if end <= start:
+                end = start + timedelta(days=1)
+            return start, end, True
 
         # Multi-day like "Aug 24 - Aug 26, 2025"
         m = re.search(rf"({MONTHS}\w*\s+\d{{1,2}})\s*-\s*({MONTHS}\w*\s+\d{{1,2}}),\s*(\d{{4}})", text, re.I)
@@ -72,6 +85,8 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
             eday = dp.parse(f"{m.group(2)}, {m.group(3)}")
             start = tz.localize(dp.parse(sday.strftime("%Y-%m-%d")))
             end = tz.localize(dp.parse(eday.strftime("%Y-%m-%d"))) + timedelta(days=1)
+            if end <= start:
+                end = start + timedelta(days=1)
             return start, end, True
 
         # Fallback: let dateutil guess; treat as all-day
@@ -81,6 +96,8 @@ def parse_datetime_range(text: str, tzname: str, default_minutes: int, iso_hint=
                 d = tz.localize(d)
             start = tz.localize(dp.parse(d.strftime("%Y-%m-%d")))
             end = start + timedelta(days=1)
+            if end <= start:
+                end = start + timedelta(days=1)
             return start, end, True
         except Exception:
             pass

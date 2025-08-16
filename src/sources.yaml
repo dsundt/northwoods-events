@@ -1,0 +1,23 @@
+timezone: America/Chicago
+default_duration_minutes: 60
+
+sources:
+  - name: Vilas County (Modern Tribe)
+    type: modern_tribe
+    url: "https://vilaswi.com/events/?eventDisplay=list"
+
+  - name: Boulder Junction (Modern Tribe)
+    type: modern_tribe
+    url: "https://boulderjct.org/events/?eventDisplay=list"
+
+  - name: Oneida County – Festivals & Events (Modern Tribe)
+    type: modern_tribe
+    url: "https://oneidacountywi.com/festivals-events/?eventDisplay=list"
+
+  - name: Eagle River Chamber (GrowthZone)
+    type: growthzone
+    url: "https://business.eagleriver.org/events/calendar"
+
+  - name: Rhinelander Chamber (GrowthZone)
+    type: growthzone
+    url: "https://business.rhinelanderchamber.com/events/search"

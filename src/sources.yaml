@@ -2,7 +2,7 @@ timezone: America/Chicago
 default_duration_minutes: 60
 
 sources:
-  # HTML (Modern Tribe) — still fine to scrape with static/JS path
+  # Existing working scrapers
   - name: Vilas County (Modern Tribe)
     type: modern_tribe
     url: "https://vilaswi.com/events/?eventDisplay=list"
@@ -11,19 +11,20 @@ sources:
     type: modern_tribe
     url: "https://boulderjct.org/events/?eventDisplay=list"
 
-  # ICS (Modern Tribe sitewide ICS is more reliable than page-level ICS)
-  - name: Oneida County – Festivals & Events (ICS)
-    type: ics
-    url: "https://oneidacountywi.com/events/?ical=1"
-    ics_family: modern_tribe
+  # Switch these three back to HTML scraping + JS render fallback
 
-  # ICS (GrowthZone native ICS avoids WP wrapper/403)
-  - name: Eagle River Chamber (ICS)
-    type: ics
-    url: "https://business.eagleriver.org/events/ical?months=12"
-    ics_family: growthzone
+  # Oneida County uses a Modern Tribe-style calendar but not a public ICS endpoint
+  - name: Oneida County – Festivals & Events (Modern Tribe)
+    type: modern_tribe
+    url: "https://oneidacountywi.com/festivals-events/?eventDisplay=list"
 
-  - name: Rhinelander Chamber (ICS)
-    type: ics
-    url: "https://business.rhinelanderchamber.com/events/ical?months=12"
-    ics_family: growthzone
+  # Eagle River’s WordPress site runs The Events Calendar; parse the list view directly
+  - name: Eagle River Chamber (Modern Tribe)
+    type: modern_tribe
+    url: "https://eagleriver.org/events/?eventDisplay=list"
+
+  # Rhinelander is GrowthZone (ChamberMaster); render the calendar and parse cards/listings
+  - name: Rhinelander Chamber (GrowthZone)
+    type: growthzone
+    url: "https://business.rhinelanderchamber.com/events/calendar"
+    wait_selector: ".mn-calendar, .listing, .mn-event, .mn-event-card, .event"

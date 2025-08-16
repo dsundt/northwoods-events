@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-16T06:21:16.375372-05:00",
+  "when": "2025-08-16T06:27:54.984324-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -96,17 +96,18 @@
       "skipped_dupe": 0,
       "samples": [],
       "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
+      "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html",
       "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.html"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 316,
-      "parsed": 115,
-      "added": 115,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 118,
       "skipped_nodate": 0,
-      "skipped_dupe": 83,
+      "skipped_dupe": 198,
       "samples": [
         {
           "reason": "past",
@@ -138,17 +139,18 @@
           "start": "2025-08-14T00:00:00-05:00",
           "date_text": "August 14"
         }
-      ]
+      ],
+      "snapshot_frame_1": "state/snapshots/eagle_river_chamber_modern_tribe.frame1.www.googletagmanager.com_ns.html.html"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 123,
-      "parsed": 4,
-      "added": 4,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 2,
       "skipped_nodate": 117,
-      "skipped_dupe": 0,
+      "skipped_dupe": 4,
       "samples": [
         {
           "reason": "nodate",

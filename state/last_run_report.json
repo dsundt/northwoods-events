@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-16T06:13:35.331455-05:00",
+  "when": "2025-08-16T06:21:16.375372-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -86,8 +86,8 @@
       ]
     },
     {
-      "name": "Oneida County \u2013 Festivals & Events (ICS)",
-      "url": "https://oneidacountywi.com/events/?ical=1",
+      "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
+      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
       "fetched": 0,
       "parsed": 0,
       "added": 0,
@@ -95,31 +95,92 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "error": "RuntimeError('ICS fetch failed. Tried: [(\\'https://oneidacountywi.com/events/?ical=1\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://oneidacountywi.com/events/?ical=1\\')\"), (\\'https://oneidacountywi.com/events/?ical=1\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://oneidacountywi.com/events/?ical=1\\')\"), (\\'https://oneidacountywi.com/events/?ical=1 (no referer)\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://oneidacountywi.com/events/?ical=1\\')\")]')"
+      "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
+      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.html"
     },
     {
-      "name": "Eagle River Chamber (ICS)",
-      "url": "https://business.eagleriver.org/events/ical?months=12",
-      "fetched": 0,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
+      "name": "Eagle River Chamber (Modern Tribe)",
+      "url": "https://eagleriver.org/events/?eventDisplay=list",
+      "fetched": 316,
+      "parsed": 115,
+      "added": 115,
+      "skipped_past": 118,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "RuntimeError('ICS fetch failed. Tried: [(\\'https://business.eagleriver.org/events/ical?months=12\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.eagleriver.org/events/ical?months=12\\')\"), (\\'https://business.eagleriver.org/events/ical?months=12\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.eagleriver.org/events/ical?months=12\\')\"), (\\'https://business.eagleriver.org/events/ical?months=12 (no referer)\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.eagleriver.org/events/ical?months=12\\')\")]')"
+      "skipped_dupe": 83,
+      "samples": [
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
+        },
+        {
+          "reason": "past",
+          "title": "Back To School Drive",
+          "start": "2025-08-15T00:00:00-05:00",
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
+        }
+      ]
     },
     {
-      "name": "Rhinelander Chamber (ICS)",
-      "url": "https://business.rhinelanderchamber.com/events/ical?months=12",
-      "fetched": 0,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
+      "name": "Rhinelander Chamber (GrowthZone)",
+      "url": "https://business.rhinelanderchamber.com/events/calendar",
+      "fetched": 123,
+      "parsed": 4,
+      "added": 4,
+      "skipped_past": 2,
+      "skipped_nodate": 117,
       "skipped_dupe": 0,
-      "samples": [],
-      "error": "RuntimeError('ICS fetch failed. Tried: [(\\'https://business.rhinelanderchamber.com/events/ical?months=12\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.rhinelanderchamber.com/events/ical?months=12\\')\"), (\\'https://business.rhinelanderchamber.com/events/ical?months=12\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.rhinelanderchamber.com/events/ical?months=12\\')\"), (\\'https://business.rhinelanderchamber.com/events/ical?months=12 (no referer)\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://business.rhinelanderchamber.com/events/ical?months=12\\')\")]')"
+      "samples": [
+        {
+          "reason": "nodate",
+          "title": "Oneida County Fair",
+          "date_text": "Oneida County Fair",
+          "iso_hint": null
+        },
+        {
+          "reason": "nodate",
+          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
+          "date_text": "Youth Baseball/Softball Clinic with the WI Woodchucks",
+          "iso_hint": null
+        },
+        {
+          "reason": "nodate",
+          "title": "ArtStart Gallery Exhibitions",
+          "date_text": "ArtStart Gallery Exhibitions",
+          "iso_hint": null
+        },
+        {
+          "reason": "nodate",
+          "title": "Saluting Heroes Balloon Rally",
+          "date_text": "Saluting Heroes Balloon Rally",
+          "iso_hint": null
+        },
+        {
+          "reason": "nodate",
+          "title": "Oneida County Fair",
+          "date_text": "Oneida County Fair",
+          "iso_hint": null
+        }
+      ]
     }
   ]
 }

@@ -1,17 +1,18 @@
 import json
 import os
 from datetime import datetime
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin, urlparse
 
 import pytz
 import yaml
-from bs4 import BeautifulSoup  # used only to extract iframes/links in this file
+from bs4 import BeautifulSoup  # iframe discovery
 
 from fetch import get                           # static HTTP fetch -> (html, final_url, status)
 from render import render_url                   # headless render -> (html, final_url)
-from ics_fetch import get_ics_text              # (kept for future ICS sources)
+from ics_fetch import get_ics_text              # resilient ICS fetcher (kept for future ICS sources)
 from parse_modern_tribe import parse as parse_mt
 from parse_growthzone import parse as parse_gz
+from parse_travelwi import parse as parse_travelwi
 from parse_ics import parse as parse_ics
 from normalize import clean_text, parse_datetime_range
 from dedupe import stable_id
@@ -41,45 +42,10 @@ def save_seen(seen):
         json.dump(seen, f, indent=2, sort_keys=True)
 
 
-def absolutize(url, source_url):
+def absolutize(url, base_url):
     if url.startswith(("http://", "https://")):
         return url
-    return urljoin(source_url, url)
-
-
-def _guess_kind_from_url(url: str) -> str:
-    """
-    Heuristic: GrowthZone/ChamberMaster usually lives on business.* and /events/* paths.
-    """
-    host = urlparse(url).netloc.lower()
-    path = urlparse(url).path.lower()
-    if "business." in host or "chamber" in host or "/events/" in path:
-        return "growthzone"
-    return "modern_tribe"
-
-
-def _parse_by_type(kind, html_or_text):
-    if kind == "modern_tribe":
-        return parse_mt(html_or_text)
-    if kind == "growthzone":
-        return parse_gz(html_or_text)
-    if kind == "ics":
-        return parse_ics(html_or_text)
-    return []
-
-
-def _extract_iframe_srcs(html: str, base_url: str):
-    """
-    Pull absolute iframe src URLs from the HTML, ignoring empty/about:blank.
-    """
-    out = []
-    soup = BeautifulSoup(html or "", "lxml")
-    for fr in soup.find_all("iframe"):
-        src = (fr.get("src") or "").strip()
-        if not src or src.startswith("about:") or src.startswith("data:"):
-            continue
-        out.append(absolutize(src, base_url))
-    return list(dict.fromkeys(out))  # de-dup preserve order
+    return urljoin(base_url, url)
 
 
 def _slugify(name: str) -> str:
@@ -91,7 +57,53 @@ def _slugify(name: str) -> str:
         .replace("–", "-")
         .replace("—", "-")
         .replace("&", "and")
+        .replace(",", "")
     )
+
+
+def _guess_kind_from_url(url: str) -> str:
+    """
+    Heuristic: decide which parser to use based on the URL.
+    - travelwisconsin.com -> TravelWI widget
+    - business.* / chamber / /events/ -> GrowthZone/ChamberMaster
+    - otherwise -> Modern Tribe (The Events Calendar)
+    """
+    host = urlparse(url).netloc.lower()
+    path = urlparse(url).path.lower()
+
+    if "travelwisconsin.com" in host:
+        return "travelwi"
+    if "business." in host or "chamber" in host or "/events/" in path:
+        return "growthzone"
+    return "modern_tribe"
+
+
+def _parse_by_type(kind: str, html_or_text: str):
+    if kind == "modern_tribe":
+        return parse_mt(html_or_text)
+    if kind == "growthzone":
+        return parse_gz(html_or_text)
+    if kind in ("travelwi", "travelwi_widget"):
+        return parse_travelwi(html_or_text)
+    if kind == "ics":
+        return parse_ics(html_or_text)
+    return []
+
+
+def _extract_iframe_srcs(html: str, base_url: str):
+    """
+    Pull absolute iframe src URLs from HTML, ignoring empty/about:blank/data:.
+    """
+    out = []
+    soup = BeautifulSoup(html or "", "lxml")
+    for fr in soup.find_all("iframe"):
+        src = (fr.get("src") or "").strip()
+        if not src or src.startswith(("about:", "data:")):
+            continue
+        out.append(absolutize(src, base_url))
+    if out:
+        print("IFRAMES FOUND:", out)
+    return list(dict.fromkeys(out))  # de-dup preserve order
 
 
 def main():
@@ -122,7 +134,7 @@ def main():
             rows = []
 
             if s["type"] == "ics":
-                # Robust ICS fetch (kept for future use)
+                # Robust ICS fetch (tries alternates + proper headers)
                 fam = s.get("ics_family") or ("growthzone" if "business." in s["url"] else "modern_tribe")
                 ics_text = get_ics_text(s["url"], fam)
                 rows = _parse_by_type("ics", ics_text)
@@ -133,10 +145,10 @@ def main():
                 html_static, final_url_static, status = get(s["url"])
                 rows = _parse_by_type(s["type"], html_static)
 
-                # Always look for iframes; many WP pages wrap a GrowthZone calendar
+                # Discover iframes in static HTML
                 iframe_srcs = _extract_iframe_srcs(html_static, final_url_static)
 
-                # 2) RENDERED HTML if needed
+                # 2) RENDERED HTML (Playwright) if needed
                 if not rows:
                     try:
                         wait_sel = s.get("wait_selector")
@@ -148,7 +160,7 @@ def main():
                         more = _parse_by_type(s["type"], html_dyn)
                         rows.extend(more)
 
-                        # save rendered snapshot
+                        # Save rendered snapshot
                         slug = _slugify(s["name"])
                         snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
                         with open(snap_path_dyn, "w", encoding="utf-8") as f:
@@ -156,22 +168,34 @@ def main():
                             f.write(html_dyn[:300000])
                         src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
 
-                        # collect iframes from rendered doc too (sometimes added in JS)
+                        # Also collect iframes from rendered page (often added by JS)
                         iframe_srcs += _extract_iframe_srcs(html_dyn, final_url_dyn)
                         iframe_srcs = list(dict.fromkeys(iframe_srcs))
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        src_report["render_error"] = repr(e)
 
-                # 3) IF FRAME(S) EXIST, RENDER + PARSE THEM
+                # 3) IF IFAME(S) EXIST, RENDER + PARSE THEM
                 frame_rows = []
-                for i, fr_url in enumerate(iframe_srcs[:5]):  # safety cap 5 frames
+                for i, fr_url in enumerate(iframe_srcs[:5]):  # safety cap
                     try:
-                        fr_html, fr_final = render_url(fr_url, wait_selector=None, timeout_ms=25000)
+                        host = urlparse(fr_url).netloc.lower()
+                        wait_sel = None
+                        # Host-specific waits
+                        if "travelwisconsin.com" in host:
+                            wait_sel = ".event__list li.event__item"
+
+                        fr_html, fr_final = render_url(fr_url, wait_selector=wait_sel, timeout_ms=25000)
                         kind = _guess_kind_from_url(fr_final)
                         parsed = _parse_by_type(kind, fr_html)
+
+                        # Absolutize links relative to the IFRAME base
+                        for rr in parsed:
+                            if rr.get("url"):
+                                rr["url"] = urljoin(fr_final, rr["url"])
+
                         frame_rows.extend(parsed)
 
-                        # snapshot frame for debugging
+                        # Snapshot frame for debugging
                         slug = _slugify(s["name"])
                         fr_slug = _slugify(urlparse(fr_final).netloc + urlparse(fr_final).path.replace("/", "_"))
                         snap_path_fr = os.path.join(SNAPDIR, f"{slug}.frame{i+1}.{fr_slug}.html")
@@ -198,7 +222,7 @@ def main():
                     except Exception:
                         pass
 
-            # Post-parse normalization & filtering
+            # 4) Post-parse normalization & filtering
             for r in rows:
                 title = clean_text(r.get("title"))
                 url = absolutize(r.get("url", ""), s["url"])
@@ -258,15 +282,15 @@ def main():
 
         report["sources"].append(src_report)
 
-    # Build ICS
+    # 5) Build ICS
     build_ics(collected, ICS_OUT)
 
-    # Persist state + report
+    # 6) Persist state + report
     save_seen(seen)
     with open(REPORT, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
-    # Print a short summary for Actions logs
+    # 7) Print a short summary for Actions logs
     total_added = sum(s["added"] for s in report["sources"])
     summary = {
         "total_added": total_added,

@@ -3,12 +3,12 @@ import os
 from datetime import datetime
 from urllib.parse import urljoin
 
-import requests
 import pytz
 import yaml
 
 from fetch import get                           # static HTTP fetch -> (html, final_url, status)
 from render import render_url                   # headless render -> (html, final_url)
+from ics_fetch import get_ics_text              # resilient ICS fetcher with alternates/headers
 from parse_modern_tribe import parse as parse_mt
 from parse_growthzone import parse as parse_gz
 from parse_ics import parse as parse_ics
@@ -82,10 +82,9 @@ def main():
 
         try:
             if s["type"] == "ics":
-                # Simple GET of ICS text (no rendering)
-                r = requests.get(s["url"], timeout=30)
-                r.raise_for_status()
-                ics_text = r.text
+                # Robust ICS fetch (tries alternates + proper headers)
+                fam = s.get("ics_family") or ("growthzone" if "business." in s["url"] else "modern_tribe")
+                ics_text = get_ics_text(s["url"], fam)
                 rows = _parse_by_type("ics", ics_text)
                 src_report["fetched"] = len(rows)
 
@@ -228,6 +227,7 @@ def main():
                 "skipped_dupe": s["skipped_dupe"],
                 **({"snapshot": s.get("snapshot")} if s.get("snapshot") else {}),
                 **({"snapshot_rendered": s.get("snapshot_rendered")} if s.get("snapshot_rendered") else {}),
+                **({"error": s.get("error")} if s.get("error") else {}),
             }
             for s in report["sources"]
         ]

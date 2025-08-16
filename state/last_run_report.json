@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-16T05:32:29.404015-05:00",
+  "when": "2025-08-16T05:55:54.750778-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -86,8 +86,8 @@
       ]
     },
     {
-      "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
-      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
+      "name": "Oneida County \u2013 Festivals & Events (ICS)",
+      "url": "https://oneidacountywi.com/festivals-events/?ical=1",
       "fetched": 0,
       "parsed": 0,
       "added": 0,
@@ -95,12 +95,11 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
-      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.html"
+      "error": "FailedParse(Buffer@0, ['ALPHADIGIT_MINUS_PLUS', 'contentline', 'start'], 'Expecting <ALPHADIGIT_MINUS_PLUS>')"
     },
     {
-      "name": "Eagle River Chamber (GrowthZone)",
-      "url": "https://business.eagleriver.org/events/calendar",
+      "name": "Eagle River Chamber (ICS)",
+      "url": "https://eagleriver.org/events/?ical=1",
       "fetched": 0,
       "parsed": 0,
       "added": 0,
@@ -108,8 +107,7 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/eagle_river_chamber_growthzone.rendered.html",
-      "snapshot": "state/snapshots/eagle_river_chamber_growthzone.html"
+      "error": "HTTPError('403 Client Error: Forbidden for url: https://eagleriver.org/events/?ical=1')"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",

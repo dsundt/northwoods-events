@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 
 import pytz
 import yaml
+import requests
 
 from fetch import get
 from render import render_url
@@ -13,6 +14,8 @@ from parse_growthzone import parse as parse_gz
 from normalize import clean_text, parse_datetime_range
 from dedupe import stable_id
 from icsbuild import build_ics
+from parse_ics import parse as parse_ics  # <-- add this
+
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 STATE = os.path.join(ROOT, "state", "seen.json")
@@ -39,11 +42,13 @@ def absolutize(url, source_url):
         return url
     return urljoin(source_url, url)
 
-def _parse_by_type(kind, html):
+def _parse_by_type(kind, html_or_text):
     if kind == "modern_tribe":
-        return parse_mt(html)
+        return parse_mt(html_or_text)
     if kind == "growthzone":
-        return parse_gz(html)
+        return parse_gz(html_or_text)
+    if kind == "ics":
+        return parse_ics(html_or_text)
     return []
 
 def main():
@@ -71,9 +76,48 @@ def main():
         }
 
         try:
-            # 1) Static fetch first
-            html_static, final_url_static, status = get(s["url"])
-            rows = _parse_by_type(s["type"], html_static)
+           if s["type"] == "ics":
+    # Simple GET of ICS text (no rendering)
+    r = requests.get(s["url"], timeout=30)
+    r.raise_for_status()
+    ics_text = r.text
+    rows = _parse_by_type("ics", ics_text)
+    src_report["fetched"] = len(rows)
+else:
+    # HTML path (static → optional rendered)
+    html_static, final_url_static, status = get(s["url"])
+    rows = _parse_by_type(s["type"], html_static)
+
+    # Try headless render if nothing parsed
+    if not rows:
+        try:
+            wait_sel = s.get("wait_selector")
+            html_dyn, final_url_dyn = render_url(s["url"], wait_selector=wait_sel, timeout_ms=25000)
+            rows = _parse_by_type(s["type"], html_dyn)
+            # save rendered snapshot
+            slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
+            snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
+            with open(snap_path_dyn, "w", encoding="utf-8") as f:
+                f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
+                f.write(html_dyn[:300000])
+            src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
+        except Exception:
+            pass
+
+    src_report["fetched"] = len(rows)
+
+    # If still zero, save static snapshot for debugging
+    if len(rows) == 0:
+        slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-").replace("&","and")
+        snap_path = os.path.join(SNAPDIR, f"{slug}.html")
+        try:
+            with open(snap_path, "w", encoding="utf-8") as f:
+                f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
+                f.write(html_static[:200000])
+            src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
+        except Exception:
+            pass
+
 
             used_renderer = False
             # 2) If nothing parsed, try headless render

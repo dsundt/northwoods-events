@@ -1,27 +1,89 @@
 {
-  "when": "2025-08-16T04:35:51.175043-05:00",
+  "when": "2025-08-16T05:11:21.523017-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
-      "fetched": 0,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
+      "fetched": 190,
+      "parsed": 75,
+      "added": 75,
+      "skipped_past": 64,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": []
+      "skipped_dupe": 51,
+      "samples": [
+        {
+          "reason": "past",
+          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
+          "start": "2025-08-02T00:00:00-05:00",
+          "date_text": "August 2"
+        },
+        {
+          "reason": "past",
+          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
+          "start": "2025-08-02T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Featured Boulder Junction\u2019s Musky Capital of the World Musky Tournament",
+          "start": "2025-08-08T00:00:00-05:00",
+          "date_text": "August 8 @ 10:00 am"
+        }
+      ]
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
-      "fetched": 0,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
+      "fetched": 136,
+      "parsed": 53,
+      "added": 53,
+      "skipped_past": 55,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": []
+      "skipped_dupe": 28,
+      "samples": [
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": "August 1"
+        },
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Alcohol Inks on Yupo Paper at Marywood",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7 @ 9:00 am"
+        },
+        {
+          "reason": "past",
+          "title": "Alcohol Inks on Yupo Paper at Marywood",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
+        }
+      ]
     },
     {
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
@@ -32,7 +94,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
-      "samples": []
+      "samples": [],
+      "snapshot": "state/snapshots/oneida_county_-_festivals_&_events_modern_tribe.html"
     },
     {
       "name": "Eagle River Chamber (GrowthZone)",
@@ -43,7 +106,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
-      "samples": []
+      "samples": [],
+      "snapshot": "state/snapshots/eagle_river_chamber_growthzone.html"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -54,7 +118,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
-      "samples": []
+      "samples": [],
+      "snapshot": "state/snapshots/rhinelander_chamber_growthzone.html"
     }
   ]
 }

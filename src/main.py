@@ -1,4 +1,5 @@
-import json, os
+import json
+import os
 from datetime import datetime
 from urllib.parse import urljoin
 
@@ -16,6 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 STATE = os.path.join(ROOT, "state", "seen.json")
 ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
 REPORT = os.path.join(ROOT, "state", "last_run_report.json")
+SNAPDIR = os.path.join(ROOT, "state", "snapshots")
 
 def load_yaml():
     with open(os.path.join(ROOT, "src", "sources.yaml"), "r", encoding="utf-8") as f:
@@ -41,46 +43,78 @@ def main():
     tzname = cfg.get("timezone", "America/Chicago")
     default_minutes = int(cfg.get("default_duration_minutes", 60))
     seen = load_seen()
+
     tz = pytz.timezone(tzname)
     now = tz.localize(datetime.now())
+
+    os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
+    os.makedirs(os.path.join(ROOT, "state"), exist_ok=True)
+    os.makedirs(SNAPDIR, exist_ok=True)
 
     collected = []
     report = {"when": now.isoformat(), "sources": []}
 
     for s in cfg["sources"]:
-        src_report = {"name": s["name"], "url": s["url"], "fetched": 0, "parsed": 0,
-                      "added": 0, "skipped_past": 0, "skipped_nodate": 0, "skipped_dupe": 0,
-                      "samples": []}
+        src_report = {
+            "name": s["name"], "url": s["url"],
+            "fetched": 0, "parsed": 0, "added": 0,
+            "skipped_past": 0, "skipped_nodate": 0, "skipped_dupe": 0,
+            "samples": []
+        }
+
         try:
-            html = get(s["url"])
+            html, final_url, status = get(s["url"])
+
             if s["type"] == "modern_tribe":
                 rows = parse_mt(html)
             elif s["type"] == "growthzone":
                 rows = parse_gz(html)
             else:
                 rows = []
+
             src_report["fetched"] = len(rows)
+
+            # Save snapshot if nothing parsed
+            if len(rows) == 0:
+                slug = s["name"].lower().replace(" ", "_").replace("(", "").replace(")", "").replace("–","-").replace("—","-")
+                snap_path = os.path.join(SNAPDIR, f"{slug}.html")
+                try:
+                    with open(snap_path, "w", encoding="utf-8") as f:
+                        f.write(f"<!-- URL: {s['url']} | Final: {final_url} | Status: {status} -->\n")
+                        f.write(html[:200000])  # cap snapshot size
+                    src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
+                except Exception:
+                    pass
 
             for r in rows:
                 title = clean_text(r.get("title"))
                 url = absolutize(r.get("url",""), s["url"])
                 location = clean_text(r.get("venue_text") or "")
-                # prefer ISO datetime if parser found one
-                iso_from_attr = r.get("iso_datetime")
                 date_text = clean_text(r.get("date_text") or "")
+                iso_from_attr = r.get("iso_datetime")
+                iso_end = r.get("iso_end")
 
-                start, end, all_day = parse_datetime_range(date_text, tzname, default_minutes, iso_hint=iso_from_attr)
+                start, end, all_day = parse_datetime_range(
+                    date_text, tzname, default_minutes,
+                    iso_hint=iso_from_attr, iso_end_hint=iso_end
+                )
                 if not start or not end:
                     src_report["skipped_nodate"] += 1
                     if len(src_report["samples"]) < 5:
-                        src_report["samples"].append({"reason":"nodate","title":title,"date_text":date_text,"iso_hint":iso_from_attr})
+                        src_report["samples"].append({
+                            "reason":"nodate", "title": title,
+                            "date_text": date_text, "iso_hint": iso_from_attr
+                        })
                     continue
 
                 # Future or today only
                 if start.replace(hour=0, minute=0, second=0, microsecond=0) < now.replace(hour=0, minute=0, second=0, microsecond=0):
                     src_report["skipped_past"] += 1
                     if len(src_report["samples"]) < 5:
-                        src_report["samples"].append({"reason":"past","title":title,"start":start.isoformat(),"date_text":date_text})
+                        src_report["samples"].append({
+                            "reason":"past", "title": title,
+                            "start": start.isoformat(), "date_text": date_text
+                        })
                     continue
 
                 sid = stable_id(title, start.isoformat(), location, url)
@@ -101,17 +135,16 @@ def main():
                 seen[sid] = {"added": now.isoformat(), "source": s["name"]}
                 src_report["added"] += 1
                 src_report["parsed"] += 1
+
         except Exception as e:
             src_report["error"] = repr(e)
 
         report["sources"].append(src_report)
 
-       # Build ICS
-    os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
+    # Build ICS
     build_ics(collected, ICS_OUT)
 
     # Persist state + report
-    os.makedirs(os.path.join(ROOT, "state"), exist_ok=True)
     save_seen(seen)
     with open(REPORT, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)

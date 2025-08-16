@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-16T14:27:45.372689-05:00",
+  "when": "2025-08-16T15:27:57.327353-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -101,24 +101,42 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 12,
-      "parsed": 10,
-      "added": 10,
-      "skipped_past": 2,
+      "fetched": 316,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 118,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 198,
       "samples": [
         {
           "reason": "past",
           "title": "National Championship Musky Open",
           "start": "2025-08-14T00:00:00-05:00",
-          "date_text": "August 14 - August 17"
+          "date_text": "August 14"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
         },
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15 - September 1"
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
+        },
+        {
+          "reason": "past",
+          "title": "National Championship Musky Open",
+          "start": "2025-08-14T00:00:00-05:00",
+          "date_text": "August 14"
         }
       ],
       "snapshot_frame_1": "state/snapshots/eagle_river_chamber_modern_tribe.frame1.www.googletagmanager.com_ns.html.html"

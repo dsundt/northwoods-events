@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-16T05:11:21.523017-05:00",
+  "when": "2025-08-16T05:32:29.404015-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 75,
-      "added": 75,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 64,
       "skipped_nodate": 0,
-      "skipped_dupe": 51,
+      "skipped_dupe": 126,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 136,
-      "parsed": 53,
-      "added": 53,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 55,
       "skipped_nodate": 0,
-      "skipped_dupe": 28,
+      "skipped_dupe": 81,
       "samples": [
         {
           "reason": "past",
@@ -95,7 +95,8 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot": "state/snapshots/oneida_county_-_festivals_&_events_modern_tribe.html"
+      "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
+      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.html"
     },
     {
       "name": "Eagle River Chamber (GrowthZone)",
@@ -107,6 +108,7 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
+      "snapshot_rendered": "state/snapshots/eagle_river_chamber_growthzone.rendered.html",
       "snapshot": "state/snapshots/eagle_river_chamber_growthzone.html"
     },
     {
@@ -119,6 +121,7 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
+      "snapshot_rendered": "state/snapshots/rhinelander_chamber_growthzone.rendered.html",
       "snapshot": "state/snapshots/rhinelander_chamber_growthzone.html"
     }
   ]

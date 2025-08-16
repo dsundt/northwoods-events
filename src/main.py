@@ -106,7 +106,7 @@ def main():
 
         report["sources"].append(src_report)
 
-    # Build ICS
+       # Build ICS
     os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
     build_ics(collected, ICS_OUT)
 
@@ -118,7 +118,22 @@ def main():
 
     # Print a short summary for Actions logs
     total_added = sum(s["added"] for s in report["sources"])
-    print("SUMMARY:", json.dumps({
+    summary = {
         "total_added": total_added,
-        "per_source": [{k: s[k] for k in ("name","fetched","parsed","added","skipped_past","skipped_nodate","skipped_dupe")} for s in report["sources"]]
-    }, in
+        "per_source": [
+            {
+                "name": s["name"],
+                "fetched": s["fetched"],
+                "parsed": s["parsed"],
+                "added": s["added"],
+                "skipped_past": s["skipped_past"],
+                "skipped_nodate": s["skipped_nodate"],
+                "skipped_dupe": s["skipped_dupe"]
+            }
+            for s in report["sources"]
+        ]
+    }
+    print("SUMMARY:", json.dumps(summary, indent=2))
+
+if __name__ == "__main__":
+    main()

@@ -24,3 +24,8 @@ sources:
     type: growthzone
     url: "https://business.rhinelanderchamber.com/events/calendar"
     wait_selector: ".mn-calendar, .listing, .mn-event, .mn-event-card, .event"
+
+  - name: Travel Wisconsin – Oneida Widget
+    type: travelwi   # we’ll map this to “travelwi” in main
+    url: "https://www.travelwisconsin.com/events/widgetview?id=bd86f944-aa2f-4e46-8be5-089e5273e88f&utm_source=Fall%20Color%20Report&utm_medium=Widget&utm_campaign=Widget%20Traffic"
+

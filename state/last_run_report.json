@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-16T06:27:54.984324-05:00",
+  "when": "2025-08-16T06:45:43.379483-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -88,16 +88,15 @@
     {
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 0,
-      "parsed": 0,
-      "added": 0,
+      "fetched": 12,
+      "parsed": 12,
+      "added": 12,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
       "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
-      "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html",
-      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.html"
+      "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -183,6 +182,17 @@
           "iso_hint": null
         }
       ]
+    },
+    {
+      "name": "Travel Wisconsin \u2013 Oneida Widget",
+      "url": "https://www.travelwisconsin.com/events/widgetview?id=bd86f944-aa2f-4e46-8be5-089e5273e88f&utm_source=Fall%20Color%20Report&utm_medium=Widget&utm_campaign=Widget%20Traffic",
+      "fetched": 12,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 12,
+      "samples": []
     }
   ]
 }

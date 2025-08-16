@@ -1,6 +1,6 @@
 import time, random, requests
 
-UA = "northwoods-events/1.0 (+https://github.com/<you>/northwoods-events)"
+UA = "Mozilla/5.0 (compatible; NorthwoodsBot/1.0; +https://github.com/dsundt/northwoods-events)"
 
 def get(url, timeout=20, max_retries=4):
     for attempt in range(max_retries):

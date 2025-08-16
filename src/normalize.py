@@ -7,30 +7,33 @@ MONTHS = "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
 def clean_text(s):
     return re.sub(r"\s+", " ", (s or "").strip())
 
-def parse_datetime_range(text, tzname, default_minutes, iso_hint=None):
+def parse_datetime_range(text, tzname, default_minutes, iso_hint=None, iso_end_hint=None):
     """
-    Accepts:
-      - ISO hint from <time datetime="..."> when present
-      - 'Aug 24, 2025 @ 5:00 pm – 7:00 pm'
-      - 'August 24, 2025'
-      - 'Aug 24–Aug 26, 2025'
-      - 'Aug 24 @ 5:00 pm' (no year -> assume current year)
-    Returns: (start_dt, end_dt, all_day:bool) in tzname
+    Returns (start_dt, end_dt, all_day)
+    First uses ISO hints (from <time datetime=...> or JSON-LD) if present.
     """
     tz = pytz.timezone(tzname)
 
-    # 1) Fast path if we have a machine-readable ISO from the page
+    # ISO fast path
     if iso_hint:
         try:
             start = dp.parse(iso_hint)
             if not start.tzinfo:
                 start = tz.localize(start)
+            if iso_end_hint:
+                end = dp.parse(iso_end_hint)
+                if not end.tzinfo:
+                    end = tz.localize(end)
+                all_day = False
+                return start, end, all_day
             end = start + timedelta(minutes=default_minutes)
             return start, end, False
         except Exception:
             pass
 
-    text = clean_text(text)
+    # ... keep the rest of your previous parsing code unchanged ...
+
+text = clean_text(text)
 
     # Normalize separators
     text = text.replace("–", "-").replace("—", "-").replace("@", "")

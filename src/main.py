@@ -17,13 +17,16 @@ from parse_ics import parse as parse_ics
 from normalize import clean_text, parse_datetime_range
 from dedupe import stable_id
 from icsbuild import build_ics
+from state_store import load_events, save_events, merge_events, to_runtime_events
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 STATE = os.path.join(ROOT, "state", "seen.json")
 ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
 REPORT = os.path.join(ROOT, "state", "last_run_report.json")
 SNAPDIR = os.path.join(ROOT, "state", "snapshots")
+EVENTS_STORE = os.path.join(ROOT, "state", "events.json")
 
+events_store = load_events(EVENTS_STORE)
 
 def load_yaml():
     with open(os.path.join(ROOT, "src", "sources.yaml"), "r", encoding="utf-8") as f:
@@ -283,7 +286,12 @@ def main():
         report["sources"].append(src_report)
 
     # 5) Build ICS
-    build_ics(collected, ICS_OUT)
+    #build_ics(collected, ICS_OUT)
+    # NEW: merge → persist → build from merged store
+    events_store = merge_events(events_store, collected, now)
+    save_events(EVENTS_STORE, events_store)
+    runtime_events = to_runtime_events(events_store)
+    build_ics(runtime_events, ICS_OUT)
 
     # 6) Persist state + report
     save_seen(seen)

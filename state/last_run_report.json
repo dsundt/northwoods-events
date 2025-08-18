@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-18T02:28:56.232750-05:00",
+  "when": "2025-08-18T04:06:42.430467-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 38,
-      "added": 38,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 70,
       "skipped_nodate": 0,
-      "skipped_dupe": 82,
+      "skipped_dupe": 120,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 136,
-      "parsed": 32,
-      "added": 32,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 58,
       "skipped_nodate": 0,
-      "skipped_dupe": 46,
+      "skipped_dupe": 78,
       "samples": [
         {
           "reason": "past",
@@ -101,42 +101,24 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 316,
-      "parsed": 47,
-      "added": 47,
-      "skipped_past": 123,
+      "fetched": 12,
+      "parsed": 1,
+      "added": 1,
+      "skipped_past": 2,
       "skipped_nodate": 0,
-      "skipped_dupe": 146,
+      "skipped_dupe": 9,
       "samples": [
         {
           "reason": "past",
           "title": "National Championship Musky Open",
           "start": "2025-08-14T00:00:00-05:00",
-          "date_text": "August 14"
-        },
-        {
-          "reason": "past",
-          "title": "National Championship Musky Open",
-          "start": "2025-08-14T00:00:00-05:00",
-          "date_text": "August 14"
+          "date_text": "August 14 - August 17"
         },
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15"
-        },
-        {
-          "reason": "past",
-          "title": "National Championship Musky Open",
-          "start": "2025-08-14T00:00:00-05:00",
-          "date_text": "August 14"
-        },
-        {
-          "reason": "past",
-          "title": "National Championship Musky Open",
-          "start": "2025-08-14T00:00:00-05:00",
-          "date_text": "August 14"
+          "date_text": "August 15 - September 1"
         }
       ],
       "snapshot_frame_1": "state/snapshots/eagle_river_chamber_modern_tribe.frame1.www.googletagmanager.com_ns.html.html"
@@ -145,11 +127,11 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 123,
-      "parsed": 1,
-      "added": 1,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 2,
       "skipped_nodate": 117,
-      "skipped_dupe": 3,
+      "skipped_dupe": 4,
       "samples": [
         {
           "reason": "nodate",

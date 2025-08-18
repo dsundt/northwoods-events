@@ -1,17 +1,16 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil import parser as dp
 
 def load_events(path: str) -> dict:
     """
     Load persistent event store from JSON.
-    Returns dict keyed by sid with fields:
+    Returns dict keyed by sid with:
       title, description, location, url, start_iso, end_iso, all_day, source, last_seen
     """
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Ensure it's a dict
             return data if isinstance(data, dict) else {}
     except FileNotFoundError:
         return {}
@@ -24,11 +23,10 @@ def save_events(path: str, store: dict) -> None:
 
 def merge_events(store: dict, new_events: list, now_dt: datetime) -> dict:
     """
-    Merge current-run events (list of dicts with datetime objects) into the persistent store.
-    - Upserts by sid.
-    - Removes events that are fully in the past (end < start of today).
+    Merge current-run events (list of dicts with datetime objs) into the persistent store.
+    Upserts by sid. Removes events fully in the past (end < today 00:00).
     """
-    # 1) Upsert incoming
+    # Upsert incoming
     for e in new_events:
         sid = e["sid"]
         store[sid] = {
@@ -43,7 +41,7 @@ def merge_events(store: dict, new_events: list, now_dt: datetime) -> dict:
             "last_seen": now_dt.isoformat(),
         }
 
-    # 2) Purge past
+    # Purge past
     today_start = now_dt.replace(hour=0, minute=0, second=0, microsecond=0)
     to_delete = []
     for sid, e in store.items():
@@ -52,7 +50,7 @@ def merge_events(store: dict, new_events: list, now_dt: datetime) -> dict:
             if end < today_start:
                 to_delete.append(sid)
         except Exception:
-            # If unparsable, keep it (safer)
+            # keep unparsable
             pass
     for sid in to_delete:
         store.pop(sid, None)
@@ -80,6 +78,5 @@ def to_runtime_events(store: dict) -> list:
             "all_day": bool(e.get("all_day", False)),
             "sid": sid,
         })
-    # Sort by start
     out.sort(key=lambda x: x["start"])
     return out

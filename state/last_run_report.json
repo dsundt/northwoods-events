@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-18T22:28:42.443306-05:00",
+  "when": "2025-08-18T23:06:34.198264-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 69,
+      "added": 69,
       "skipped_past": 70,
       "skipped_nodate": 0,
-      "skipped_dupe": 120,
+      "skipped_dupe": 51,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 136,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 50,
+      "added": 50,
       "skipped_past": 58,
       "skipped_nodate": 0,
-      "skipped_dupe": 78,
+      "skipped_dupe": 28,
       "samples": [
         {
           "reason": "past",
@@ -89,11 +89,11 @@
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
       "fetched": 12,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 12,
+      "added": 12,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 12,
+      "skipped_dupe": 0,
       "samples": [],
       "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
       "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html"
@@ -101,31 +101,54 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 12,
-      "parsed": 11,
-      "added": 11,
-      "skipped_past": 1,
+      "fetched": 316,
+      "parsed": 109,
+      "added": 109,
+      "skipped_past": 119,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 88,
       "samples": [
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15 - September 1"
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Back To School Drive",
+          "start": "2025-08-15T00:00:00-05:00",
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Northwoods Art Tour",
+          "start": "2025-07-25T00:00:00-05:00",
+          "date_text": "July 25"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
         }
-      ],
-      "snapshot_frame_1": "state/snapshots/eagle_river_chamber_modern_tribe.frame1.www.googletagmanager.com_ns.html.html"
+      ]
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 123,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 4,
+      "added": 4,
       "skipped_past": 2,
       "skipped_nodate": 117,
-      "skipped_dupe": 4,
+      "skipped_dupe": 0,
       "samples": [
         {
           "reason": "nodate",

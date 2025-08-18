@@ -1,4 +1,36 @@
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:ics.py - http://git.io/lLljaA
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/memory-checkup-with-the-adrc-of-vilas-county/
+DTEND:20250819T060000Z
+LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
+DTSTART:20250819T050000Z
+SUMMARY:Memory Checkup with the ADRC of Vilas County
+UID:40c0cfc2-f644-444f-9cbc-7d52dd96e30a@40c0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-20/
+DTEND:20250820T060000Z
+LOCATION:Old Paths Christian Ministries
+DTSTART:20250820T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:f4cf1121-4820-4fc4-92e4-bb166a274f6d@f4cf.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-speedway-tuesday-night-races/2025-08-19/
+DTEND:20250819T060000Z
+LOCATION:Eagle River Speedway 3973 Cloverland Dr\, Eagle River\, WI
+DTSTART:20250819T050000Z
+SUMMARY:Eagle River Speedway Tuesday Night Races
+UID:74fb59ee-a416-49f6-9bd9-00cf0a46521d@74fb.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-08-20/
+DTEND:20250820T060000Z
+LOCATION:Eagle River Farmers Market Lot
+DTSTART:20250820T050000Z
+SUMMARY:Eagle River Farmers Market and Artisans Market
+UID:46942d8a-9ec6-4f10-8b0a-fad769f4aae7@4694.org
+END:VEVENT
 END:VCALENDAR

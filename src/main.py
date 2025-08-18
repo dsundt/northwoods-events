@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup  # iframe discovery
 
 from fetch import get                           # static HTTP fetch -> (html, final_url, status)
 from render import render_url                   # headless render -> (html, final_url)
-from ics_fetch import get_ics_text              # resilient ICS fetcher (kept for future ICS sources)
+from ics_fetch import get_ics_text              # resilient ICS fetcher (optional)
 from parse_modern_tribe import parse as parse_mt
 from parse_growthzone import parse as parse_gz
 from parse_travelwi import parse as parse_travelwi
@@ -21,12 +21,11 @@ from state_store import load_events, save_events, merge_events, to_runtime_event
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 STATE = os.path.join(ROOT, "state", "seen.json")
+EVENTS_STORE = os.path.join(ROOT, "state", "events.json")
 ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
 REPORT = os.path.join(ROOT, "state", "last_run_report.json")
 SNAPDIR = os.path.join(ROOT, "state", "snapshots")
-EVENTS_STORE = os.path.join(ROOT, "state", "events.json")
 
-events_store = load_events(EVENTS_STORE)
 
 def load_yaml():
     with open(os.path.join(ROOT, "src", "sources.yaml"), "r", encoding="utf-8") as f:
@@ -93,9 +92,23 @@ def _parse_by_type(kind: str, html_or_text: str):
     return []
 
 
+BLOCKED_IFRAME_HOSTS = (
+    "googletagmanager.com",
+    "google.com",
+    "www.google.com",
+    "facebook.com",
+    "www.facebook.com",
+    "twitter.com",
+    "www.twitter.com",
+    "youtube.com",
+    "www.youtube.com",
+)
+
+
 def _extract_iframe_srcs(html: str, base_url: str):
     """
-    Pull absolute iframe src URLs from HTML, ignoring empty/about:blank/data:.
+    Pull absolute iframe src URLs from HTML, ignoring empty/about:blank/data:
+    and common analytics/social iframes.
     """
     out = []
     soup = BeautifulSoup(html or "", "lxml")
@@ -103,7 +116,11 @@ def _extract_iframe_srcs(html: str, base_url: str):
         src = (fr.get("src") or "").strip()
         if not src or src.startswith(("about:", "data:")):
             continue
-        out.append(absolutize(src, base_url))
+        abs_src = absolutize(src, base_url)
+        host = urlparse(abs_src).netloc.lower()
+        if any(host.endswith(b) for b in BLOCKED_IFRAME_HOSTS):
+            continue
+        out.append(abs_src)
     if out:
         print("IFRAMES FOUND:", out)
     return list(dict.fromkeys(out))  # de-dup preserve order
@@ -113,7 +130,10 @@ def main():
     cfg = load_yaml()
     tzname = cfg.get("timezone", "America/Chicago")
     default_minutes = int(cfg.get("default_duration_minutes", 60))
+
+    # initialize dedupe and persistent event store BEFORE crawling
     seen = load_seen()
+    events_store = load_events(EVENTS_STORE)
 
     tz = pytz.timezone(tzname)
     now = tz.localize(datetime.now())
@@ -274,7 +294,8 @@ def main():
                     "start": start,
                     "end": end,
                     "all_day": all_day,
-                    "sid": sid
+                    "sid": sid,
+                    "source": s["name"],
                 })
                 seen[sid] = {"added": now.isoformat(), "source": s["name"]}
                 src_report["added"] += 1
@@ -285,15 +306,13 @@ def main():
 
         report["sources"].append(src_report)
 
-    # 5) Build ICS
-    #build_ics(collected, ICS_OUT)
-    # NEW: merge → persist → build from merged store
+    # 5) Build ICS from persistent merged store
     events_store = merge_events(events_store, collected, now)
     save_events(EVENTS_STORE, events_store)
     runtime_events = to_runtime_events(events_store)
     build_ics(runtime_events, ICS_OUT)
 
-    # 6) Persist state + report
+    # 6) Persist seen + report
     save_seen(seen)
     with open(REPORT, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
@@ -314,7 +333,7 @@ def main():
                 **({"snapshot": s.get("snapshot")} if s.get("snapshot") else {}),
                 **({"snapshot_rendered": s.get("snapshot_rendered")} if s.get("snapshot_rendered") else {}),
                 **({k: s[k] for k in s.keys() if k.startswith("snapshot_frame_")} if any(k.startswith("snapshot_frame_") for k in s.keys()) else {}),
-                **({k: s[k] for k in s.keys() if k.startswith("frame_") and k.endswith("_error")} if any(k.startswith("frame_") and k.endswith("_error") for k in s.keys()) else {}),
+                **({k: s[k] for k in s.keys() if k.endswith("_error") and k.startswith("frame_")} if any(k.endswith("_error") and k.startswith("frame_") for k in s.keys()) else {}),
                 **({"error": s.get("error")} if s.get("error") else {}),
             }
             for s in report["sources"]

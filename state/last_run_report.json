@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-18T11:28:31.506508-05:00",
+  "when": "2025-08-18T13:02:38.912006-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -101,18 +101,42 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 12,
-      "parsed": 1,
-      "added": 1,
-      "skipped_past": 1,
+      "fetched": 316,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 119,
       "skipped_nodate": 0,
-      "skipped_dupe": 10,
+      "skipped_dupe": 197,
       "samples": [
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15 - September 1"
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Back To School Drive",
+          "start": "2025-08-15T00:00:00-05:00",
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Northwoods Art Tour",
+          "start": "2025-07-25T00:00:00-05:00",
+          "date_text": "July 25"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
         }
       ],
       "snapshot_frame_1": "state/snapshots/eagle_river_chamber_modern_tribe.frame1.www.googletagmanager.com_ns.html.html"

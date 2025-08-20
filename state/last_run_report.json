@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-19T23:27:06.280235-05:00",
+  "when": "2025-08-20T02:06:59.276219-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 72,
+      "parsed": 38,
+      "added": 38,
+      "skipped_past": 74,
       "skipped_nodate": 0,
-      "skipped_dupe": 118,
+      "skipped_dupe": 78,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 136,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 60,
+      "parsed": 32,
+      "added": 32,
+      "skipped_past": 62,
       "skipped_nodate": 0,
-      "skipped_dupe": 76,
+      "skipped_dupe": 42,
       "samples": [
         {
           "reason": "past",
@@ -102,11 +102,11 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 316,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 122,
+      "parsed": 47,
+      "added": 47,
+      "skipped_past": 127,
       "skipped_nodate": 0,
-      "skipped_dupe": 194,
+      "skipped_dupe": 142,
       "samples": [
         {
           "reason": "past",
@@ -116,27 +116,27 @@
         },
         {
           "reason": "past",
+          "title": "",
+          "start": "2025-08-19T00:00:00-05:00",
+          "date_text": "5:30 pm"
+        },
+        {
+          "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
           "date_text": "August 15"
         },
         {
           "reason": "past",
+          "title": "",
+          "start": "2025-08-19T00:00:00-05:00",
+          "date_text": "5:30 pm"
+        },
+        {
+          "reason": "past",
           "title": "Northwoods Art Tour",
           "start": "2025-07-25T00:00:00-05:00",
           "date_text": "July 25"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": "August 7"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": ""
         }
       ]
     },
@@ -144,11 +144,11 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 124,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 1,
+      "added": 1,
       "skipped_past": 2,
       "skipped_nodate": 118,
-      "skipped_dupe": 4,
+      "skipped_dupe": 3,
       "samples": [
         {
           "reason": "nodate",

@@ -1,1 +1,86 @@
+name: Daily ICS build + email
+
+on:
+  schedule:
+    # 8:00 AM America/Chicago ~ 13:00 UTC during CDT; adjust if needed
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  build_and_email:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Playwright deps (if you use render.py)
+          python -m playwright install --with-deps chromium
+
+      - name: Build ICS and digest
+        run: |
+          python src/main.py
+
+      - name: Debug new items (optional)
+        run: |
+          if [ -f state/new_items.json ]; then
+            echo "New items:"
+            cat state/new_items.json
+          else
+            echo "No new items today."
+          fi
+
+      - name: Commit updated ICS & state (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/northwoods.ics state/*.json state/*.txt state/*.html || true
+          git diff --cached --quiet || git commit -m "Daily update: ICS + state"
+          git push || true
+
+      # Send email ONLY if digest file exists (i.e., we had new items)
+      - name: Send email digest
+        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Northwoods Events — New items ($(date +'%Y-%m-%d'))"
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          # Prefer HTML if available, fallback to TXT
+          html_body: ${{ steps.load_html.outputs.body }}
+          attachments: |
+            state/new_items.json
+        env:
+          TZ: America/Chicago
+
+      # Load HTML if present; otherwise the action will use an empty string and still send attachments
+      - name: Load HTML body
+        id: load_html
+        shell: bash
+        run: |
+          if [ -f state/daily_digest.html ]; then
+            BODY="$(cat state/daily_digest.html)"
+          elif [ -f state/daily_digest.txt ]; then
+            BODY="<pre>$(sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' state/daily_digest.txt)</pre>"
+          else
+            BODY="<p>No new items.</p>"
+          fi
+          # Escape % for set-output safety
+          BODY="${BODY//'%'/'%25'}"
+          echo "body<<'EOF'" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 

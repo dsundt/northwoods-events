@@ -17,7 +17,7 @@ on:
       test_note:
         description: "Optional note to include in the test email"
         required: true
-        default: "This is a test message of adding a new calendar item"
+        default: "this is a dummy test email"
 
 jobs:
   build_and_email:
@@ -38,14 +38,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # Only needed if your scraper uses Playwright
+          # If your scraper uses Playwright:
           python -m playwright install --with-deps chromium
 
       - name: Build ICS and digest
-        run: |
-          python src/main.py
+        run: python src/main.py
 
-      - name: Debug new items (optional)
+      - name: Show new items (optional)
         run: |
           if [ -f state/new_items.json ]; then
             echo "New items:"
@@ -54,55 +53,59 @@ jobs:
             echo "No new items produced by main.py."
           fi
 
-      # If user asked for a test email AND no digest exists yet, create a dummy digest.
-      - name: Force test digest if requested
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.send_test_email == 'true' && hashFiles('state/daily_digest.txt') == '' }}
+      - name: Check for digest file
+        id: has_digest
+        run: |
+          if [ -f state/daily_digest.txt ]; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+
+      # If user asked for a test email and no digest exists, create a dummy digest
+      - name: Create test digest if requested
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.send_test_email == 'true' && steps.has_digest.outputs.present == 'false' }}
         run: |
           mkdir -p state
           NOW_CHI=$(date +"%Y-%m-%d (%a) %I:%M %p %Z")
           TODAY=$(date +"%Y-%m-%d")
 
-          cat > state/daily_digest.txt <<'EOF'
+          cat > state/daily_digest.txt <<EOF
 New Northwoods Events added today:
 
-__TODAY__
+$TODAY
   Source: Test Harness
     • Example Event @ Anywhere, WI
-      __NOW__ – __NOW__
+      $NOW_CHI - $NOW_CHI
       https://dsundt.github.io/northwoods-events/northwoods.ics
 
-Note: __NOTE__
+Note: $NOTE
 EOF
-          sed -i "s/__TODAY__/${TODAY}/g" state/daily_digest.txt
-          sed -i "s/__NOW__/${NOW_CHI}/g" state/daily_digest.txt
-          sed -i "s/__NOTE__/${NOTE}/g" state/daily_digest.txt
 
-          cat > state/daily_digest.html <<'EOF'
+          cat > state/daily_digest.html <<EOF
 <h2>New Northwoods Events added today</h2>
-<h3>__TODAY__</h3>
+<h3>$TODAY</h3>
 <ul>
   <li><strong>Source:</strong> Test Harness
     <ul>
       <li>
         <div><strong>Example Event</strong> @ Anywhere, WI</div>
-        <div>__NOW__ – __NOW__</div>
+        <div>$NOW_CHI - $NOW_CHI</div>
         <div><a href="https://dsundt.github.io/northwoods-events/northwoods.ics">https://dsundt.github.io/northwoods-events/northwoods.ics</a></div>
       </li>
     </ul>
   </li>
 </ul>
-<p><em>__NOTE__</em></p>
+<p><em>$NOTE</em></p>
 EOF
-          sed -i "s/__TODAY__/${TODAY}/g" state/daily_digest.html
-          sed -i "s/__NOW__/${NOW_CHI}/g" state/daily_digest.html
-          sed -i "s/__NOTE__/${NOTE}/g" state/daily_digest.html
 
-          cat > state/new_items.json <<'EOF'
+          NOW_Z=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          cat > state/new_items.json <<EOF
 [
   {
     "title": "Example Event",
-    "start": "__NOW_Z__",
-    "end": "__NOW_Z__",
+    "start": "$NOW_Z",
+    "end": "$NOW_Z",
     "location": "Anywhere, WI",
     "url": "https://dsundt.github.io/northwoods-events/northwoods.ics",
     "source": "Test Harness",
@@ -110,8 +113,6 @@ EOF
   }
 ]
 EOF
-          NOW_Z=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          sed -i "s/__NOW_Z__/${NOW_Z}/g" state/new_items.json
         env:
           NOTE: ${{ github.event.inputs.test_note }}
 
@@ -123,7 +124,6 @@ EOF
           git diff --cached --quiet || git commit -m "Daily update: ICS + state"
           git push || true
 
-      # Load HTML body (fall back to the TXT as <pre> if HTML missing)
       - name: Load HTML body
         id: load_html
         shell: bash
@@ -131,7 +131,6 @@ EOF
           if [ -f state/daily_digest.html ]; then
             BODY="$(cat state/daily_digest.html)"
           elif [ -f state/daily_digest.txt ]; then
-            # Escape &, <, > for HTML
             ESCAPED="$(sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' state/daily_digest.txt)"
             BODY="<pre>${ESCAPED}</pre>"
           else
@@ -139,17 +138,26 @@ EOF
           fi
           printf "body<<'EOF'\n%s\nEOF\n" "$BODY" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve recipient
+        id: rcpt
+        run: |
+          if [ -n "${{ github.event.inputs.test_to }}" ]; then
+            echo "to=${{ github.event.inputs.test_to }}" >> $GITHUB_OUTPUT
+          else
+            echo "to=${{ secrets.MAIL_TO }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send email digest
-        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
+        if: ${{ steps.has_digest.outputs.present == 'true' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
           server_port: ${{ secrets.SMTP_PORT }}
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: Northwoods Events — New items
+          subject: Northwoods Events - New items
           from: ${{ secrets.MAIL_FROM }}
-          to: ${{ github.event.inputs.test_to != '' && github.event.inputs.test_to || secrets.MAIL_TO }}
+          to: ${{ steps.rcpt.outputs.to }}
           html_body: ${{ steps.load_html.outputs.body }}
           attachments: |
             state/new_items.json

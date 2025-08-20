@@ -17,7 +17,7 @@ on:
       test_note:
         description: "Optional note to include in the test email"
         required: true
-        default: "this is a dummy test email"
+        default: "test email"
 
 jobs:
   build_and_email:

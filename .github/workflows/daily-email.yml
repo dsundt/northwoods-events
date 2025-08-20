@@ -7,12 +7,12 @@ on:
     inputs:
       force_test_email:
         description: "Force send a test email (creates a dummy digest)"
-        required: false
+        required: true
         default: "false"
       test_note:
         description: "Optional note to include in the test email"
         required: false
-        default: ""
+        default: "test email"
 
 jobs:
   build_and_email:

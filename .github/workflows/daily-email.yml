@@ -8,7 +8,7 @@ on:
     inputs:
       send_test_email:
         description: "Force a test email (creates a dummy digest if none exists)"
-        required: false
+        required: true
         default: "false"
       test_to:
         description: "Override TO address (optional)"
@@ -16,8 +16,8 @@ on:
         default: ""
       test_note:
         description: "Optional note to include in the test email"
-        required: false
-        default: ""
+        required: true
+        default: "This is a test message of adding a new calendar item"
 
 jobs:
   build_and_email:

@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-20T20:31:33.910651-05:00",
+  "when": "2025-08-20T21:27:43.024121-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 140,
-      "parsed": 2,
-      "added": 2,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 62,
       "skipped_nodate": 0,
-      "skipped_dupe": 76,
+      "skipped_dupe": 78,
       "samples": [
         {
           "reason": "past",
@@ -101,42 +101,18 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 316,
-      "parsed": 1,
-      "added": 1,
-      "skipped_past": 125,
+      "fetched": 12,
+      "parsed": 7,
+      "added": 7,
+      "skipped_past": 1,
       "skipped_nodate": 0,
-      "skipped_dupe": 190,
+      "skipped_dupe": 4,
       "samples": [
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15"
-        },
-        {
-          "reason": "past",
-          "title": "Back To School Drive",
-          "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15"
-        },
-        {
-          "reason": "past",
-          "title": "Northwoods Art Tour",
-          "start": "2025-07-25T00:00:00-05:00",
-          "date_text": "July 25"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": "August 7"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": ""
+          "date_text": "August 15 - September 1"
         }
       ]
     },

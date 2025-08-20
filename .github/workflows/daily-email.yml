@@ -2,13 +2,12 @@ name: Daily ICS build + email
 
 on:
   schedule:
-    # 8:00 AM America/Chicago (~13:00 UTC during CDT)
-    - cron: "0 13 * * *"
+    - cron: "0 13 * * *"   # 8:00 AM America/Chicago (~13:00 UTC during CDT)
   workflow_dispatch:
     inputs:
       send_test_email:
         description: "Force a test email (creates a dummy digest if none exists)"
-        required: true
+        required: false
         default: "false"
       test_to:
         description: "Override TO address (optional)"
@@ -16,8 +15,8 @@ on:
         default: ""
       test_note:
         description: "Optional note to include in the test email"
-        required: true
-        default: "test email"
+        required: false
+        default: ""
 
 jobs:
   build_and_email:
@@ -35,16 +34,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # If your scraper uses Playwright for JS rendering:
+          # If your scraper uses Playwright:
           python -m playwright install --with-deps chromium
 
       - name: Build ICS and digest
+        shell: bash
         run: python src/main.py
 
       - name: Show new items (optional)
+        shell: bash
         run: |
           if [ -f state/new_items.json ]; then
             echo "New items:"
@@ -55,6 +57,7 @@ jobs:
 
       - name: Check for digest file
         id: has_digest
+        shell: bash
         run: |
           if [ -f state/daily_digest.txt ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
@@ -62,15 +65,16 @@ jobs:
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # If manually triggered with send_test_email=true and no digest exists,
-      # create a simple test digest so an email is always sent.
+      # Create a simple test digest if manually triggered and no real digest exists
       - name: Create test digest if requested
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.send_test_email == 'true' && steps.has_digest.outputs.present == 'false' }}
+        shell: bash
+        env:
+          TEST_NOTE: ${{ github.event.inputs.test_note }}
         run: |
           mkdir -p state
           NOW_CHI=$(date +"%Y-%m-%d (%a) %I:%M %p %Z")
           TODAY=$(date +"%Y-%m-%d")
-          NOTE="${{ github.event.inputs.test_note }}"
 
           cat > state/daily_digest.txt <<EOF
 New Northwoods Events added today:
@@ -81,7 +85,7 @@ $TODAY
       $NOW_CHI - $NOW_CHI
       https://dsundt.github.io/northwoods-events/northwoods.ics
 
-Note: $NOTE
+Note: ${TEST_NOTE}
 EOF
 
           cat > state/daily_digest.html <<EOF
@@ -98,7 +102,7 @@ EOF
     </ul>
   </li>
 </ul>
-<p><em>$NOTE</em></p>
+<p><em>${TEST_NOTE}</em></p>
 EOF
 
           NOW_Z=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -117,6 +121,7 @@ EOF
 EOF
 
       - name: Commit updated ICS & state (if changed)
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -126,6 +131,7 @@ EOF
 
       - name: Load HTML body
         id: load_html
+        shell: bash
         run: |
           if [ -f state/daily_digest.html ]; then
             BODY="$(cat state/daily_digest.html)"
@@ -139,17 +145,7 @@ EOF
           echo "$BODY" >> "$GITHUB_OUTPUT"
           echo 'EOF' >> "$GITHUB_OUTPUT"
 
-      - name: Resolve recipient
-        id: rcpt
-        run: |
-          if [ -n "${{ github.event.inputs.test_to }}" ]; then
-            echo "to=${{ github.event.inputs.test_to }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "to=${{ secrets.MAIL_TO }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Send email digest
-        # Send if we have any digest file (real or test)
         if: ${{ hashFiles('state/daily_digest.txt') != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
@@ -159,7 +155,7 @@ EOF
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: Northwoods Events - New items
           from: ${{ secrets.MAIL_FROM }}
-          to: ${{ steps.rcpt.outputs.to }}
+          to: ${{ github.event.inputs.test_to != '' && github.event.inputs.test_to || secrets.MAIL_TO }}
           html_body: ${{ steps.load_html.outputs.body }}
           attachments: |
             state/new_items.json

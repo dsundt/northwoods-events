@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-20T11:25:28.029029-05:00",
+  "when": "2025-08-20T12:58:34.369546-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -101,53 +101,29 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 316,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 125,
+      "fetched": 12,
+      "parsed": 1,
+      "added": 1,
+      "skipped_past": 1,
       "skipped_nodate": 0,
-      "skipped_dupe": 191,
+      "skipped_dupe": 10,
       "samples": [
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15"
-        },
-        {
-          "reason": "past",
-          "title": "Back To School Drive",
-          "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15"
-        },
-        {
-          "reason": "past",
-          "title": "Northwoods Art Tour",
-          "start": "2025-07-25T00:00:00-05:00",
-          "date_text": "July 25"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": "August 7"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": ""
+          "date_text": "August 15 - September 1"
         }
       ]
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 124,
+      "fetched": 125,
       "parsed": 0,
       "added": 0,
       "skipped_past": 2,
-      "skipped_nodate": 118,
+      "skipped_nodate": 119,
       "skipped_dupe": 4,
       "samples": [
         {

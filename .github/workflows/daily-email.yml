@@ -145,8 +145,18 @@ EOF
           echo "$BODY" >> "$GITHUB_OUTPUT"
           echo 'EOF' >> "$GITHUB_OUTPUT"
 
+      - name: Resolve recipient
+        id: rcpt
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.test_to }}" ]; then
+            echo "to=${{ github.event.inputs.test_to }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "to=${{ secrets.MAIL_TO }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Send email digest
-        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
+        if: ${{ steps.has_digest.outputs.present == 'true' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
@@ -155,7 +165,7 @@ EOF
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: Northwoods Events - New items
           from: ${{ secrets.MAIL_FROM }}
-          to: ${{ github.event.inputs.test_to != '' && github.event.inputs.test_to || secrets.MAIL_TO }}
+          to: ${{ steps.rcpt.outputs.to }}
           html_body: ${{ steps.load_html.outputs.body }}
           attachments: |
             state/new_items.json

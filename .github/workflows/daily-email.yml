@@ -38,7 +38,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # If your scraper uses Playwright:
+          # If your scraper uses Playwright for JS rendering:
           python -m playwright install --with-deps chromium
 
       - name: Build ICS and digest
@@ -57,18 +57,20 @@ jobs:
         id: has_digest
         run: |
           if [ -f state/daily_digest.txt ]; then
-            echo "present=true" >> $GITHUB_OUTPUT
+            echo "present=true" >> "$GITHUB_OUTPUT"
           else
-            echo "present=false" >> $GITHUB_OUTPUT
+            echo "present=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # If user asked for a test email and no digest exists, create a dummy digest
+      # If manually triggered with send_test_email=true and no digest exists,
+      # create a simple test digest so an email is always sent.
       - name: Create test digest if requested
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.send_test_email == 'true' && steps.has_digest.outputs.present == 'false' }}
         run: |
           mkdir -p state
           NOW_CHI=$(date +"%Y-%m-%d (%a) %I:%M %p %Z")
           TODAY=$(date +"%Y-%m-%d")
+          NOTE="${{ github.event.inputs.test_note }}"
 
           cat > state/daily_digest.txt <<EOF
 New Northwoods Events added today:
@@ -113,8 +115,6 @@ EOF
   }
 ]
 EOF
-        env:
-          NOTE: ${{ github.event.inputs.test_note }}
 
       - name: Commit updated ICS & state (if changed)
         run: |
@@ -126,7 +126,6 @@ EOF
 
       - name: Load HTML body
         id: load_html
-        shell: bash
         run: |
           if [ -f state/daily_digest.html ]; then
             BODY="$(cat state/daily_digest.html)"
@@ -136,19 +135,22 @@ EOF
           else
             BODY="<p>No new items.</p>"
           fi
-          printf "body<<'EOF'\n%s\nEOF\n" "$BODY" >> "$GITHUB_OUTPUT"
+          echo 'body<<EOF' >> "$GITHUB_OUTPUT"
+          echo "$BODY" >> "$GITHUB_OUTPUT"
+          echo 'EOF' >> "$GITHUB_OUTPUT"
 
       - name: Resolve recipient
         id: rcpt
         run: |
           if [ -n "${{ github.event.inputs.test_to }}" ]; then
-            echo "to=${{ github.event.inputs.test_to }}" >> $GITHUB_OUTPUT
+            echo "to=${{ github.event.inputs.test_to }}" >> "$GITHUB_OUTPUT"
           else
-            echo "to=${{ secrets.MAIL_TO }}" >> $GITHUB_OUTPUT
+            echo "to=${{ secrets.MAIL_TO }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Send email digest
-        if: ${{ steps.has_digest.outputs.present == 'true' }}
+        # Send if we have any digest file (real or test)
+        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}

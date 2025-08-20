@@ -1,5 +1,6 @@
 import json
 import os
+from collections import defaultdict
 from datetime import datetime
 from urllib.parse import urljoin, urlparse
 
@@ -25,6 +26,9 @@ EVENTS_STORE = os.path.join(ROOT, "state", "events.json")
 ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
 REPORT = os.path.join(ROOT, "state", "last_run_report.json")
 SNAPDIR = os.path.join(ROOT, "state", "snapshots")
+DIGEST_TXT = os.path.join(ROOT, "state", "daily_digest.txt")
+DIGEST_HTML = os.path.join(ROOT, "state", "daily_digest.html")
+NEW_ITEMS_JSON = os.path.join(ROOT, "state", "new_items.json")
 
 
 def load_yaml():
@@ -126,6 +130,64 @@ def _extract_iframe_srcs(html: str, base_url: str):
     return list(dict.fromkeys(out))  # de-dup preserve order
 
 
+def _format_dt_local(dt: datetime, tzname: str) -> str:
+    # display helper for digest
+    tz = pytz.timezone(tzname)
+    local = dt.astimezone(tz)
+    return local.strftime("%Y-%m-%d (%a) %I:%M %p %Z")
+
+
+def _build_digest(new_items: list, tzname: str) -> tuple[str, str]:
+    """
+    Build plain-text and HTML digests for the email, grouped by date (YYYY-MM-DD) and source.
+    new_items: list of events dicts with 'title','start','end','location','url','source','all_day'
+    """
+    if not new_items:
+        return "", ""
+
+    by_date = defaultdict(list)
+    tz = pytz.timezone(tzname)
+    for e in new_items:
+        key = e["start"].astimezone(tz).strftime("%Y-%m-%d")
+        by_date[key].append(e)
+
+    # sort dates and items
+    ordered_dates = sorted(by_date.keys())
+    lines = []
+    html = []
+    lines.append("New Northwoods Events added today:\n")
+    html.append("<h2>New Northwoods Events added today</h2>")
+
+    for d in ordered_dates:
+        lines.append(f"{d}")
+        html.append(f"<h3>{d}</h3><ul>")
+        # group by source within the date for readability
+        by_source = defaultdict(list)
+        for e in sorted(by_date[d], key=lambda x: (x.get('source',''), x["start"])):
+            by_source[e.get("source","Unknown")].append(e)
+        for src, items in by_source.items():
+            lines.append(f"  Source: {src}")
+            html.append(f"<li><strong>Source:</strong> {src}<ul>")
+            for e in items:
+                when = "All-day" if e.get("all_day") else f"{_format_dt_local(e['start'], tzname)} – {_format_dt_local(e['end'], tzname)}"
+                loc = f" @ {e['location']}" if e.get("location") else ""
+                url = e.get("url") or ""
+                lines.append(f"    • {e['title']}{loc}")
+                lines.append(f"      {when}")
+                if url:
+                    lines.append(f"      {url}")
+                html.append("<li>")
+                html.append(f"<div><strong>{e['title']}</strong>{(' @ ' + e['location']) if e.get('location') else ''}</div>")
+                html.append(f"<div>{when}</div>")
+                if url:
+                    html.append(f'<div><a href="{url}">{url}</a></div>')
+                html.append("</li>")
+            html.append("</ul></li>")
+        html.append("</ul>")
+
+    return "\n".join(lines) + "\n", "\n".join(html)
+
+
 def main():
     cfg = load_yaml()
     tzname = cfg.get("timezone", "America/Chicago")
@@ -135,8 +197,8 @@ def main():
     seen = load_seen()
     events_store = load_events(EVENTS_STORE)
 
-    tz = pytz.timezone(tzname)
-    now = tz.localize(datetime.now())
+    tz_local = pytz.timezone(tzname)
+    now = tz_local.localize(datetime.now())
 
     os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
     os.makedirs(os.path.join(ROOT, "state"), exist_ok=True)
@@ -306,6 +368,10 @@ def main():
 
         report["sources"].append(src_report)
 
+    # Identify NEW items for this run (those not in persistent store yet)
+    prev_sids = set(events_store.keys())
+    new_items = [e for e in collected if e["sid"] not in prev_sids]
+
     # 5) Build ICS from persistent merged store
     events_store = merge_events(events_store, collected, now)
     save_events(EVENTS_STORE, events_store)
@@ -317,7 +383,41 @@ def main():
     with open(REPORT, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
-    # 7) Print a short summary for Actions logs
+    # 7) Create a digest ONLY if we have new items
+    if new_items:
+        # Write JSON for programmatic use
+        with open(NEW_ITEMS_JSON, "w", encoding="utf-8") as f:
+            json.dump([
+                {
+                    "title": e["title"],
+                    "start": e["start"].isoformat(),
+                    "end": e["end"].isoformat(),
+                    "location": e.get("location",""),
+                    "url": e.get("url",""),
+                    "source": e.get("source",""),
+                    "all_day": bool(e.get("all_day", False)),
+                }
+                for e in new_items
+            ], f, indent=2)
+
+        # Write TXT and HTML digests for email body
+        txt, html = _build_digest(new_items, tzname)
+        with open(DIGEST_TXT, "w", encoding="utf-8") as f:
+            f.write(txt)
+        with open(DIGEST_HTML, "w", encoding="utf-8") as f:
+            f.write(html)
+        print(f"NEW_ITEMS_COUNT: {len(new_items)}")
+    else:
+        # Ensure old digests (if any) don't trigger email on a no-change day
+        for p in (NEW_ITEMS_JSON, DIGEST_TXT, DIGEST_HTML):
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+            except Exception:
+                pass
+        print("NEW_ITEMS_COUNT: 0")
+
+    # 8) Print a short summary for Actions logs
     total_added = sum(s["added"] for s in report["sources"])
     summary = {
         "total_added": total_added,

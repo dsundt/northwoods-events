@@ -2,19 +2,15 @@ name: Daily ICS build + email
 
 on:
   schedule:
-    - cron: "0 13 * * *"   # 8:00 AM America/Chicago (~13:00 UTC during CDT)
+    - cron: "0 13 * * *"  # 8:00 AM America/Chicago (~13:00 UTC during CDT)
   workflow_dispatch:
     inputs:
       send_test_email:
-        description: "Force a test email (creates a dummy digest if none exists)"
+        description: Force a test email (creates a dummy digest if none exists)
         required: false
         default: "false"
-      test_to:
-        description: "Override TO address (optional)"
-        required: false
-        default: ""
       test_note:
-        description: "Optional note to include in the test email"
+        description: Optional note to include in the test email
         required: false
         default: ""
 
@@ -38,7 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # If your scraper uses Playwright:
+          # If your scraper uses Playwright for JS rendering:
           python -m playwright install --with-deps chromium
 
       - name: Build ICS and digest
@@ -145,18 +141,8 @@ EOF
           echo "$BODY" >> "$GITHUB_OUTPUT"
           echo 'EOF' >> "$GITHUB_OUTPUT"
 
-      - name: Resolve recipient
-        id: rcpt
-        shell: bash
-        run: |
-          if [ -n "${{ github.event.inputs.test_to }}" ]; then
-            echo "to=${{ github.event.inputs.test_to }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "to=${{ secrets.MAIL_TO }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Send email digest
-        if: ${{ steps.has_digest.outputs.present == 'true' }}
+        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
@@ -165,7 +151,7 @@ EOF
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: Northwoods Events - New items
           from: ${{ secrets.MAIL_FROM }}
-          to: ${{ steps.rcpt.outputs.to }}
+          to: ${{ secrets.MAIL_TO }}
           html_body: ${{ steps.load_html.outputs.body }}
           attachments: |
             state/new_items.json

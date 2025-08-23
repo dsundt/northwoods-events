@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-23T04:33:05.449497-05:00",
+  "when": "2025-08-23T05:28:06.325301-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -88,12 +88,12 @@
     {
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 12,
+      "fetched": 11,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 12,
+      "skipped_dupe": 11,
       "samples": [],
       "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
       "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html"
@@ -101,18 +101,42 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 12,
+      "fetched": 316,
       "parsed": 0,
       "added": 0,
-      "skipped_past": 1,
+      "skipped_past": 134,
       "skipped_nodate": 0,
-      "skipped_dupe": 11,
+      "skipped_dupe": 182,
       "samples": [
         {
           "reason": "past",
           "title": "Back To School Drive",
           "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15 - September 1"
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Back To School Drive",
+          "start": "2025-08-15T00:00:00-05:00",
+          "date_text": "August 15"
+        },
+        {
+          "reason": "past",
+          "title": "Northwoods Art Tour",
+          "start": "2025-07-25T00:00:00-05:00",
+          "date_text": "July 25"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
         }
       ]
     },
@@ -161,12 +185,12 @@
     {
       "name": "Travel Wisconsin \u2013 Oneida Widget",
       "url": "https://www.travelwisconsin.com/events/widgetview?id=bd86f944-aa2f-4e46-8be5-089e5273e88f&utm_source=Fall%20Color%20Report&utm_medium=Widget&utm_campaign=Widget%20Traffic",
-      "fetched": 12,
+      "fetched": 11,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 12,
+      "skipped_dupe": 11,
       "samples": []
     }
   ]

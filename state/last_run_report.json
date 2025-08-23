@@ -1,51 +1,112 @@
 {
-  "when": "2025-08-23T22:28:50.641746-05:00",
+  "when": "2025-08-23T23:26:12.217417-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
-      "fetched": 0,
+      "fetched": 190,
       "parsed": 0,
       "added": 0,
-      "skipped_past": 0,
+      "skipped_past": 79,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "HTTPError('500 Server Error: Internal Server Error for url: https://vilaswi.com/events/?eventDisplay=list')"
+      "skipped_dupe": 111,
+      "samples": [
+        {
+          "reason": "past",
+          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
+          "start": "2025-08-02T00:00:00-05:00",
+          "date_text": "August 2"
+        },
+        {
+          "reason": "past",
+          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
+          "start": "2025-08-02T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7"
+        },
+        {
+          "reason": "past",
+          "title": "Vilas County Fair",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Featured Boulder Junction\u2019s Musky Capital of the World Musky Tournament",
+          "start": "2025-08-08T00:00:00-05:00",
+          "date_text": "August 8 @ 10:00 am"
+        }
+      ]
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
-      "fetched": 0,
+      "fetched": 140,
       "parsed": 0,
       "added": 0,
-      "skipped_past": 0,
+      "skipped_past": 64,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "HTTPError('500 Server Error: Internal Server Error for url: https://boulderjct.org/events/?eventDisplay=list')"
+      "skipped_dupe": 76,
+      "samples": [
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": "August 1"
+        },
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01T00:00:00-05:00",
+          "date_text": ""
+        },
+        {
+          "reason": "past",
+          "title": "Alcohol Inks on Yupo Paper at Marywood",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": "August 7 @ 9:00 am"
+        },
+        {
+          "reason": "past",
+          "title": "Alcohol Inks on Yupo Paper at Marywood",
+          "start": "2025-08-07T00:00:00-05:00",
+          "date_text": ""
+        }
+      ]
     },
     {
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 0,
+      "fetched": 11,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 11,
       "samples": [],
-      "error": "HTTPError('500 Server Error: Internal Server Error for url: https://oneidacountywi.com/festivals-events/?eventDisplay=list')"
+      "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
+      "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 316,
-      "parsed": 1,
-      "added": 1,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 134,
       "skipped_nodate": 0,
-      "skipped_dupe": 181,
+      "skipped_dupe": 182,
       "samples": [
         {
           "reason": "past",

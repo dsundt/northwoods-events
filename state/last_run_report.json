@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-24T23:26:15.402632-05:00",
+  "when": "2025-08-25T02:17:22.372141-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 82,
+      "parsed": 38,
+      "added": 38,
+      "skipped_past": 85,
       "skipped_nodate": 0,
-      "skipped_dupe": 108,
+      "skipped_dupe": 67,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 140,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 35,
+      "added": 35,
       "skipped_past": 67,
       "skipped_nodate": 0,
-      "skipped_dupe": 73,
+      "skipped_dupe": 38,
       "samples": [
         {
           "reason": "past",
@@ -102,11 +102,11 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 12,
-      "parsed": 3,
-      "added": 3,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 1,
       "skipped_nodate": 0,
-      "skipped_dupe": 8,
+      "skipped_dupe": 11,
       "samples": [
         {
           "reason": "past",
@@ -120,11 +120,11 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 125,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 1,
+      "added": 1,
       "skipped_past": 2,
       "skipped_nodate": 119,
-      "skipped_dupe": 4,
+      "skipped_dupe": 3,
       "samples": [
         {
           "reason": "nodate",

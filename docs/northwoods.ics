@@ -2,309 +2,46 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:ics.py - http://git.io/lLljaA
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250818T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:00a216e1-a4ce-4f31-952b-01d4979a513c@00a2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250820T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:1237f8e4-494d-4add-a2e9-365ad895249f@1237.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-08-14/
-DTEND:20250825T183000Z
-DTSTART:20250825T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:03e83d7d-e25c-473b-a1e5-082e4b09f5f6@03e8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
-DTEND:20250828T050000Z
-DTSTART:20250818T150000Z
-SUMMARY:Trees for Tomorrow Nature’s Bounty
-UID:267034b6-54d6-4e01-9566-3f21e5179fe6@2670.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/atv-safety-course-hosted-by-the-boulder-junction-atv-utv-club/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:ATV Safety Course hosted by the Boulder Junction ATV/UTV Club
-UID:1b9817b7-ece3-494c-a38e-1612230847b2@1b98.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250824T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:a06282c5-4e5c-4b29-9d25-094d571c189b@a062.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/hallowfest/
-DTEND:20251025T060000Z
-DTSTART:20251025T050000Z
-SUMMARY:Hallowfest
-UID:a969c93b-237c-44b3-a8d0-0ed4ca54186f@a969.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250818T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:279a89be-4ad1-467d-bf6b-b12e6ddb779c@279a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-annual-community-corn-roast/
-DTEND:20250825T220000Z
-DTSTART:20250825T210000Z
-SUMMARY:Presque Isle Annual Community Corn Roast
-UID:99db2bcc-a964-4ea0-ae41-9bfbf8ad5378@99db.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/entertainment-and-attractions/beef-a-rama™-2025-41312
-DTEND:20250928T000000Z
-LOCATION:Minocqua
-DTSTART:20250927T000000Z
-SUMMARY:Beef-A-Rama™ 2025
-UID:1b002505-bf10-4451-8202-6d32e796911f@1b00.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/brat-and-bake-sale-to-support-the-olson-memorial-library/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Brat and Bake Sale to Support the Olson Memorial Library
-UID:0b893a43-f5e8-49d9-8a7b-20b068f7b515@0b89.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/preslie-pays-it-forward-childrens-cn/
+DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/
 DTEND:20250825T140000Z
 DTSTART:20250825T130000Z
-SUMMARY:Preslie Pays It Forward Motorcycle Ride! Children’s Cancer Benefit
-UID:faff15ae-c7bc-4c99-9e09-dd8aac02fcac@faff.org
+SUMMARY:Recurring
+UID:5dcc0021-a213-446c-a8a5-aa4238b32927@5dcc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/2025-fall-flurry-clay-shoot-17626
+DTEND:20250825T000000Z
+DTSTART:20250824T000000Z
+SUMMARY:2025 Fall Flurry Clay Shoot
+UID:c9f619d7-4861-46d9-8d1b-16d9ad03fc0b@c9f6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-car-and-truck-show/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:45th Eagle River Car and Truck Show
+UID:80930c64-4761-4819-a0ee-f9fcd6d7d3d3@8093.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
 DTEND:20250831T050000Z
-DTSTART:20250823T150000Z
+DTSTART:20250822T150000Z
 SUMMARY:Labor Day Arts & Crafts Show
-UID:f64cad9d-65c0-4625-a66b-6f56b5ae2204@f64c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250823T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:6305b5d6-9fb2-429f-aa28-367a42af44a7@6305.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/10th-annual-sayner-star-lake-street-fair/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:Sayner-Star Lake Street Fair
-UID:931810f8-c201-4af6-a546-ff8fb3a7b0d7@9318.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250818T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:ec5b5f7b-eefa-4f48-b01b-cab11d5e3320@ec5b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs/2025-08-25/
-DTEND:20250825T060000Z
-LOCATION:Northland Pines High School 1800 Pleasure Island Road\, Eagle River\, Wisconsin
-DTSTART:20250825T050000Z
-SUMMARY:School Walking Hours at NPHS
-UID:0f70812b-7aeb-4444-b638-3816de75227e@0f70.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/widnr-learn-to-fish-musky-workshop/
-DTEND:20250825T143000Z
-DTSTART:20250825T133000Z
-SUMMARY:WiDNR: Learn to Fish Musky Workshop
-UID:913e6b64-a2a7-47f4-bb06-34d5e0811fcc@913e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-coffee-co-live-music/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:Boulder Junction Coffee Co. Live Music
-UID:e8f8dc70-10de-4b30-aa5e-a07fce3b9974@e8f8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T060000Z
-DTSTART:20250827T050000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:c7028f1d-1bac-45f2-918c-4bdc6cc87f8a@c702.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/musky-fun-run-2/
-DTEND:20250825T130000Z
-DTSTART:20250825T120000Z
-SUMMARY:Musky Fun Run
-UID:c3c20d1b-7155-4772-84d1-ce1163844f2a@c3c2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/chat-n-craft-at-the-boulder-junction-public-library-4-copy-copy-copy-copy/all/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:Recurring
-UID:099c5de3-a8f2-4840-b49e-7156a96999b8@099c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250818T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:3ebf50d9-8630-4472-bbc3-b194d76555e3@3ebf.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/68th-annual-musky-jamboree/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Boulder Junction’s 68th Annual Musky Jamboree
-UID:bfc13188-3749-4514-aef8-ff83950952ef@bfc1.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250822T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:2644f2d3-24aa-48cb-9fc1-d98ac803b943@2644.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/all/
-DTEND:20250827T060000Z
-DTSTART:20250827T050000Z
-SUMMARY:Recurring
-UID:c3bee2ca-c576-4e43-a076-1a31d4dc03bf@c3be.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/
-DTEND:20250825T190000Z
-DTSTART:20250825T180000Z
-SUMMARY:Recurring
-UID:eb448273-f3c2-48bc-b79a-04b8f7a88f52@eb44.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports-2/all/
-DTEND:20250825T220000Z
-DTSTART:20250825T210000Z
-SUMMARY:Recurring
-UID:ab02922f-4270-499f-9b18-ac3776826b16@ab02.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250821T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:1ae5d8d1-4869-47e3-b6fb-fb064e162efc@1ae5.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/boulder-junctions-musky-day-fly-in/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:Boulder Junction’s Musky Day Fly-In
-UID:baa8a4bc-05a5-418e-a4d3-1a872a484a04@baa8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250824T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:412afcd7-b926-45b9-9dbd-c79a9d646176@412a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250820T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:06899cb0-5215-4ebb-8cb3-0ef3932fc4b4@0689.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/old-fashioneds-up-north/
-DTEND:20251108T070000Z
-DTSTART:20251108T060000Z
-SUMMARY:Old Fashioneds Up North
-UID:1f07b6a2-49e6-41af-af68-cd8536143b4f@1f07.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/yoga-on-the-beach-3/2025-08-26/
-DTEND:20250826T060000Z
-LOCATION:Cedaroma Lodge
-DTSTART:20250826T050000Z
-SUMMARY:Outdoor Yoga Classes at Cedaroma Lodge
-UID:f705479d-26c6-4be8-a8e3-6139fa301bbd@f705.org
+UID:6a1c2482-8751-48aa-b6fe-a65c6340d657@6a1c.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
 DTEND:20250831T050000Z
-DTSTART:20250825T150000Z
+DTSTART:20250822T150000Z
 SUMMARY:Labor Day Arts and Crafts Show
-UID:c08226a7-b3dc-4ec9-b134-824e087ba83e@c082.org
+UID:aaaadc4b-3ab0-4292-a4a4-566e60af598d@aaaa.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250822T000000Z
-SUMMARY:Recurring
-UID:062b0310-ce5f-4caf-9d23-cd0c59f19618@062b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/community-garage-sale-weekend-2/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:Community Garage Sale Weekend
-UID:e665ca79-762f-4f67-a307-ad4e6c16d35c@e665.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/dan-connies-fishing-classic/
-DTEND:20250825T130000Z
-DTSTART:20250825T120000Z
-SUMMARY:Dan and Connie’s Fishing Classic
-UID:f271be9a-ee93-4839-8e72-e97c8e467c87@f271.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/getting-excited-about-science-at-north-lakeland-discovery-center/
-DTEND:20250825T163000Z
-DTSTART:20250825T153000Z
-SUMMARY:Getting Excited about Science at North Lakeland Discovery Center
-UID:82fc94ef-8854-4456-81af-fb5a7209caa6@82fc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/
-DTEND:20250826T060000Z
-DTSTART:20250826T050000Z
-SUMMARY:Recurring
-UID:7f19084a-4473-4b9a-b860-2494cb4dc0c8@7f19.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250821T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:93f414e7-8a68-4eb7-9cbd-a2df8df139b2@93f4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/musky-jamboree-car-show/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Musky Jamboree Car Show
-UID:3556bc6a-5d58-46ec-bfe0-65a88551d6dd@3556.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-26/
-DTEND:20250826T060000Z
-LOCATION:Old Paths Christian Ministries
-DTSTART:20250826T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:35137fff-897b-49ad-bf18-992cb86616c0@3513.org
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250820T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:ca279a42-c0d3-494d-9e9d-0d7b91736ba2@ca27.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://www.travelwisconsin.com/events/performing-arts/hodag-park-concert-series-227754
@@ -312,94 +49,70 @@ DTEND:20250827T000000Z
 LOCATION:Rhinelander
 DTSTART:20250826T000000Z
 SUMMARY:Hodag Park Concert Series
-UID:2d213d40-60ca-4bc2-9593-684380d47c0b@2d21.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/under-the-northern-lights-summer-fundraiser-for-lola/
-DTEND:20250826T060000Z
-LOCATION:Lac Vieux Desert Northern Casino Resort
-DTSTART:20250826T050000Z
-SUMMARY:Under the Northern Lights-Summer Fundraiser for LOLA
-UID:0e262550-5717-4042-967f-1efd29872f5c@0e26.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/fairs-festivals/hodag-heritage-festival-203832
-DTEND:20260517T000000Z
-LOCATION:Rhinelander
-DTSTART:20260516T000000Z
-SUMMARY:Hodag Heritage Festival
-UID:ec12df15-48b7-4f04-a959-ebaceb995e04@ec12.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250821T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:f8fc7fc8-7a3f-4588-8930-3abc7a4340d5@f8fc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250819T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:e35a1871-13d2-47dd-a3e2-2e99db221478@e35a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/67th-annual-musky-jamboree/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:68th Annual Musky Jamboree
-UID:2f7b2533-594e-4421-9eb6-5dd639eef851@2f7b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250821T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:3b042e0a-5e6a-4546-b2c4-ea26a45df45b@3b04.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250823T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:76b86f61-1fd1-47d7-89ce-c265ef4a222a@76b8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/all/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:Recurring
-UID:46290359-ffb0-4987-b689-ad7a4ccd7087@4629.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/all/
-DTEND:20250827T060000Z
-DTSTART:20250827T050000Z
-SUMMARY:Recurring
-UID:76255255-795e-4f1d-92f5-30a95aa64f32@7625.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-speedway-tuesday-night-races/2025-08-26/
-DTEND:20250826T060000Z
-LOCATION:Eagle River Speedway 3973 Cloverland Dr\, Eagle River\, WI
-DTSTART:20250826T050000Z
-SUMMARY:Eagle River Speedway Tuesday Night Races
-UID:280e8829-6506-4db5-a0d4-6d1e899fa775@280e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
-DTEND:20250828T050000Z
-DTSTART:20250821T150000Z
-SUMMARY:Trees for Tomorrow Nature’s Bounty
-UID:ca56d073-239d-4f8b-81ed-31c3d227f811@ca56.org
+UID:d09ce1ea-94a9-47f8-acdc-ec9f6645f004@d09c.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
 DTEND:20250830T050000Z
-DTSTART:20250824T060000Z
+DTSTART:20250820T060000Z
 SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:0d5eb88a-16ce-4439-8df6-8102eac19707@0d5e.org
+UID:b45b6852-97a5-4a76-9eb2-7c9fe3d1195a@b45b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250825T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:5184f07f-df76-4b46-90f4-9e60fca9436b@5184.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T050000Z
+DTSTART:20250818T150000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:06bb6fd5-0059-4afb-b92a-405f7e616078@06bb.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/the-100000-bass-and-other-stories-with-author-ted-rulseh/
+DTEND:20250826T010000Z
+DTSTART:20250826T000000Z
+SUMMARY:The $100\,000 Bass and Other Stories with Author Ted Rulseh
+UID:fe6a4bd7-296a-4fbf-af66-74f94736cb5b@fe6a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/all/
+DTEND:20250825T163000Z
+DTSTART:20250825T153000Z
+SUMMARY:Recurring
+UID:f4b561ef-cabb-4464-a054-50de108ece70@f4b5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250824T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:7fcf6b96-84f4-4bc2-ad1c-1c92723f8b9d@7fcf.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/10th-annual-sayner-star-lake-street-fair/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:Sayner-Star Lake Street Fair
+UID:7d305e2a-aa1f-43fa-b7c8-1a04bfce6951@7d30.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250820T000000Z
+SUMMARY:Recurring
+UID:413f6eeb-6138-4323-8ada-339343eb0bc9@413f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/all/
+DTEND:20250826T000000Z
+DTSTART:20250825T230000Z
+SUMMARY:Recurring
+UID:3f5d22a5-f9e2-41d6-b1c5-15489c09a4e1@3f5d.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://www.travelwisconsin.com/events/road-and-multi-use-trails/dirty-squirrel-gravel-grind-bike-race-237788
@@ -407,7 +120,157 @@ DTEND:20250907T000000Z
 LOCATION:Minocqua
 DTSTART:20250906T000000Z
 SUMMARY:Dirty Squirrel Gravel Grind Bike Race
-UID:3b2c34df-794d-4396-a736-25ca1e15aff7@3b2c.org
+UID:d58e2d19-a974-4c11-adb5-11e29899147d@d58e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/entertainment-and-attractions/beef-a-rama™-2025-41312
+DTEND:20250928T000000Z
+LOCATION:Minocqua
+DTSTART:20250927T000000Z
+SUMMARY:Beef-A-Rama™ 2025
+UID:66c6b952-dcb2-4cc6-8b21-b2a6f283f248@66c6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250820T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:d39a0afc-9d88-430b-9e21-59c898879370@d39a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/dan-connies-fishing-classic/
+DTEND:20250825T130000Z
+DTSTART:20250825T120000Z
+SUMMARY:Dan and Connie’s Fishing Classic
+UID:8a050c52-7eb5-443e-b428-7c947f074c28@8a05.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/annual-boulder-junction-and-manitowish-waters-lions-club-golf-outing/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Annual Boulder Junction and Manitowish Waters Lions Club Golf Outing
+UID:ced187e7-1278-449a-a1c4-4286472a9f35@ced1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250818T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:c8706ea3-cbd0-4d4f-ac8f-308dd271cbfc@c870.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/northwoods-throwdown-disc-golf-tournament/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:Northwoods Throwdown Disc Golf Tournament
+UID:630307b4-f79d-4d08-a422-d4ed8afa4a44@6303.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250821T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:4ab869c1-3053-40b0-8dd4-a59f2f888057@4ab8.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/brat-and-bake-sale-to-support-the-olson-memorial-library/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Brat and Bake Sale to Support the Olson Memorial Library
+UID:77e458c7-594e-4a5e-a516-e3e07c9b85e9@77e4.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/all/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Recurring
+UID:b62e4fe7-8c02-4db7-ad94-2e0b9e65928c@b62e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/boulder-junction-history-day/
+DTEND:20250825T170000Z
+DTSTART:20250825T160000Z
+SUMMARY:Boulder Junction’s History Day
+UID:a32bde22-feb9-4265-b2fd-f779636e0216@a32b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250819T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:0d4bedff-2711-4607-9d0d-ac9267c3e87b@0d4b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250824T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:1b69b7e3-7af9-4896-81f1-a5f70b739bda@1b69.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/hallowfest/
+DTEND:20251025T060000Z
+DTSTART:20251025T050000Z
+SUMMARY:Hallowfest
+UID:ddfa1f38-b119-45ab-81f0-3a9737bdffdf@ddfa.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250823T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:a273dff0-aa25-41cf-b764-8be44264c59c@a273.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/under-the-northern-lights-summer-fundraiser-for-lola/
+DTEND:20250826T060000Z
+LOCATION:Lac Vieux Desert Northern Casino Resort
+DTSTART:20250826T050000Z
+SUMMARY:Under the Northern Lights-Summer Fundraiser for LOLA
+UID:84ccf79f-925a-41d5-a02c-4c9783273275@84cc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250824T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:a2bafc2a-610f-4f53-8e58-4306726c59bd@a2ba.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs/2025-08-25/
+DTEND:20250825T060000Z
+LOCATION:Northland Pines High School 1800 Pleasure Island Road\, Eagle River\, Wisconsin
+DTSTART:20250825T050000Z
+SUMMARY:School Walking Hours at NPHS
+UID:0018e4e2-2e95-4283-9090-354871e56423@0018.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250824T000000Z
+SUMMARY:Recurring
+UID:d2054143-a02f-489a-8584-4aff4a610116@d205.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/
+DTEND:20250825T190000Z
+DTSTART:20250825T180000Z
+SUMMARY:Recurring
+UID:d4f0ad37-1ed8-42bb-b307-add3a9b1384f@d4f0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250824T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:16d2bf11-11c3-4608-9936-33d1103f800a@16d2.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/4th-annual-plum-lake-open-golf-tournament/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:4th Annual Plum Lake Open Golf Tournament
+UID:d7c3f0e7-fa95-46e7-a284-3d0b6e1ae675@d7c3.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-2/2025-08-25/
@@ -415,115 +278,57 @@ DTEND:20250825T060000Z
 LOCATION:Northland Pines High School 1800 Pleasure Island Road\, Eagle River\, Wisconsin
 DTSTART:20250825T050000Z
 SUMMARY:School Walking Hours at NPHS
-UID:f56fb176-99b6-4a28-8440-d4212a637f1c@f56f.org
+UID:aedb9da9-4160-43fa-96fd-5ef35b560113@aedb.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wildlife-wednesday-dragonflies-17601
-DTEND:20250828T000000Z
-DTSTART:20250827T000000Z
-SUMMARY:Wildlife Wednesday: Dragonflies
-UID:6498a0e8-5d72-4fd7-8c28-411c76f0306b@6498.org
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-26/
+DTEND:20250826T060000Z
+LOCATION:Old Paths Christian Ministries
+DTSTART:20250826T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:f1ffb400-37ac-4572-aa78-9a8e178a1bed@f1ff.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T060000Z
-DTSTART:20250828T050000Z
-SUMMARY:Recurring
-UID:57d9a505-6409-4551-8526-46a44ace4111@57d9.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250819T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:8e96c92f-2bf1-43cc-84a4-329357f533ba@8e96.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/member-appreciation-weekend/
-DTEND:20250829T060000Z
-DTSTART:20250829T050000Z
-SUMMARY:Member Appreciation Weekend
-UID:d4b0b1f9-284b-45ab-b637-10758784a930@d4b0.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250824T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:285919fc-eb43-4ba8-b51e-30743fbc69e3@2859.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250820T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:4362ff70-7ba3-4b7a-a7d3-08afa7f6d32c@4362.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250824T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:f72b675c-8d88-49c1-b50a-ff64cb98b782@f72b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/fairs-festivals/rhinelander-chalkfest-227758
-DTEND:20250914T000000Z
-LOCATION:Rhinelander
-DTSTART:20250913T000000Z
-SUMMARY:Rhinelander Chalkfest
-UID:e75f6449-d7a7-4702-9e22-9826b32d6a84@e75f.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250819T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:c8715515-c317-4927-978e-b96f0e17e192@c871.org
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250825T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:3ded82c7-92a0-4e9c-90c9-27830538b52f@3ded.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
 DTEND:20250831T060000Z
 DTSTART:20250831T050000Z
 SUMMARY:Labor Day Arts & Crafts Show
-UID:fde9105f-ca71-4a2c-8546-22162fc9e28f@fde9.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250819T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:db7d6cca-4294-470c-a10c-f4832ff45c36@db7d.org
+UID:043a9bd3-1b35-4299-8a7f-583f96d91be0@043a.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-community-foundation-15th-anniversary-celebration/
 DTEND:20250826T010000Z
 DTSTART:20250826T000000Z
 SUMMARY:Boulder Junction Community Foundation 15th Anniversary Celebration
-UID:351e09b3-7a6f-4767-b716-e55543a6baea@351e.org
+UID:f2239f0e-30cb-4834-9abd-7637d9a8fed7@f223.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/ukulele-practice-jam-session/2025-08-25/
-DTEND:20250825T060000Z
-LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
-DTSTART:20250825T050000Z
-SUMMARY:Ukulele Practice/ Jam Session
-UID:7e1cb042-e711-4264-9150-c975f0d77486@7e1c.org
+DESCRIPTION:Source: https://vilaswi.com/event/guided-nature-hike-at-tara-lila/
+DTEND:20250825T180000Z
+DTSTART:20250825T170000Z
+SUMMARY:Guided Nature Hike at Tara Lila
+UID:774ea75e-539a-456f-ac25-a5c1441c4202@774e.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250820T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:4d56f554-4060-4600-8da3-73682ca05661@4d56.org
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250818T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:5d4d2c1e-b471-4be4-959d-5500010bf452@5d4d.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/tours/a-christmas-wonderland-light-tour-241901
-DTEND:20251208T000000Z
-LOCATION:Harshaw
-DTSTART:20251207T000000Z
-SUMMARY:A Christmas Wonderland - Light Tour
-UID:0dea4f7d-a6c6-41b9-ab9b-e454723a176d@0dea.org
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T060000Z
+DTSTART:20250904T050000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:31948e6f-a74f-47c1-b9c4-e26d26be8fe2@3194.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://eagleriver.org/events/hatha-yoga-monday-nights-at-the-warehouse-community-art-center/2025-08-25/
@@ -531,502 +336,7 @@ DTEND:20250825T060000Z
 LOCATION:The Warehouse Art Center 107 South Railroad Street\, Eagle River\, Wisconsin
 DTSTART:20250825T050000Z
 SUMMARY:Hatha Yoga Monday Nights at The Warehouse Community Art Center
-UID:a8b3cb82-eaf7-4332-acdb-45757c245b4a@a8b3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
-DTEND:20250828T050000Z
-DTSTART:20250820T150000Z
-SUMMARY:Trees for Tomorrow Nature’s Bounty
-UID:c3b0c37d-3920-4371-83bb-5224cce6d789@c3b0.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250821T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:e95349bf-be6a-4a03-ab66-6aba566378ee@e953.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250822T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:82e20936-19ff-4774-87b3-8a73dff98062@82e2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-arts-venture-at-lola/2025-08-25/
-DTEND:20250825T060000Z
-LOCATION:LOLA - Land O'Lakes Art Center 4262 Cty Hwy B\, Land O'Lakes\, WI\, United States
-DTSTART:20250825T050000Z
-SUMMARY:Summer Arts Venture at LOLA
-UID:5134b1b2-d92f-447d-979d-94575ad70d22@5134.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-25/
-DTEND:20250825T060000Z
-LOCATION:Old Paths Christian Ministries
-DTSTART:20250825T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:7af36bdc-305b-45f6-a3fa-f596276ee239@7af3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250823T000000Z
-SUMMARY:Recurring
-UID:fb4ef2a0-8d15-4aac-8351-586d87f8fb7c@fb4e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-edible-flower-and-medicinal-plant-gardening-workshop/
-DTEND:20250825T190000Z
-DTSTART:20250825T180000Z
-SUMMARY:North Lakeland Discovery Center: Edible Flower and Medicinal Plant Gardening Workshop
-UID:c3bf5683-8171-4c5c-b52d-6d8721a54dc1@c3bf.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250821T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:4c0dbd95-58e2-4484-9170-62d378222666@4c0d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/all/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Recurring
-UID:1233e769-af04-447e-ba9b-fc14bbed98a5@1233.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250825T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:5887e5e0-0c08-4806-b8d6-ed5f15fc03a1@5887.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/2025-pontoon-boat-poker-run/
-DTEND:20250825T180000Z
-DTSTART:20250825T170000Z
-SUMMARY:Manitowish Waters Pontoon & Boat Poker Run
-UID:9d211b19-a3b5-4dc9-9aa7-5cd08e19f467@9d21.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250825T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:9b534275-1829-460a-acd7-cd26304320cb@9b53.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/summer-library-program-at-the-boulder-junction-public-library/all/
-DTEND:20250825T163000Z
-DTSTART:20250825T153000Z
-SUMMARY:Recurring
-UID:0dbb5e17-4ad3-4712-8fb0-876da15d0bdc@0dbb.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/boulder-junction-learn-to-fish-musky-workshop/
-DTEND:20250825T143000Z
-DTSTART:20250825T133000Z
-SUMMARY:Boulder Junction’s Learn to Fish Musky Workshop
-UID:564e7a0a-15d5-4273-a943-180f79092593@564e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250825T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:086d0a5f-7d36-4ff5-9c8c-76b37b5c7cc0@086d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/library-pop-up-at-eagle-river-farmers-market/
-DTEND:20250825T143000Z
-DTSTART:20250825T133000Z
-SUMMARY:Library Pop Up at Eagle River Farmers Market
-UID:8b06a8e6-300e-446f-b948-67466c82d370@8b06.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250821T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:dad9de17-6a93-4917-8619-a7e4b9805dfe@dad9.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250823T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:d99cd28d-2630-4251-b3f8-25622189845f@d99c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/all/
-DTEND:20250825T163000Z
-DTSTART:20250825T153000Z
-SUMMARY:Recurring
-UID:42432031-49dc-4bf8-8d5b-e4dd4e517e8b@4243.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/music-on-main-street-2/all/
-DTEND:20250826T000000Z
-DTSTART:20250825T230000Z
-SUMMARY:Recurring
-UID:10a2ce6b-4673-415c-8249-97b7cf7d159f@10a2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250825T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:d95ee112-6bba-44b2-9794-fc60e28860af@d95e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250823T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:6b7bb2a3-e712-4bbe-a451-5b1097eaf711@6b7b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/all/
-DTEND:20250825T220000Z
-DTSTART:20250825T210000Z
-SUMMARY:Recurring
-UID:5aa1a7b0-2cfc-4453-963b-3e4bbfbb5f95@5aa1.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250825T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:284d3430-0e08-4ec9-aea0-64163de8bff2@284d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/musky-jamboree-fun-run/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:Boulder Junction’s Musky Jamboree Fun Run
-UID:15f84fdb-f8dc-4a0a-b0e3-bc725aa6f074@15f8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250821T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:75d18e99-8140-4757-8bf8-15737fd1eec0@75d1.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250819T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:eb314bc6-4387-46cd-b73e-b035a0013f06@eb31.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250822T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:24baf4bf-4681-4fbe-8ebd-439557710ecb@24ba.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-lions-rummage-sale/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Presque Isle Lions Rummage Sale
-UID:ef33a23c-5c08-4cde-9c86-3409c049cf64@ef33.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250820T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:84cee1a1-0e6c-4c2b-b965-8909afaf5cc5@84ce.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/wisconsin-specialties/oktoberfest-239691
-DTEND:20250921T000000Z
-LOCATION:Three Lakes
-DTSTART:20250920T000000Z
-SUMMARY:Oktoberfest
-UID:51d8457b-bb61-48b0-9468-b807089d8733@51d8.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250825T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:4302f438-3652-4502-83f2-aa589a8155ef@4302.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250824T000000Z
-SUMMARY:Recurring
-UID:01b4ef5c-d6fa-48ee-b699-38c34416b331@01b4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/northern-lakes-catholic-communities-5th-annual-golfing-fore-our-youth/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:“Fore” Our Youth Golf Tournament
-UID:de8c605d-f061-40fa-ac1d-b723be6e1c33@de8c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-car-and-truck-show/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:45th Eagle River Car and Truck Show
-UID:e927624f-fa31-489d-9fd6-c982c35991f2@e927.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250820T000000Z
-SUMMARY:Recurring
-UID:895dadb1-77e9-4d96-adaa-ca71d9f8f69c@895d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250822T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:26f5ed01-6a05-46a5-b549-21ac105dd546@26f5.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
-DTEND:20250828T060000Z
-DTSTART:20250828T050000Z
-SUMMARY:Trees for Tomorrow Nature’s Bounty
-UID:1cf289b5-71b1-46e5-822b-15986c6fbb32@1cf2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250821T000000Z
-SUMMARY:Recurring
-UID:296fa107-9968-46c4-a08b-c30213fd9e18@296f.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250819T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:7654d689-a434-4b9d-99f3-f0e0afa52b2e@7654.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250822T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:5041cdaf-be41-4165-9d93-7f5b0e05e8a9@5041.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250825T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:ab719776-69c4-4712-8f94-52d802338256@ab71.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/
-DTEND:20250825T060000Z
-DTSTART:20250825T050000Z
-SUMMARY:Recurring
-UID:38965d19-9da4-4f13-919a-f35de286f878@3896.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250825T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:d699542e-5ef1-4fe6-8c0e-3ea215c6cf91@d699.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/carbliss-tasting-at-pirates-hideaway/
-DTEND:20250825T210000Z
-DTSTART:20250825T200000Z
-SUMMARY:Carbliss Tasting at Pirates Hideaway!
-UID:4dfc9102-c1b2-4060-911d-d585e3bcd788@4dfc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/the-100000-bass-and-other-stories-with-author-ted-rulseh/
-DTEND:20250826T010000Z
-DTSTART:20250826T000000Z
-SUMMARY:The $100\,000 Bass and Other Stories with Author Ted Rulseh
-UID:1004c6ae-b420-4caa-b571-aced5c2b2f7d@1004.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250821T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:82dd136b-fffa-4508-8864-1b43c902bb08@82dd.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/44th-eagle-river-car-and-truck-show/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:45th Annual Eagle River Car and Truck Show
-UID:6a9adb72-0587-4199-8a88-575b2c27e014@6a9a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T060000Z
-DTSTART:20250828T050000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:83b10de7-7bec-4860-88b1-a4fd300bc77b@83b1.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/10th-annual-sayner-star-lake-street-fair-2/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:10th Annual Sayner-Star Lake Street Fair
-UID:5d65d9da-fe99-4a99-becf-4eacf09a714f@5d65.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T060000Z
-DTSTART:20250904T050000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:4cecb1e9-0c67-43d8-8fe2-f68078b27828@4cec.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/sports/three-eagle-half-marathon-5k-151976
-DTEND:20251012T000000Z
-LOCATION:Three Lakes
-DTSTART:20251011T000000Z
-SUMMARY:Three Eagle Half Marathon & 5K
-UID:8cb71ad3-878e-4796-bda8-55eb5449f140@8cb7.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
-DTEND:20250828T050000Z
-DTSTART:20250819T150000Z
-SUMMARY:Trees for Tomorrow Nature’s Bounty
-UID:0c2b7754-0ac2-4c07-873e-f3bcbad07015@0c2b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250822T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:c79697f1-56bf-4fae-98b5-e114b4df501a@c796.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T050000Z
-DTSTART:20250823T160000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:112f27a8-b534-43bf-a74e-5fe9d7d08baa@112f.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/musky-fly-in-2/
-DTEND:20250825T160000Z
-DTSTART:20250825T150000Z
-SUMMARY:Musky Jamboree Fly-In
-UID:5690f946-f519-466d-bf02-cd98f2bd410d@5690.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250820T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:e834fe02-8708-40ea-b324-4553e0b183e0@e834.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250819T000000Z
-SUMMARY:Recurring
-UID:5ccbcc6f-f8fe-44bb-9839-9a4b7df67cac@5ccb.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wednesday-morning-kids-series-2025-at-rouman-cinema-08-13-2025-17457
-DTEND:20250828T000000Z
-DTSTART:20250827T000000Z
-SUMMARY:Wednesday Morning Kids Series 2025 at Rouman Cinema
-UID:69a4cd3d-2855-443b-96d5-3b4b7c750d59@69a4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T060000Z
-DTSTART:20250830T050000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:f02bb1af-745a-4e59-b254-00fe1b283e31@f02b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250820T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:c712c751-13a0-46ba-8987-e348edfd45f6@c712.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T050000Z
-DTSTART:20250824T173000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:6b0d85b7-c4a9-49d0-9894-fef8dd2263b4@6b0d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T060000Z
-DTSTART:20250829T050000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:8cea1a43-4b19-4484-aa0f-d533303a9866@8cea.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/art-tours/northwoods-art-tour-44368
-DTEND:20251011T000000Z
-LOCATION:Arbor Vitae
-DTSTART:20251010T000000Z
-SUMMARY:Northwoods Art Tour
-UID:bd44871e-c246-450a-9db1-df9a88dabcc4@bd44.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
-DTEND:20250828T050000Z
-DTSTART:20250825T000000Z
-SUMMARY:Recurring
-UID:7f9bb23f-04c0-4331-b88c-8b4a92f4ca61@7f9b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/annual-boulder-junction-and-manitowish-waters-lions-club-golf-outing/
-DTEND:20250825T150000Z
-DTSTART:20250825T140000Z
-SUMMARY:Annual Boulder Junction and Manitowish Waters Lions Club Golf Outing
-UID:fc085161-4a5d-4115-bb74-3ffd15e4ce69@fc08.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/chain-skimmers-independence-day-water-ski-show/
-DTEND:20250825T180000Z
-DTSTART:20250825T170000Z
-SUMMARY:Chain Skimmers Jr. Club Water Ski Show
-UID:1d4e007c-81ba-4dbf-93a6-199680d0192c@1d4e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250818T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:59f3509b-84a2-4fb9-9d1c-1edccf03455b@59f3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250822T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:2ef46ffc-d1e6-4b6e-8a8e-5d914c4ae796@2ef4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/northwoods-music-collective/all/
-DTEND:20250825T230000Z
-DTSTART:20250825T220000Z
-SUMMARY:Recurring
-UID:be567fb4-ce68-4099-aba0-43d0a44faa33@be56.org
+UID:334af740-9c01-4920-94a9-166895f719bc@334a.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://www.travelwisconsin.com/events/arts-crafts-fairs/show-sell-craft-show-43897
@@ -1034,254 +344,312 @@ DTEND:20251123T000000Z
 LOCATION:Rhinelander
 DTSTART:20251122T000000Z
 SUMMARY:Show & Sell Craft Show
-UID:9cd3351a-59fd-4bd1-bcef-487dfe2978a8@9cd3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250818T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:4b0c95cd-83a3-4d5a-8666-40f7eb6de37d@4b0c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/seated-yoga-at-the-walter-e-memorial-library/2025-08-26/
-DTEND:20250826T060000Z
-LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
-DTSTART:20250826T050000Z
-SUMMARY:Seated Yoga at the Walter E. Memorial Library
-UID:d4c01ce2-eb2c-46a4-b28c-af1a72c4d92a@d4c0.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250822T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:465d4146-fc45-497f-b524-d743374ba8e1@465d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T060000Z
-DTSTART:20250831T050000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:1dcb87fb-1661-4eb9-b262-b060c84d65b4@1dcb.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/cranberry-fest/
-DTEND:20251004T060000Z
-DTSTART:20251004T050000Z
-SUMMARY:Cranberry Fest
-UID:9df22275-254d-4a2e-8ad5-f5402a83b814@9df2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250823T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:871a32ee-1e03-40d2-a60e-55852ae8b9d6@871a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/musky-jamboree-street-party-2/
-DTEND:20250826T000000Z
-DTSTART:20250825T230000Z
-SUMMARY:Musky Jamboree Street Party
-UID:7ccb4472-0790-4fde-bb4f-438832322061@7ccb.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/all/
-DTEND:20250826T000000Z
-DTSTART:20250825T230000Z
-SUMMARY:Recurring
-UID:33d97dd3-eb4c-4d3b-a3ce-3a5b75f395ea@33d9.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wednesday-morning-kids-series-2025-at-rouman-cinema-08-06-2025-17456
-DTEND:20250828T000000Z
-DTSTART:20250827T000000Z
-SUMMARY:Wednesday Morning Kids Series 2025 at Rouman Cinema
-UID:cc231319-e7c6-4556-a4a3-4d31188e9a15@cc23.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://www.travelwisconsin.com/events/fishing/hodag-musky-challenge-40404
-DTEND:20250927T000000Z
-LOCATION:Rhinelander
-DTSTART:20250926T000000Z
-SUMMARY:Hodag Musky Challenge
-UID:0471d1ce-a6b4-4bcb-a50c-abcf11d5624f@0471.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:Recurring
-UID:7cfde26b-da61-4332-9afd-1983ee1d92aa@7cfd.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250824T150000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:195eb2d1-6e4e-48ce-afa1-b8dad2fc1903@195e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T050000Z
-DTSTART:20250824T223000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:ecf601e3-dab0-48bd-b9bf-2da46e9a5edd@ecf6.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/book-club-sponsored-by-the-boulder-junction-public-library/all/
-DTEND:20250825T193000Z
-DTSTART:20250825T183000Z
-SUMMARY:Recurring
-UID:dbdc452a-da2b-4714-9af9-4462e6a1f29a@dbdc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/guided-nature-hike-at-tara-lila/
-DTEND:20250825T180000Z
-DTSTART:20250825T170000Z
-SUMMARY:Guided Nature Hike at Tara Lila
-UID:1ba20bb8-b590-453f-8308-15033dcb3a58@1ba2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/
-DTEND:20250825T163000Z
-DTSTART:20250825T153000Z
-SUMMARY:Recurring
-UID:db046216-3def-47cb-8b8b-86fe9607ce03@db04.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/all/
-DTEND:20250826T060000Z
-DTSTART:20250826T050000Z
-SUMMARY:Recurring
-UID:8bd39f70-9175-49b3-8fb6-aef758011f52@8bd3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/boulder-junction-history-day/
-DTEND:20250825T170000Z
-DTSTART:20250825T160000Z
-SUMMARY:Boulder Junction’s History Day
-UID:3674ee35-3cb0-4a2a-bbb8-f62f26d5666f@3674.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T050000Z
-DTSTART:20250826T010000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:c472f27d-7341-4e1f-aceb-364eccef1820@c472.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/all/
-DTEND:20250830T060000Z
-DTSTART:20250830T050000Z
-SUMMARY:Recurring
-UID:4c5176d5-1c36-4db3-afbb-4566a9dca06d@4c51.org
+UID:f7e30e64-c03a-4f03-9035-454383efb52b@f7e3.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
 DTEND:20250828T050000Z
-DTSTART:20250826T000000Z
+DTSTART:20250819T000000Z
 SUMMARY:Recurring
-UID:1732eb59-7df9-48a1-833b-adb709e403aa@1732.org
+UID:8ef12854-0e8c-4c59-8c9a-f39e7d0b86b9@8ef1.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T060000Z
-DTSTART:20250830T050000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:3ad78bc0-eb8a-453c-83c7-53ac282f53dd@3ad7.org
+DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/all/
+DTEND:20250827T060000Z
+DTSTART:20250827T050000Z
+SUMMARY:Recurring
+UID:45252c4a-ed10-4b2d-ae5f-7bdcd2c4193b@4525.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
 DTEND:20250831T050000Z
-DTSTART:20250820T150000Z
+DTSTART:20250819T150000Z
 SUMMARY:Labor Day Arts & Crafts Show
-UID:9450b257-3ab5-45b1-934b-f33ce9b31db6@9450.org
+UID:d265f6fd-7bb1-4894-bfaa-33f30ae59325@d265.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250818T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:0c6fb9f4-2d4e-4b65-9709-26a5be487111@0c6f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/all/
+DTEND:20250827T060000Z
+DTSTART:20250827T050000Z
+SUMMARY:Recurring
+UID:cdca8292-190c-4d0e-83bf-2520758428a4@cdca.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250821T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:3fea9d1d-c43a-4b8c-943a-0dd02f38519b@3fea.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250825T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:23ba6115-eab4-403f-9700-db6267646cee@23ba.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/summer-library-program-at-the-boulder-junction-public-library/all/
+DTEND:20250825T163000Z
+DTSTART:20250825T153000Z
+SUMMARY:Recurring
+UID:394a6731-565a-4e53-a88d-891c646d4099@394a.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
 DTEND:20250829T050000Z
 DTSTART:20250823T010000Z
 SUMMARY:Aqualand Ale House Comedy Night
-UID:cc872e87-c2f6-4e5b-972f-2a0579976927@cc87.org
+UID:442c9964-de47-4ff9-82ca-cc4eb8f40fa0@442c.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
-DTEND:20250827T050000Z
-DTSTART:20250820T170000Z
-SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:f0b09246-9c2a-468c-807a-6def23e44a56@f0b0.org
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250826T000000Z
+SUMMARY:Recurring
+UID:4132ccd8-be4b-4127-9aa0-e8691b753edd@4132.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/septimber-ride/
-DTEND:20250913T060000Z
-DTSTART:20250913T050000Z
-SUMMARY:SepTimber Ride
-UID:524689a1-edd4-4a52-9037-314b454b3f8b@5246.org
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T060000Z
+DTSTART:20250829T050000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:2178b343-8127-45d9-a1b6-2874ea2a3cc6@2178.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250822T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:a62500de-2328-4a0d-9c21-92e9ab0dcbf3@a625.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/chain-skimmers-independence-day-water-ski-show/
+DTEND:20250825T180000Z
+DTSTART:20250825T170000Z
+SUMMARY:Chain Skimmers Jr. Club Water Ski Show
+UID:7ee053bb-be45-4695-a9ca-7629aa9a448b@7ee0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/boulder-junctions-musky-day-fly-in/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:Boulder Junction’s Musky Day Fly-In
+UID:e295f412-6dcb-4be6-b040-ff2840a4dfd7@e295.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250820T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:8e765ae3-b2a0-472a-833a-7be126979ab3@8e76.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/fairs-festivals/hodag-heritage-festival-203832
+DTEND:20260517T000000Z
+LOCATION:Rhinelander
+DTSTART:20260516T000000Z
+SUMMARY:Hodag Heritage Festival
+UID:11279321-a1e5-40ad-8957-d26ad6d42c58@1127.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250823T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:15560ca3-94dc-428c-a4f3-8d932a8c973f@1556.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T060000Z
+DTSTART:20250828T050000Z
+SUMMARY:Recurring
+UID:be73941c-4c0d-47fc-b24c-147f99f816bb@be73.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250821T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:18278235-c4e3-4546-a004-2bbbae9b2af8@1827.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/31st-annual-pancake-breakfast-open-house-at-camp-jorn-ymca/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:31st Annual Pancake Breakfast & Open House at Camp Jorn YMCA
+UID:20607d51-c014-41c6-85c1-de95508cbf33@2060.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/2025-fall-flurry-clay-shoot-17626
-DTEND:20250825T000000Z
-DTSTART:20250824T000000Z
+DTEND:20250826T000000Z
+DTSTART:20250825T000000Z
 SUMMARY:2025 Fall Flurry Clay Shoot
-UID:10997eaa-f8b7-4def-a763-822d6797fc77@1099.org
+UID:32e017ef-0333-472b-a8c3-66efec2ec905@32e0.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T050000Z
-DTSTART:20250822T150000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:254d2f29-90e2-4813-ab78-067b20d662ad@254d.org
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250823T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:fcc53ce0-2eb8-492d-94bd-8638543a489f@fcc5.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/all/
-DTEND:20250830T060000Z
-DTSTART:20250830T050000Z
-SUMMARY:Recurring
-UID:43c7dcae-a59b-455e-adc7-dbae9f455c48@43c7.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
 DTEND:20250828T050000Z
-DTSTART:20250823T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:60dad83a-8b82-4e27-bc77-cb141b9da779@60da.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T050000Z
-DTSTART:20250819T060000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:1b5a2ac3-33a4-4997-881c-29c200bff9f5@1b5a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T050000Z
-DTSTART:20250824T150000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:25957f02-08e8-451c-80e6-44773a8dd7cc@2595.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/bingo-at-northern-waters-casino/all/
-DTEND:20250825T180000Z
-DTSTART:20250825T170000Z
+DTSTART:20250822T000000Z
 SUMMARY:Recurring
-UID:106e3c2b-4a21-4076-98c8-100d627c9d42@106e.org
+UID:a9c090c4-0a22-4d34-8102-ed74f9947ea8@a9c0.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/4th-annual-plum-lake-open-golf-tournament/
+DESCRIPTION:Source: https://eagleriver.org/events/northern-lakes-catholic-communities-5th-annual-golfing-fore-our-youth/
 DTEND:20250825T140000Z
 DTSTART:20250825T130000Z
-SUMMARY:4th Annual Plum Lake Open Golf Tournament
-UID:611bff0b-6011-479c-b7d9-60fd4194d985@611b.org
+SUMMARY:“Fore” Our Youth Golf Tournament
+UID:54ef4dda-fb3d-47e4-99a4-e4f61137f0d1@54ef.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/book-club-sponsored-by-the-boulder-junction-public-library/all/
+DTEND:20250825T193000Z
+DTSTART:20250825T183000Z
+SUMMARY:Recurring
+UID:e361f01d-9fb7-4ecb-9647-0fdf33288596@e361.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250826T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:a522406a-83ad-4fc7-9ab3-bd34adcc9f8e@a522.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-speedway-tuesday-night-races/2025-08-26/
+DTEND:20250826T060000Z
+LOCATION:Eagle River Speedway 3973 Cloverland Dr\, Eagle River\, WI
+DTSTART:20250826T050000Z
+SUMMARY:Eagle River Speedway Tuesday Night Races
+UID:ae176725-de7e-4d41-9f76-c7d5ee7c5c79@ae17.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/musky-fly-in-2/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:Musky Jamboree Fly-In
+UID:aede37b6-8c3a-42b9-8544-54b1b78b68e3@aede.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-08-27/
+DTEND:20250827T060000Z
+LOCATION:Eagle River Farmers Market Lot
+DTSTART:20250827T050000Z
+SUMMARY:Eagle River Farmers Market and Artisans Market
+UID:2c1196c9-474a-4d00-894b-a5d98f0f946a@2c11.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/partners-cribbage-tournaments-at-northern-waters-casino/all/
 DTEND:20250825T220000Z
 DTSTART:20250825T210000Z
 SUMMARY:Recurring
-UID:51e36c26-bb3b-4717-8d40-22a73cd01ee5@51e3.org
+UID:39b46f9b-7968-4516-a181-f38f1f331b6e@39b4.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250825T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:3c0d5d0b-9931-4995-89d4-8c409eab6bcc@3c0d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250823T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:0779f971-dd72-414d-97fa-0b533bb9e560@0779.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/tours/a-christmas-wonderland-light-tour-241901
+DTEND:20251208T000000Z
+LOCATION:Harshaw
+DTSTART:20251207T000000Z
+SUMMARY:A Christmas Wonderland - Light Tour
+UID:da774a76-0353-48e2-8ef5-eff0924b4a99@da77.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/old-fashioneds-up-north/
+DTEND:20251108T070000Z
+DTSTART:20251108T060000Z
+SUMMARY:Old Fashioneds Up North
+UID:3543abc3-b8f3-4135-bde0-2fea57439e70@3543.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250821T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:59ae9801-80d2-4367-a24c-98c641d692fe@59ae.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/68th-annual-musky-jamboree/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Boulder Junction’s 68th Annual Musky Jamboree
+UID:3faaeb5f-f83a-4076-ba15-1537587e0d08@3faa.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250819T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:da835cc0-5d37-4d19-9bba-6b3e006fd7db@da83.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T050000Z
+DTSTART:20250821T150000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:87b59393-8e8b-4210-98dc-bafa55842b15@87b5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250822T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:0dbb7821-838d-449e-bb10-6f2ed57750d8@0dbb.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/library-pop-up-at-eagle-river-farmers-market/
+DTEND:20250825T143000Z
+DTSTART:20250825T133000Z
+SUMMARY:Library Pop Up at Eagle River Farmers Market
+UID:3fda3e9c-6932-4e29-8790-bc82cd2382b8@3fda.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T050000Z
+DTSTART:20250819T150000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:bbb63253-09ff-4c80-8b2b-2f4d84685ca5@bbb6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/musky-fun-run-2/
+DTEND:20250825T130000Z
+DTSTART:20250825T120000Z
+SUMMARY:Musky Fun Run
+UID:8caab079-8c6a-499d-a26b-00fcac0cd588@8caa.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250822T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:0d144762-98c3-4c01-adbc-292d58de8249@0d14.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://eagleriver.org/events/story-time/2025-08-26/
@@ -1289,41 +657,697 @@ DTEND:20250826T060000Z
 LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
 DTSTART:20250826T050000Z
 SUMMARY:Story Time
-UID:a86727bd-c90a-4f47-b70e-2c3caa83e850@a867.org
+UID:5a1484af-df36-49fe-b523-6b37a6a32f33@5a14.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T060000Z
+DTSTART:20250828T050000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:24b37d71-2824-4229-8950-da0504c275df@24b3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/trees-for-tomorrow-natures-bounty/
+DTEND:20250828T050000Z
+DTSTART:20250820T150000Z
+SUMMARY:Trees for Tomorrow Nature’s Bounty
+UID:4fd3e9c9-2122-4574-81de-9ee8bdbeb693@4fd3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250818T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:0c8f7693-50f5-40fd-8b7d-5a3f4c54673a@0c8f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250823T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:e6ea8079-83b2-450a-b653-c536f52f9cc1@e6ea.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/sports/three-eagle-half-marathon-5k-151976
+DTEND:20251012T000000Z
+LOCATION:Three Lakes
+DTSTART:20251011T000000Z
+SUMMARY:Three Eagle Half Marathon & 5K
+UID:08e942d5-e3e0-4acd-ad8c-b362f6f8c745@08e9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-27/
+DTEND:20250827T060000Z
+LOCATION:Old Paths Christian Ministries
+DTSTART:20250827T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:fcf24ea6-4ce8-441b-acbf-5136e460ba3b@fcf2.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T060000Z
+DTSTART:20250831T050000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:9d6aae50-294f-451e-b462-c0abdc45e773@9d6a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/fairs-festivals/rhinelander-chalkfest-227758
+DTEND:20250914T000000Z
+LOCATION:Rhinelander
+DTSTART:20250913T000000Z
+SUMMARY:Rhinelander Chalkfest
+UID:78f49f1c-96a6-4526-9f48-24015081de9f@78f4.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/all/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:Recurring
+UID:9cd452e7-56cb-436e-b5a5-0d2c5ee7a7dc@9cd4.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-coffee-co-live-music/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:Boulder Junction Coffee Co. Live Music
+UID:41df40cb-daa1-404f-ba82-e99c551e9055@41df.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/
+DTEND:20250825T163000Z
+DTSTART:20250825T153000Z
+SUMMARY:Recurring
+UID:0d62ebb5-54f4-4426-b545-6996017a08bf@0d62.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wednesday-morning-kids-series-2025-at-rouman-cinema-08-06-2025-17456
+DTEND:20250828T000000Z
+DTSTART:20250827T000000Z
+SUMMARY:Wednesday Morning Kids Series 2025 at Rouman Cinema
+UID:d1ca0d3e-f539-4fd8-a955-d7421f370ec2@d1ca.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/musky-jamboree-car-show/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Musky Jamboree Car Show
+UID:c408a54f-0403-47c1-a943-d1f17f773745@c408.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250819T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:7d0d8c1d-f916-4a0d-b359-688c18655e37@7d0d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/preslie-pays-it-forward-childrens-cn/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:Preslie Pays It Forward Motorcycle Ride! Children’s Cancer Benefit
+UID:30592045-01a1-41ba-83ef-455f498d41f7@3059.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250824T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:c4f92e78-acf3-4feb-86db-6709e31a642b@c4f9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/bingo-at-northern-waters-casino/all/
+DTEND:20250825T180000Z
+DTSTART:20250825T170000Z
+SUMMARY:Recurring
+UID:9ec679c0-0e21-42a5-b785-860f94609385@9ec6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/heart-and-soul-quilters-group/2025-08-27/
+DTEND:20250827T060000Z
+LOCATION:Kalmar Community Center
+DTSTART:20250827T050000Z
+SUMMARY:Heart and Soul Quilters Group
+UID:af611988-14d5-4c8c-8be8-1c72741a8dc5@af61.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wednesday-morning-kids-series-2025-at-rouman-cinema-08-13-2025-17457
+DTEND:20250828T000000Z
+DTSTART:20250827T000000Z
+SUMMARY:Wednesday Morning Kids Series 2025 at Rouman Cinema
+UID:a47c1cf1-f9a9-49f9-ad6e-f06fdaf179c9@a47c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250821T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:2d42b598-636f-46c6-9f7a-2794cfa9d097@2d42.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/44th-eagle-river-car-and-truck-show/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:45th Annual Eagle River Car and Truck Show
+UID:0502620e-199d-47e0-a511-95f7ec241680@0502.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/seated-yoga-at-the-walter-e-memorial-library/2025-08-26/
+DTEND:20250826T060000Z
+LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
+DTSTART:20250826T050000Z
+SUMMARY:Seated Yoga at the Walter E. Memorial Library
+UID:58c51d6e-9893-4914-b61f-69c9d4dcdce9@58c5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/chat-n-craft-at-the-boulder-junction-public-library-4-copy-copy-copy-copy/all/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:Recurring
+UID:8375a568-d045-4806-bde5-5f8d05c2d04a@8375.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/2025-pontoon-boat-poker-run/
+DTEND:20250825T180000Z
+DTSTART:20250825T170000Z
+SUMMARY:Manitowish Waters Pontoon & Boat Poker Run
+UID:d788170e-aba5-4421-935a-6c56f320aaea@d788.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250823T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:a49065e5-06f4-4371-9565-99716ad781a7@a490.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250819T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:68ebb881-b74d-496c-9468-5c41fcfc2f3e@68eb.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250822T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:e3807599-4ff9-4de9-bc35-87c2e2403da2@e380.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/boulder-junction-learn-to-fish-musky-workshop/
+DTEND:20250825T143000Z
+DTSTART:20250825T133000Z
+SUMMARY:Boulder Junction’s Learn to Fish Musky Workshop
+UID:1a5c4e54-571c-487e-8a14-11d7c921cccd@1a5c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250825T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:7a88a7bb-dc7e-4792-b937-d2f35f5cb844@7a88.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/music-on-main-street-2/all/
+DTEND:20250826T000000Z
+DTSTART:20250825T230000Z
+SUMMARY:Recurring
+UID:38aef332-bddb-4f67-8490-435b5af15fbf@38ae.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/wildlife-wednesday-dragonflies-17601
+DTEND:20250828T000000Z
+DTSTART:20250827T000000Z
+SUMMARY:Wildlife Wednesday: Dragonflies
+UID:16209f3e-e9ac-45fd-aec6-c8661fa5c922@1620.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250824T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:a029a680-1c9f-41ea-8202-237d28fac3f3@a029.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250825T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:658dc123-407b-40fc-ad99-f68c7df37a5d@658d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/community-garage-sale-weekend-2/
+DTEND:20250825T140000Z
+DTSTART:20250825T130000Z
+SUMMARY:Community Garage Sale Weekend
+UID:4c0d5b47-0d61-4a37-bcf4-663b365e0a95@4c0d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/fishing/hodag-musky-challenge-40404
+DTEND:20250927T000000Z
+LOCATION:Rhinelander
+DTSTART:20250926T000000Z
+SUMMARY:Hodag Musky Challenge
+UID:1515cc12-dcef-4a8b-b65b-8b1fc52abf4d@1515.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/carbliss-tasting-at-pirates-hideaway/
+DTEND:20250825T210000Z
+DTSTART:20250825T200000Z
+SUMMARY:Carbliss Tasting at Pirates Hideaway!
+UID:f6e1cfb6-77c4-4a00-9e04-774263d2fcd3@f6e1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-08-14/
+DTEND:20250825T183000Z
+DTSTART:20250825T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:abf7e5e7-f20a-4f9d-8d42-27b1b6f4d22e@abf7.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/all/
+DTEND:20250826T060000Z
+DTSTART:20250826T050000Z
+SUMMARY:Recurring
+UID:24863184-e5e7-45d4-8600-4193de6d0492@2486.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250819T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:464c72cc-0bb6-47f6-b240-28779b04aec1@464c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/art-tours/northwoods-art-tour-44368
+DTEND:20251011T000000Z
+LOCATION:Arbor Vitae
+DTSTART:20251010T000000Z
+SUMMARY:Northwoods Art Tour
+UID:e40056ee-50c0-4866-8ce1-27582728bd24@e400.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250821T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:b8400c16-3e49-4958-8236-2535eaeb257f@b840.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250824T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:c12fa7dd-b80e-430c-9aab-b3f7eecf2b7e@c12f.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-history-day-2/
 DTEND:20250825T170000Z
 DTSTART:20250825T160000Z
 SUMMARY:Boulder Junction Area Historical Society History Day
-UID:f72c1c4e-b0c1-46dc-a110-f4632534ce1d@f72c.org
+UID:c421fa27-0e56-4c31-849c-e66e62e52912@c421.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/musky-jamboree-street-party-2/
+DTEND:20250826T000000Z
+DTSTART:20250825T230000Z
+SUMMARY:Musky Jamboree Street Party
+UID:83a865b3-043a-43f1-80d4-4d74532c25db@83a8.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250824T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:82be9610-9d1e-4c02-a6a2-76b9e517bffe@82be.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-annual-community-corn-roast/
+DTEND:20250825T220000Z
+DTSTART:20250825T210000Z
+SUMMARY:Presque Isle Annual Community Corn Roast
+UID:a88a1252-c1c5-4a34-9e82-6cff6e8cb904@a88a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/cranberry-fest/
+DTEND:20251004T060000Z
+DTSTART:20251004T050000Z
+SUMMARY:Cranberry Fest
+UID:ddb9ecd1-a6c5-4369-995c-46213c26f82c@ddb9.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T050000Z
+DTSTART:20250822T010000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:7865c243-a4c0-41bc-9abb-4ae57db12b73@7865.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250824T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:ac80f5d7-a9ad-4005-9ccc-26cc63751ed6@ac80.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250825T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:f5e96bf7-32d9-4459-b927-c1d308712456@f5e9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250821T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:1d6abccb-1a88-413d-88ff-ecd25076453e@1d6a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/10th-annual-sayner-star-lake-street-fair-2/
+DTEND:20250825T160000Z
+DTSTART:20250825T150000Z
+SUMMARY:10th Annual Sayner-Star Lake Street Fair
+UID:fa7e9ba9-5989-4fca-acac-e684e9d13764@fa7e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/atv-safety-course-hosted-by-the-boulder-junction-atv-utv-club/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:ATV Safety Course hosted by the Boulder Junction ATV/UTV Club
+UID:665e5d96-d30e-4078-8edd-42597ce2ed11@665e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250825T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:214f9c87-f4c7-4360-b202-73118af9af0c@214f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T060000Z
+DTSTART:20250828T050000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:984cb152-da59-47b5-b5be-7b2b7f421d9b@984c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://www.travelwisconsin.com/events/wisconsin-specialties/oktoberfest-239691
+DTEND:20250921T000000Z
+LOCATION:Three Lakes
+DTSTART:20250920T000000Z
+SUMMARY:Oktoberfest
+UID:0e8ded91-ecd2-4dcc-aa39-cde9cfb40d23@0e8d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250825T000000Z
+SUMMARY:Recurring
+UID:a670a10b-88b5-46ab-b488-bafcc781faa1@a670.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/ukulele-practice-jam-session/2025-08-25/
+DTEND:20250825T060000Z
+LOCATION:Walter E. Olson Memorial Library 203 North Main Street\, Eagle River\, Wisconsin
+DTSTART:20250825T050000Z
+SUMMARY:Ukulele Practice/ Jam Session
+UID:9fcc288e-2c39-42b3-b4ae-826f7c213b79@9fcc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports-2/all/
+DTEND:20250825T220000Z
+DTSTART:20250825T210000Z
+SUMMARY:Recurring
+UID:ee9d9f1e-efbb-41f8-8f31-1f63c51272af@ee9d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
 DTEND:20250829T060000Z
 DTSTART:20250829T050000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:5bdae7fd-b983-4e45-86cd-fdace87ecb11@5bda.org
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:dcefe5f2-3f85-4657-a769-028ab8eba5b9@dcef.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/31st-annual-pancake-breakfast-open-house-at-camp-jorn-ymca/
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250821T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:e29a4cc3-f1c2-476f-b827-f689be4919c8@e29a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T050000Z
+DTSTART:20250820T173000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:336e9022-c0c4-4137-87bd-f16493886399@336e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T060000Z
+DTSTART:20250830T050000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:3c46c5fe-daac-4b37-8e86-5ec2686b8f14@3c46.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T060000Z
+DTSTART:20250827T050000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:f92b5b2d-a32c-4d32-b70b-8e8ea36a009b@f92b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/member-appreciation-weekend/
+DTEND:20250829T060000Z
+DTSTART:20250829T050000Z
+SUMMARY:Member Appreciation Weekend
+UID:c16a555a-c3bd-4d11-93cf-5c5065a4d81b@c16a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250820T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:ce960d00-69e2-48d6-ad78-92c020155b02@ce96.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/all/
+DTEND:20250830T060000Z
+DTSTART:20250830T050000Z
+SUMMARY:Recurring
+UID:6b1cd319-e7a7-4271-9495-cd0a9f3342c3@6b1c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-edible-flower-and-medicinal-plant-gardening-workshop/
+DTEND:20250825T190000Z
+DTSTART:20250825T180000Z
+SUMMARY:North Lakeland Discovery Center: Edible Flower and Medicinal Plant Gardening Workshop
+UID:127cc6b1-b7f5-4f38-9d11-ce6f3aa8eb51@127c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250823T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:5e2a5c0f-3adf-4037-8bcb-08c6876b504c@5e2a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/
+DTEND:20250825T060000Z
+DTSTART:20250825T050000Z
+SUMMARY:Recurring
+UID:c8d3a4e8-1c70-48b3-a78e-fbb2325e89ad@c8d3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250823T000000Z
+SUMMARY:Recurring
+UID:ee6fba12-fd04-4a75-97e4-4388836e1728@ee6f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/musky-jamboree-fun-run/
 DTEND:20250825T140000Z
 DTSTART:20250825T130000Z
-SUMMARY:31st Annual Pancake Breakfast & Open House at Camp Jorn YMCA
-UID:32a370a8-9127-4771-be77-5683bae0100f@32a3.org
+SUMMARY:Boulder Junction’s Musky Jamboree Fun Run
+UID:7cc84dbc-f469-4641-83bb-ce00c8917aae@7cc8.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/northwoods-throwdown-disc-golf-tournament/
-DTEND:20250825T140000Z
-DTSTART:20250825T130000Z
-SUMMARY:Northwoods Throwdown Disc Golf Tournament
-UID:51158dfb-681f-4294-93ec-f6f173c19dcb@5115.org
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-25/
+DTEND:20250825T060000Z
+LOCATION:Old Paths Christian Ministries
+DTSTART:20250825T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:5a807011-dafd-4b18-8c3a-09d0b0e78033@5a80.org
 END:VEVENT
 BEGIN:VEVENT
-DESCRIPTION:Source: https://business.rhinelanderchamber.com/events/details/2025-fall-flurry-clay-shoot-17626
-DTEND:20250826T000000Z
-DTSTART:20250825T000000Z
-SUMMARY:2025 Fall Flurry Clay Shoot
-UID:ea6c8311-6c5c-432c-b646-e87aeb2cfb88@ea6c.org
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250821T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:b9ffe3eb-d688-4d4b-85ed-5c208f7c1618@b9ff.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T060000Z
+DTSTART:20250830T050000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:68b12a9c-f33c-45ac-a12a-59f86ac91047@68b1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T050000Z
+DTSTART:20250818T060000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:af3090fa-c037-40a3-9282-2888c4ccad78@af30.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T050000Z
+DTSTART:20250822T223000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:085898e2-da2d-4567-b58c-1eab55075dc1@0858.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250825T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:16c957a3-88f3-4056-b7c7-b3b5340780b5@16c9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/yoga-on-the-beach-3/2025-08-26/
+DTEND:20250826T060000Z
+LOCATION:Cedaroma Lodge
+DTSTART:20250826T050000Z
+SUMMARY:Outdoor Yoga Classes at Cedaroma Lodge
+UID:171cc311-7ef9-4d1c-a463-717f88a52ec4@171c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250820T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:16d7f9d1-86d0-4372-97c5-021644ebe275@16d7.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250823T150000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:9856cc47-4064-4261-8544-1d5bec3d8be9@9856.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/all/
+DTEND:20250825T220000Z
+DTSTART:20250825T210000Z
+SUMMARY:Recurring
+UID:c8f105a2-bfba-407d-a62b-bf320b9b8968@c8f1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/all/
+DTEND:20250828T050000Z
+DTSTART:20250821T000000Z
+SUMMARY:Recurring
+UID:357b40ec-8f2f-4a1c-bd17-6cf111496909@357b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T050000Z
+DTSTART:20250819T150000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:69972b18-7c32-4a37-9339-0b0542a3f8ca@6997.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250820T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:9db17ab3-2fa9-4211-b3fa-f43c83e4d376@9db1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/67th-annual-musky-jamboree/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:68th Annual Musky Jamboree
+UID:9d39682a-d9f8-4ba2-ab75-723d00a68d25@9d39.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/septimber-ride/
+DTEND:20250913T060000Z
+DTSTART:20250913T050000Z
+SUMMARY:SepTimber Ride
+UID:652c1d4f-f4fb-443b-ba91-972108be44f0@652c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T050000Z
+DTSTART:20250818T150000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:fd672375-3440-4f02-8697-253b2545660f@fd67.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/all/
+DTEND:20250830T060000Z
+DTSTART:20250830T050000Z
+SUMMARY:Recurring
+UID:623965ca-e555-43b4-b3b1-c42275e9c459@6239.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-lions-rummage-sale/
+DTEND:20250825T150000Z
+DTSTART:20250825T140000Z
+SUMMARY:Presque Isle Lions Rummage Sale
+UID:8d5ac4a7-8ece-4715-b385-f1b2166e892c@8d5a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/northwoods-music-collective/all/
+DTEND:20250825T230000Z
+DTSTART:20250825T220000Z
+SUMMARY:Recurring
+UID:d315ddff-f1a7-49cd-bc78-e632ef6c223a@d315.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/getting-excited-about-science-at-north-lakeland-discovery-center/
+DTEND:20250825T163000Z
+DTSTART:20250825T153000Z
+SUMMARY:Getting Excited about Science at North Lakeland Discovery Center
+UID:8d2d29d0-8625-46b8-aaa6-ab3be0fac7c4@8d2d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/widnr-learn-to-fish-musky-workshop/
+DTEND:20250825T143000Z
+DTSTART:20250825T133000Z
+SUMMARY:WiDNR: Learn to Fish Musky Workshop
+UID:3e652573-4f31-4e79-aed5-9414a0413316@3e65.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
+DTEND:20250827T050000Z
+DTSTART:20250822T170000Z
+SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
+UID:0cf33abd-844a-41c9-9b92-5672747e2af9@0cf3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T050000Z
+DTSTART:20250820T160000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:6b3804e8-eacb-4c41-ab8a-3f5b71a840d1@6b38.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/
+DTEND:20250826T060000Z
+DTSTART:20250826T050000Z
+SUMMARY:Recurring
+UID:5fa86db4-590b-4882-b91b-1d4f4cf0cfab@5fa8.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-arts-venture-at-lola/2025-08-25/
+DTEND:20250825T060000Z
+LOCATION:LOLA - Land O'Lakes Art Center 4262 Cty Hwy B\, Land O'Lakes\, WI\, United States
+DTSTART:20250825T050000Z
+SUMMARY:Summer Arts Venture at LOLA
+UID:dd8d6822-77db-4e43-b837-2254bf409068@dd8d.org
 END:VEVENT
 END:VCALENDAR

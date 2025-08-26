@@ -36,4 +36,10 @@ sources:
   # Helps Playwright wait until events are in the DOM (covers list/month variants)
   wait_selector: ".tribe-events .tribe-events-calendar-list__event, .tribe-events-calendar-month__calendar-event"
 
+    # --- St. Germain (ICS fallback) ---
+  - name: St. Germain Chamber (ICS)
+    type: ics
+    url: https://st-germain.com/events-calendar/?ical=1
+    ics_family: modern_tribe
+
 

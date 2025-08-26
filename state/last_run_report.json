@@ -1,15 +1,15 @@
 {
-  "when": "2025-08-25T23:28:13.317114-05:00",
+  "when": "2025-08-26T02:08:42.269599-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 190,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 85,
+      "parsed": 38,
+      "added": 38,
+      "skipped_past": 87,
       "skipped_nodate": 0,
-      "skipped_dupe": 105,
+      "skipped_dupe": 65,
       "samples": [
         {
           "reason": "past",
@@ -47,11 +47,11 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 140,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 67,
+      "parsed": 35,
+      "added": 35,
+      "skipped_past": 68,
       "skipped_nodate": 0,
-      "skipped_dupe": 73,
+      "skipped_dupe": 37,
       "samples": [
         {
           "reason": "past",
@@ -120,11 +120,11 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 125,
-      "parsed": 0,
-      "added": 0,
+      "parsed": 1,
+      "added": 1,
       "skipped_past": 2,
       "skipped_nodate": 119,
-      "skipped_dupe": 4,
+      "skipped_dupe": 3,
       "samples": [
         {
           "reason": "nodate",

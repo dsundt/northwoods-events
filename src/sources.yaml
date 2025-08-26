@@ -29,3 +29,11 @@ sources:
     type: travelwi   # we’ll map this to “travelwi” in main
     url: "https://www.travelwisconsin.com/events/widgetview?id=bd86f944-aa2f-4e46-8be5-089e5273e88f&utm_source=Fall%20Color%20Report&utm_medium=Widget&utm_campaign=Widget%20Traffic"
 
+    # --- St. Germain (Modern Tribe HTML) ---
+- name: St. Germain Chamber (Modern Tribe)
+  type: modern_tribe
+  url: https://st-germain.com/events-calendar/
+  # Helps Playwright wait until events are in the DOM (covers list/month variants)
+  wait_selector: ".tribe-events .tribe-events-calendar-list__event, .tribe-events-calendar-month__calendar-event"
+
+

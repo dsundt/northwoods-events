@@ -1,175 +1,89 @@
 {
-  "when": "2025-08-26T20:55:00.003833-05:00",
+  "when": "2025-08-26T16:42:26.552448-05:00",
+  "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
-      "fetched": 190,
-      "parsed": 0,
+      "fetched": 1,
+      "parsed": 18,
       "added": 0,
-      "skipped_past": 87,
+      "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 103,
-      "samples": [
-        {
-          "reason": "past",
-          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
-          "start": "2025-08-02T00:00:00-05:00",
-          "date_text": "August 2"
-        },
-        {
-          "reason": "past",
-          "title": "Featured Arbor Vitae Fireman\u2019s Summerfest",
-          "start": "2025-08-02T00:00:00-05:00",
-          "date_text": ""
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": "August 7"
-        },
-        {
-          "reason": "past",
-          "title": "Vilas County Fair",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": ""
-        },
-        {
-          "reason": "past",
-          "title": "Featured Boulder Junction\u2019s Musky Capital of the World Musky Tournament",
-          "start": "2025-08-08T00:00:00-05:00",
-          "date_text": "August 8 @ 10:00 am"
-        }
-      ]
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n",
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
-      "fetched": 140,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 68,
-      "skipped_nodate": 0,
-      "skipped_dupe": 72,
-      "samples": [
-        {
-          "reason": "past",
-          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
-          "start": "2025-08-01T00:00:00-05:00",
-          "date_text": "August 1"
-        },
-        {
-          "reason": "past",
-          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
-          "start": "2025-08-01T00:00:00-05:00",
-          "date_text": ""
-        },
-        {
-          "reason": "past",
-          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
-          "start": "2025-08-01T00:00:00-05:00",
-          "date_text": ""
-        },
-        {
-          "reason": "past",
-          "title": "Alcohol Inks on Yupo Paper at Marywood",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": "August 7 @ 9:00 am"
-        },
-        {
-          "reason": "past",
-          "title": "Alcohol Inks on Yupo Paper at Marywood",
-          "start": "2025-08-07T00:00:00-05:00",
-          "date_text": ""
-        }
-      ]
-    },
-    {
-      "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
-      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 11,
-      "parsed": 0,
+      "fetched": 1,
+      "parsed": 62,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 11,
+      "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.rendered.html",
-      "snapshot_frame_1": "state/snapshots/oneida_county_-_festivals_and_events_modern_tribe.frame1.www.travelwisconsin.com_events_widgetview.html"
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n",
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
     },
     {
-      "name": "Eagle River Chamber (Modern Tribe)",
-      "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 12,
-      "parsed": 3,
-      "added": 3,
-      "skipped_past": 1,
-      "skipped_nodate": 0,
-      "skipped_dupe": 8,
-      "samples": [
-        {
-          "reason": "past",
-          "title": "Back To School Drive",
-          "start": "2025-08-15T00:00:00-05:00",
-          "date_text": "August 15 - September 1"
-        }
-      ]
-    },
-    {
-      "name": "Rhinelander Chamber (GrowthZone)",
-      "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 125,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 2,
-      "skipped_nodate": 119,
-      "skipped_dupe": 4,
-      "samples": [
-        {
-          "reason": "nodate",
-          "title": "Oneida County Fair",
-          "date_text": "Oneida County Fair",
-          "iso_hint": null
-        },
-        {
-          "reason": "nodate",
-          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
-          "date_text": "Youth Baseball/Softball Clinic with the WI Woodchucks",
-          "iso_hint": null
-        },
-        {
-          "reason": "nodate",
-          "title": "ArtStart Gallery Exhibitions",
-          "date_text": "ArtStart Gallery Exhibitions",
-          "iso_hint": null
-        },
-        {
-          "reason": "nodate",
-          "title": "Saluting Heroes Balloon Rally",
-          "date_text": "Saluting Heroes Balloon Rally",
-          "iso_hint": null
-        },
-        {
-          "reason": "nodate",
-          "title": "Oneida County Fair",
-          "date_text": "Oneida County Fair",
-          "iso_hint": null
-        }
-      ]
-    },
-    {
-      "name": "St. Germain Chamber (Modern Tribe)",
-      "url": "https://st-germain.com/events-calendar/",
-      "fetched": 0,
+      "name": "Oneida County – Festivals & Events (Modern Tribe)",
+      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
+      "fetched": 1,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/st._germain_chamber_modern_tribe.rendered.html",
-      "snapshot": "state/snapshots/st._germain_chamber_modern_tribe.html"
+      "rest_error": "HTTPError('404 Client Error: Not Found for url: https://oneidacountywi.com/wp-json/tribe/events/v1/events?page=1&per_page=100&start_date=2025-08-26T21%3A42%3A58Z&end_date=2026-08-21T21%3A42%3A58Z')",
+      "snapshot": "state/snapshots/oneida_county_–_festivals_and_events_(modern_tribe).html",
+      "snapshot_rendered": "state/snapshots/oneida_county_–_festivals_and_events_(modern_tribe).rendered.html"
+    },
+    {
+      "name": "Eagle River Chamber (Modern Tribe)",
+      "url": "https://eagleriver.org/events/?eventDisplay=list",
+      "fetched": 1,
+      "parsed": 12,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n",
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
+    },
+    {
+      "name": "Rhinelander Chamber (GrowthZone)",
+      "url": "https://business.rhinelanderchamber.com/events/calendar",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "samples": [],
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
+      "snapshot_rendered": "state/snapshots/rhinelander_chamber_(growthzone).rendered.html"
+    },
+    {
+      "name": "St. Germain Chamber (Modern Tribe)",
+      "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "samples": [],
+      "rest_error": "HTTPError('404 Client Error: Not Found for url: https://st-germain.com/wp-json/tribe/events/v1/events?page=1&per_page=100&start_date=2025-08-26T21%3A43%3A50Z&end_date=2026-08-21T21%3A43%3A50Z')",
+      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html",
+      "snapshot_rendered": "state/snapshots/st._germain_chamber_(modern_tribe).rendered.html"
     },
     {
       "name": "St. Germain Chamber (ICS)",
@@ -181,20 +95,22 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "error": "RuntimeError(\"ICS fetch failed. Tried: [('https://st-germain.com/events-calendar/?ical=1', 'text/html; charset=UTF-8'), ('https://st-germain.com/events/?ical=1', 'text/html; charset=UTF-8'), ('https://st-germain.com/events-calendar/?ical=1', 'text/html; charset=UTF-8'), ('https://st-germain.com/events-calendar/?tribe_display=list&ical=1', 'text/html; charset=UTF-8'), ('https://st-germain.com/events-calendar/?ical=1 (no referer)', 'text/html; charset=UTF-8')]\")"
+      "error": "FailedParse(Buffer@0, ['ALPHADIGIT_MINUS_PLUS', 'contentline', 'start'], 'Expecting <ALPHADIGIT_MINUS_PLUS>')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 495, in main\n    rows = ingest_ics(txt)\n           ^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 248, in ingest_ics\n    cal = Calendar(text)\n          ^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/icalendar.py\", line 64, in __init__\n    containers = calendar_string_to_containers(imports)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 227, in calendar_string_to_containers\n    return string_to_container(string)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 204, in string_to_container\n    return lines_to_container(txt.split(\"\\n\"), linewise)  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 197, in lines_to_container\n    return parse(tokenize_line(unfold_lines(lines, with_linenr=True)))  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 187, in parse\n    for line in tokenized_lines:\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 180, in tokenize_line\n    yield ContentLine.parse(line[1], line[0])\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 82, in parse\n    ast = GRAMMAR.parse(line)\n          ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 247, in parse\n    raise self._furthest_exception from e\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 241, in parse\n    return rule()\n           ^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 85, in _start_\n    self._contentline_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 104, in _contentline_\n    self._ALPHADIGIT_MINUS_PLUS_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 620, in _call\n    self._error(f'Expecting <{ruleinfo.name}>')\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 545, in _error\n    raise self._make_exception(item, exclass=exclass)\ntatsu.exceptions.FailedParse: (1:1) Expecting <ALPHADIGIT_MINUS_PLUS> :\n<!DOCTYPE html>\n^\nALPHADIGIT_MINUS_PLUS\ncontentline\nstart\n"
     },
     {
       "name": "Minocqua Area Chamber (Modern Tribe)",
-      "url": "https://www.minocqua.org/events/",
-      "fetched": 0,
+      "url": "https://www.minocqua.org/events/?eventDisplay=list",
+      "fetched": 1,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/minocqua_area_chamber_modern_tribe.rendered.html",
-      "snapshot": "state/snapshots/minocqua_area_chamber_modern_tribe.html"
+      "rest_error": "HTTPError('404 Client Error: Not Found for url: https://www.minocqua.org/wp-json/tribe/events/v1/events/?page=1&per_page=100&start_date=2025-08-26T21%3A44%3A13Z&end_date=2026-08-21T21%3A44%3A13Z')",
+      "snapshot": "state/snapshots/minocqua_area_chamber_(modern_tribe).html",
+      "snapshot_rendered": "state/snapshots/minocqua_area_chamber_(modern_tribe).rendered.html"
     },
     {
       "name": "Minocqua Area Chamber (ICS)",
@@ -206,20 +122,21 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "error": "RuntimeError(\"ICS fetch failed. Tried: [('https://www.minocqua.org/events/?ical=1', 'text/html; charset=utf-8'), ('https://www.minocqua.org/events/?ical=1', 'text/html; charset=utf-8'), ('https://www.minocqua.org/events/?ical=1 (no referer)', 'text/html; charset=utf-8')]\")"
+      "error": "FailedParse(Buffer@0, ['ALPHADIGIT_MINUS_PLUS', 'contentline', 'start'], 'Expecting <ALPHADIGIT_MINUS_PLUS>')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 495, in main\n    rows = ingest_ics(txt)\n           ^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 248, in ingest_ics\n    cal = Calendar(text)\n          ^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/icalendar.py\", line 64, in __init__\n    containers = calendar_string_to_containers(imports)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 227, in calendar_string_to_containers\n    return string_to_container(string)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 204, in string_to_container\n    return lines_to_container(txt.split(\"\\n\"), linewise)  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 197, in lines_to_container\n    return parse(tokenize_line(unfold_lines(lines, with_linenr=True)))  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 187, in parse\n    for line in tokenized_lines:\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 180, in tokenize_line\n    yield ContentLine.parse(line[1], line[0])\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 82, in parse\n    ast = GRAMMAR.parse(line)\n          ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 247, in parse\n    raise self._furthest_exception from e\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 241, in parse\n    return rule()\n           ^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 85, in _start_\n    self._contentline_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 104, in _contentline_\n    self._ALPHADIGIT_MINUS_PLUS_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 620, in _call\n    self._error(f'Expecting <{ruleinfo.name}>')\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 545, in _error\n    raise self._make_exception(item, exclass=exclass)\ntatsu.exceptions.FailedParse: (1:1) Expecting <ALPHADIGIT_MINUS_PLUS> :\n<!doctype html>\n^\nALPHADIGIT_MINUS_PLUS\ncontentline\nstart\n"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
-      "fetched": 0,
+      "fetched": 1,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/town_of_arbor_vitae_municipal_calendar.rendered.html",
-      "snapshot": "state/snapshots/town_of_arbor_vitae_municipal_calendar.html"
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
+      "snapshot_rendered": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).rendered.html"
     },
     {
       "name": "Town of Arbor Vitae (ICS)",
@@ -231,42 +148,49 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "error": "RuntimeError('ICS fetch failed. Tried: [(\\'https://www.townofarborvitae.org/calendar/?ical=1\\', \\'text/html;charset=utf-8\\'), (\\'https://www.townofarborvitae.org/events/?ical=1\\', \"HTTPError(\\'404 Client Error: Not Found for url: https://www.townofarborvitae.org/events/?ical=1\\')\"), (\\'https://www.townofarborvitae.org/calendar/?ical=1\\', \\'text/html;charset=utf-8\\'), (\\'https://www.townofarborvitae.org/calendar/?tribe_display=list&ical=1\\', \\'text/html;charset=utf-8\\'), (\\'https://www.townofarborvitae.org/calendar/?ical=1 (no referer)\\', \\'text/html;charset=utf-8\\')]')"
+      "error": "FailedParse(Buffer@0, ['ALPHADIGIT_MINUS_PLUS', 'contentline', 'start'], 'Expecting <ALPHADIGIT_MINUS_PLUS>')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 495, in main\n    rows = ingest_ics(txt)\n           ^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 248, in ingest_ics\n    cal = Calendar(text)\n          ^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/icalendar.py\", line 64, in __init__\n    containers = calendar_string_to_containers(imports)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 227, in calendar_string_to_containers\n    return string_to_container(string)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 204, in string_to_container\n    return lines_to_container(txt.split(\"\\n\"), linewise)  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 197, in lines_to_container\n    return parse(tokenize_line(unfold_lines(lines, with_linenr=True)))  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 187, in parse\n    for line in tokenized_lines:\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 180, in tokenize_line\n    yield ContentLine.parse(line[1], line[0])\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 82, in parse\n    ast = GRAMMAR.parse(line)\n          ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 247, in parse\n    raise self._furthest_exception from e\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 241, in parse\n    return rule()\n           ^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 85, in _start_\n    self._contentline_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 104, in _contentline_\n    self._ALPHADIGIT_MINUS_PLUS_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 620, in _call\n    self._error(f'Expecting <{ruleinfo.name}>')\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 545, in _error\n    raise self._make_exception(item, exclass=exclass)\ntatsu.exceptions.FailedParse: (1:1) Expecting <ALPHADIGIT_MINUS_PLUS> :\n<!doctype html>\n^\nALPHADIGIT_MINUS_PLUS\ncontentline\nstart\n"
     },
     {
-      "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)",
+      "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
-      "fetched": 11,
-      "parsed": 0,
+      "fetched": 1,
+      "parsed": 11,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 11,
-      "samples": []
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n",
+      "snapshot": "state/snapshots/sayner–star_lake–cloverland_chamber_(modern_tribe).html"
     },
     {
-      "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (ICS)",
+      "name": "Sayner–Star Lake–Cloverland Chamber (ICS)",
       "url": "https://sayner-starlake-cloverland.org/events/?ical=1",
-      "fetched": 11,
-      "parsed": 0,
+      "fetched": 1,
+      "parsed": 11,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 11,
-      "samples": []
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n"
     },
     {
       "name": "Manitowish Waters Chamber (Modern Tribe)",
-      "url": "https://manitowishwaters.org/events/",
-      "fetched": 0,
+      "url": "https://manitowishwaters.org/events/?eventDisplay=list",
+      "fetched": 1,
       "parsed": 0,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "snapshot_rendered": "state/snapshots/manitowish_waters_chamber_modern_tribe.rendered.html",
-      "snapshot": "state/snapshots/manitowish_waters_chamber_modern_tribe.html"
+      "rest_error": "HTTPError('404 Client Error: Not Found for url: https://manitowishwaters.org/wp-json/tribe/events/v1/events/?page=1&per_page=100&start_date=2025-08-26T21%3A44%3A58Z&end_date=2026-08-21T21%3A44%3A58Z')",
+      "snapshot": "state/snapshots/manitowish_waters_chamber_(modern_tribe).html",
+      "snapshot_rendered": "state/snapshots/manitowish_waters_chamber_(modern_tribe).rendered.html"
     },
     {
       "name": "Manitowish Waters Chamber (ICS)",
@@ -278,60 +202,35 @@
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [],
-      "error": "RuntimeError(\"ICS fetch failed. Tried: [('https://manitowishwaters.org/events/?ical=1', 'text/html; charset=utf-8'), ('https://manitowishwaters.org/events/?ical=1', 'text/html; charset=utf-8'), ('https://manitowishwaters.org/events/?ical=1 (no referer)', 'text/html; charset=utf-8')]\")"
+      "error": "FailedParse(Buffer@0, ['ALPHADIGIT_MINUS_PLUS', 'contentline', 'start'], 'Expecting <ALPHADIGIT_MINUS_PLUS>')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 495, in main\n    rows = ingest_ics(txt)\n           ^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 248, in ingest_ics\n    cal = Calendar(text)\n          ^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/icalendar.py\", line 64, in __init__\n    containers = calendar_string_to_containers(imports)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 227, in calendar_string_to_containers\n    return string_to_container(string)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 204, in string_to_container\n    return lines_to_container(txt.split(\"\\n\"), linewise)  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 197, in lines_to_container\n    return parse(tokenize_line(unfold_lines(lines, with_linenr=True)))  # linewise\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 187, in parse\n    for line in tokenized_lines:\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 180, in tokenize_line\n    yield ContentLine.parse(line[1], line[0])\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/parse.py\", line 82, in parse\n    ast = GRAMMAR.parse(line)\n          ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 247, in parse\n    raise self._furthest_exception from e\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 241, in parse\n    return rule()\n           ^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 85, in _start_\n    self._contentline_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 609, in _call\n    result = self._recursive_call(ruleinfo)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 640, in _recursive_call\n    return self._invoke_rule(ruleinfo, key)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 688, in _invoke_rule\n    ruleinfo.impl(self)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/ics/grammar/contentline.py\", line 104, in _contentline_\n    self._ALPHADIGIT_MINUS_PLUS_()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 77, in wrapper\n    return self._call(ruleinfo)\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 620, in _call\n    self._error(f'Expecting <{ruleinfo.name}>')\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/tatsu/contexts.py\", line 545, in _error\n    raise self._make_exception(item, exclass=exclass)\ntatsu.exceptions.FailedParse: (1:1) Expecting <ALPHADIGIT_MINUS_PLUS> :\n<!doctype html>\n^\nALPHADIGIT_MINUS_PLUS\ncontentline\nstart\n"
     },
     {
       "name": "Presque Isle Chamber (Modern Tribe)",
-      "url": "https://presqueisle.com/events/",
-      "fetched": 104,
-      "parsed": 0,
+      "url": "https://presqueisle.com/events/?eventDisplay=list",
+      "fetched": 1,
+      "parsed": 11,
       "added": 0,
-      "skipped_past": 36,
+      "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 68,
-      "samples": [
-        {
-          "reason": "past",
-          "title": "",
-          "start": "2025-07-27T00:00:00-05:00",
-          "date_text": "July 27 @ 6:00 pm"
-        },
-        {
-          "reason": "past",
-          "title": "",
-          "start": "2025-07-28T00:00:00-05:00",
-          "date_text": "July 28 @ 8:30 am"
-        },
-        {
-          "reason": "past",
-          "title": "Memory Check-In Presented by ADRC",
-          "start": "2025-07-28T00:00:00-05:00",
-          "date_text": "July 28 @ 1:00 pm"
-        },
-        {
-          "reason": "past",
-          "title": "",
-          "start": "2025-07-30T00:00:00-05:00",
-          "date_text": "July 30 @ 5:00 pm"
-        },
-        {
-          "reason": "past",
-          "title": "",
-          "start": "2025-07-31T00:00:00-05:00",
-          "date_text": "July 31 @ 8:30 am"
-        }
-      ]
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n",
+      "snapshot": "state/snapshots/presque_isle_chamber_(modern_tribe).html"
     },
     {
       "name": "Presque Isle Chamber (ICS)",
       "url": "https://presqueisle.com/events/?ical=1",
-      "fetched": 6,
-      "parsed": 0,
+      "fetched": 1,
+      "parsed": 6,
       "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 6,
-      "samples": []
+      "skipped_dupe": 0,
+      "samples": [],
+      "error": "TypeError(\"parse_datetime_range() got an unexpected keyword argument 'date_text'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 534, in main\n    normalized = normalize_rows(rows, default_duration_minutes=default_duration)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 306, in normalize_rows\n    start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: parse_datetime_range() got an unexpected keyword argument 'date_text'\n"
     }
   ]
 }

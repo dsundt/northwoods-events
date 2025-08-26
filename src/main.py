@@ -2,7 +2,7 @@
 """
 Northwoods Events – main aggregation runner.
 
-Writes:
+Outputs:
 - docs/northwoods.ics
 - state/events.json
 - state/last_run_report.json
@@ -24,20 +24,20 @@ import requests
 import yaml
 from bs4 import BeautifulSoup
 
-# Local modules (must exist)
+# Local modules
 from normalize import clean_text, parse_datetime_range
 from icsbuild import build_ics
 from dedupe import stable_id
-from tec_rest import fetch_events as tec_rest_fetch       # TEC REST fallback
-from parse_ai1ec import parse_ai1ec                       # Ai1EC parser
+from tec_rest import fetch_events as tec_rest_fetch
+from parse_ai1ec import parse_ai1ec  # present in repo
 
-# Optional: Travel Wisconsin parser (if present)
+# Optional Travel Wisconsin parser
 try:
     from parse_travelwi import parse_travelwi  # noqa: F401
 except Exception:
     parse_travelwi = None  # type: ignore
 
-# Optional: Playwright (rendering). Code guards if not installed.
+# Optional Playwright rendering
 PLAYWRIGHT_AVAILABLE = False
 try:
     from playwright.sync_api import sync_playwright
@@ -66,8 +66,7 @@ DIGEST_HTML = STATE_DIR / "daily_digest.html"
 SOURCES_YAML = SRC_DIR / "sources.yaml"
 
 # ---------- Misc ----------
-# America/Chicago; if you want perfect DST, swap to zoneinfo('America/Chicago')
-CHI = timezone(timedelta(hours=-5))  # local display for digest
+CHI = timezone(timedelta(hours=-5))  # display tz for digest; UTC storage in store/ICS
 UA = "northwoods-events/1.0 (+github actions; https://github.com/dsundt/northwoods-events)"
 REQ_TIMEOUT = 30
 
@@ -109,11 +108,8 @@ def read_json(path: Path, default: Any) -> Any:
 def snapshot_html(name: str, raw_html: str, rendered: bool = False) -> str:
     safe = (
         name.lower()
-        .replace(" ", "_")
-        .replace("/", "_")
-        .replace("&", "and")
-        .replace("–", "-")
-        .replace("—", "-")
+        .replace(" ", "_").replace("/", "_").replace("&", "and")
+        .replace("–", "-").replace("—", "-")
     )
     suffix = ".rendered.html" if rendered else ".html"
     out = SNAP_DIR / f"{safe}{suffix}"
@@ -121,11 +117,11 @@ def snapshot_html(name: str, raw_html: str, rendered: bool = False) -> str:
     return str(out.relative_to(ROOT))
 
 
-# --- Compatibility wrapper for normalize.parse_datetime_range ---
+# --- Compatibility wrapper for parse_datetime_range ---
 def _call_parse_datetime_range(date_text: str, iso_hint: str, iso_end_hint: str):
     """
-    Call normalize.parse_datetime_range with whatever signature your local file provides.
-    Try keyword args first (newer), then fallback to positional-only (older).
+    Use whatever signature normalize.parse_datetime_range supports.
+    Tries keywords first, then falls back to positional.
     """
     try:
         return parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)
@@ -162,10 +158,6 @@ def fetch_rendered_with_context(context, url: str, wait_selector: Optional[str] 
 
 # ---------- Parsers ----------
 def parse_modern_tribe_html(html: str) -> List[Dict]:
-    """
-    Lightweight Modern Tribe (TEC) list/month extraction.
-    REST fallback will fill gaps.
-    """
     items: List[Dict] = []
     soup = BeautifulSoup(html or "", "html.parser")
 
@@ -308,7 +300,7 @@ def normalize_rows(rows: List[Dict], default_duration_minutes: int) -> List[Dict
         iso_end_hint = r.get("iso_end") or ""
         date_text = r.get("date_text") or ""
 
-        # Compatibility wrapper handles both keyword and positional signatures
+        # IMPORTANT: call through wrapper; do NOT pass keyword args directly
         start_dt, end_dt, all_day = _call_parse_datetime_range(date_text, iso_hint, iso_end_hint)
         if not start_dt:
             continue
@@ -484,7 +476,6 @@ def main() -> None:
                 stype = (s.type or "").lower()
 
                 if stype == "ics":
-                    # ICS direct ingest (defensive)
                     headers = {"User-Agent": UA, "Accept": "text/calendar, text/plain, */*"}
                     r = requests.get(s.url, headers=headers, timeout=REQ_TIMEOUT)
                     r.raise_for_status()
@@ -508,10 +499,10 @@ def main() -> None:
                     static_html = fetch_static(s.url)
                     snap_rel = snapshot_html(s.name, static_html, rendered=False)
 
-                    # Try HTML parse first
+                    # Try static parse
                     rows = parse_by_type(stype, static_html)
 
-                    # If none found, try rendered (Playwright) when available
+                    # Try rendered if needed
                     if len(rows) == 0 and context is not None:
                         try:
                             rendered_html = fetch_rendered_with_context(context, s.url, s.wait_selector)
@@ -521,7 +512,7 @@ def main() -> None:
                             snap_rendered_rel = snapshot_html(s.name, rendered_html, rendered=True)
                             rows = parse_by_type(stype, rendered_html)
 
-                    # TEC REST fallback if still nothing; 404 means API not present (not fatal)
+                    # TEC REST fallback if still empty
                     if stype in ("modern_tribe", "modern-tribe", "tribe") and len(rows) == 0:
                         try:
                             api_rows = tec_rest_fetch(s.url, months_ahead=12)
@@ -539,16 +530,16 @@ def main() -> None:
                     src_report["fetched"] = 1
                     src_report["parsed"] = len(rows)
 
-                # Normalize -> canonical events
+                # Normalize
                 normalized = normalize_rows(rows, default_duration_minutes=default_duration)
 
-                # Drop past events (older than now - 1 day grace)
+                # Keep future events (with 1-day grace)
                 cutoff = now_utc() - timedelta(days=1)
                 future_only = [
                     e for e in normalized if e["end"].astimezone(timezone.utc) >= cutoff
                 ]
 
-                # De-dupe within this run and merge into store
+                # Merge into store (cross-source de-dupe via stable_id)
                 seen_run = set()
                 new_from_source: List[Dict] = []
                 for e in future_only:
@@ -569,7 +560,7 @@ def main() -> None:
 
                 src_report["added"] = len(new_from_source)
 
-                # Samples
+                # Samples (either new or first 3 normalized)
                 for e in (new_from_source[:3] if new_from_source else normalized[:3]):
                     src_report["samples"].append(
                         {
@@ -580,6 +571,7 @@ def main() -> None:
                         }
                     )
 
+                # Aggregate newly added for digest
                 total_new_items.extend(new_from_source)
 
             except requests.HTTPError as he:
@@ -595,10 +587,10 @@ def main() -> None:
 
             report["sources"].append(src_report)
 
-        # Save updated store
+        # Save store
         save_json(EVENTS_STORE_PATH, events_store)
 
-        # Build unified ICS from the store (future events only)
+        # Build ICS from store (future events only)
         future_events: List[Dict] = []
         for sid, ev in events_store.items():
             try:
@@ -621,18 +613,11 @@ def main() -> None:
 
         build_ics(future_events, ICS_OUT)
 
-        # Build daily digest for just the newly-added items
+        # Build digest for newly added items
         build_daily_digest(total_new_items)
 
     finally:
         # Close Playwright if opened
-        try:
-            if PLAYWRIGHT_AVAILABLE:
-                # We created these only if not None
-                # Avoid NameError by guarding
-                pass
-        except Exception:
-            pass
         try:
             if 'context' in locals() and context is not None:
                 context.close()

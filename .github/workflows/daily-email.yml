@@ -2,17 +2,8 @@ name: Daily ICS build + email
 
 on:
   schedule:
-    - cron: "0 13 * * *"  # 8:00 AM America/Chicago (~13:00 UTC during CDT)
-  workflow_dispatch:
-    inputs:
-      force_test_email:
-        description: "Force send a test email (creates a dummy digest)"
-        required: true
-        default: "false"
-      test_note:
-        description: "Optional note to include in the test email"
-        required: false
-        default: "test email"
+    - cron: "0 13 * * *"  # 8:00 AM America/Chicago
+  workflow_dispatch: {}
 
 jobs:
   build_and_email:
@@ -32,69 +23,34 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        shell: bash
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
       - name: Build ICS and digest
-        shell: bash
         run: python src/main.py
 
-      - name: Show new items (optional)
-        shell: bash
-        run: |
-          if [ -f state/new_items.json ]; then
-            echo "New items:"
-            cat state/new_items.json
-          else
-            echo "No new items produced by main.py."
-          fi
-
-      - name: Force test digest if requested
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force_test_email == 'true' }}
-        shell: bash
-        env:
-          TEST_NOTE: ${{ github.event.inputs.test_note }}
-        run: |
-          mkdir -p state
-          NOW_CHI=$(date +"%Y-%m-%d %I:%M %p %Z")
-          TODAY=$(date +"%Y-%m-%d")
-
-          cat > state/daily_digest.txt <<EOF
-New Northwoods Events added today (TEST):
-
-$TODAY
-  Source: Test Harness
-    • Example Event @ Anywhere, WI
-      $NOW_CHI - $NOW_CHI
-      https://dsundt.github.io/northwoods-events/northwoods.ics
-
-Note: ${TEST_NOTE}
-EOF
-
-          cp state/daily_digest.txt state/daily_digest.html
-
-          NOW_Z=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          cat > state/new_items.json <<EOF
-[
-  {
-    "title": "Example Event",
-    "start": "$NOW_Z",
-    "end": "$NOW_Z",
-    "location": "Anywhere, WI",
-    "url": "https://dsundt.github.io/northwoods-events/northwoods.ics",
-    "source": "Test Harness",
-    "all_day": false
-  }
-]
-EOF
-
       - name: Commit updated ICS & state (if changed)
-        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/northwoods.ics state/*.json state/*.txt state/*.html 2>/dev/null || true
-          git
+          git diff --cached --quiet || git commit -m "Daily update: ICS + state"
+          git push || true
+
+      - name: Send email digest
+        if: ${{ hashFiles('state/daily_digest.txt') != '' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: Northwoods Events - New items
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          content_type: text/plain
+          body: ${{ github.workspace }}/state/daily_digest.txt
+          attachments: |
+            state/new_items.json

@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-26T19:24:15.521436-05:00",
+  "when": "2025-08-26T20:30:15.704219-05:00",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -261,22 +261,22 @@
       "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 11,
-      "parsed": 11,
-      "added": 11,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 11,
       "samples": []
     },
     {
       "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (ICS)",
       "url": "https://sayner-starlake-cloverland.org/events/?ical=1",
       "fetched": 11,
-      "parsed": 11,
-      "added": 11,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 11,
       "samples": []
     },
     {
@@ -308,11 +308,11 @@
       "name": "Presque Isle Chamber (Modern Tribe)",
       "url": "https://presqueisle.com/events/",
       "fetched": 104,
-      "parsed": 32,
-      "added": 32,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 36,
       "skipped_nodate": 0,
-      "skipped_dupe": 36,
+      "skipped_dupe": 68,
       "samples": [
         {
           "reason": "past",
@@ -350,11 +350,11 @@
       "name": "Presque Isle Chamber (ICS)",
       "url": "https://presqueisle.com/events/?ical=1",
       "fetched": 6,
-      "parsed": 6,
-      "added": 6,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 6,
       "samples": []
     }
   ]

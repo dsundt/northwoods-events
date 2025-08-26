@@ -1,445 +1,626 @@
+# -*- coding: utf-8 -*-
+"""
+Northwoods Events – main aggregation runner.
+
+Features:
+- Loads sources from src/sources.yaml
+- Fetches HTML (and optionally rendered HTML via Playwright if available)
+- Parses events for:
+    * Modern Tribe (TEC) – HTML, with REST fallback
+    * GrowthZone – basic listings
+    * Ai1EC – via parse_ai1ec
+    * Travel Wisconsin widget – via parse_travelwi (if present)
+    * ICS sources – direct ICS ingest
+- Normalizes & de-dupes across sources and runs
+- Writes:
+    * docs/northwoods.ics (unified ICS)
+    * state/events.json (persistent master store)
+    * state/last_run_report.json (per-source stats)
+    * state/new_items.json + state/daily_digest.{txt,html} (for email)
+"""
+
+from __future__ import annotations
+
 import json
 import os
-from collections import defaultdict
-from datetime import datetime
-from urllib.parse import urljoin, urlparse
+import sys
+import time
+import traceback
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-import pytz
+import requests
 import yaml
-from bs4 import BeautifulSoup  # iframe discovery
+from bs4 import BeautifulSoup
 
-from fetch import get                           # static HTTP fetch -> (html, final_url, status)
-from render import render_url                   # headless render -> (html, final_url)
-from ics_fetch import get_ics_text              # resilient ICS fetcher (optional)
-from parse_modern_tribe import parse as parse_mt
-from parse_growthzone import parse as parse_gz
-from parse_travelwi import parse as parse_travelwi
-from parse_ics import parse as parse_ics
-from normalize import clean_text, parse_datetime_range
-from dedupe import stable_id
-from icsbuild import build_ics
-from state_store import load_events, save_events, merge_events, to_runtime_events
+# Local modules (must exist)
+from normalize import clean_text, parse_datetime_range  # your existing normalizer
+from icsbuild import build_ics                           # your existing ICS builder
+from dedupe import stable_id                             # upgraded dedupe recommended
+from tec_rest import fetch_events as tec_rest_fetch      # new TEC v6 REST fallback
+from parse_ai1ec import parse_ai1ec                      # new Ai1EC parser
 
-ROOT = os.path.dirname(os.path.dirname(__file__))
-STATE = os.path.join(ROOT, "state", "seen.json")
-EVENTS_STORE = os.path.join(ROOT, "state", "events.json")
-ICS_OUT = os.path.join(ROOT, "docs", "northwoods.ics")
-REPORT = os.path.join(ROOT, "state", "last_run_report.json")
-SNAPDIR = os.path.join(ROOT, "state", "snapshots")
-DIGEST_TXT = os.path.join(ROOT, "state", "daily_digest.txt")
-DIGEST_HTML = os.path.join(ROOT, "state", "daily_digest.html")
-NEW_ITEMS_JSON = os.path.join(ROOT, "state", "new_items.json")
+# Optional: Travel Wisconsin parser (only if you've added it)
+try:
+    from parse_travelwi import parse_travelwi  # noqa
+except Exception:
+    parse_travelwi = None  # type: ignore
+
+# Optional: Playwright (rendered HTML). Code guards if not installed.
+PLAYWRIGHT_AVAILABLE = False
+try:
+    from playwright.sync_api import sync_playwright
+    PLAYWRIGHT_AVAILABLE = True
+except Exception:
+    PLAYWRIGHT_AVAILABLE = False
+
+# ---------- Paths ----------
+ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = ROOT / "src"
+DOCS_DIR = ROOT / "docs"
+STATE_DIR = ROOT / "state"
+SNAP_DIR = STATE_DIR / "snapshots"
+
+DOCS_DIR.mkdir(parents=True, exist_ok=True)
+STATE_DIR.mkdir(parents=True, exist_ok=True)
+SNAP_DIR.mkdir(parents=True, exist_ok=True)
+
+ICS_OUT = DOCS_DIR / "northwoods.ics"
+EVENTS_STORE_PATH = STATE_DIR / "events.json"
+LAST_RUN_REPORT = STATE_DIR / "last_run_report.json"
+NEW_ITEMS_JSON = STATE_DIR / "new_items.json"
+DIGEST_TXT = STATE_DIR / "daily_digest.txt"
+DIGEST_HTML = STATE_DIR / "daily_digest.html"
+
+SOURCES_YAML = SRC_DIR / "sources.yaml"
+
+# ---------- Helpers / Types ----------
+CHI = timezone(timedelta(hours=-5))  # America/Chicago (CDT). For absolute correctness, you can use zoneinfo if needed.
+
+UA = "northwoods-events/1.0 (+github actions; https://github.com/dsundt/northwoods-events)"
+REQ_TIMEOUT = 30
+
+@dataclass
+class Source:
+    name: str
+    type: str
+    url: str
+    wait_selector: Optional[str] = None
+    ics_family: Optional[str] = None  # for ICS hints
+    extra: Dict[str, Any] = None
 
 
-def load_yaml():
-    with open(os.path.join(ROOT, "src", "sources.yaml"), "r", encoding="utf-8") as f:
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def load_yaml(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
-def load_seen():
-    if not os.path.exists(STATE):
-        return {}
-    with open(STATE, "r", encoding="utf-8") as f:
-        return json.load(f)
+def save_json(path: Path, data: Any) -> None:
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
 
 
-def save_seen(seen):
-    with open(STATE, "w", encoding="utf-8") as f:
-        json.dump(seen, f, indent=2, sort_keys=True)
+def read_json(path: Path, default: Any) -> Any:
+    if not path.exists():
+        return default
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default
 
 
-def absolutize(url, base_url):
-    if url.startswith(("http://", "https://")):
-        return url
-    return urljoin(base_url, url)
+def snapshot_html(name: str, raw_html: str, rendered: bool = False) -> str:
+    safe = name.lower().replace(" ", "_").replace("/", "_").replace("&", "and")
+    suffix = ".rendered.html" if rendered else ".html"
+    out = SNAP_DIR / f"{safe}{suffix}"
+    out.write_text(raw_html or "", encoding="utf-8", errors="ignore")
+    return str(out.relative_to(ROOT))
 
 
-def _slugify(name: str) -> str:
-    return (
-        name.lower()
-        .replace(" ", "_")
-        .replace("(", "")
-        .replace(")", "")
-        .replace("–", "-")
-        .replace("—", "-")
-        .replace("&", "and")
-        .replace(",", "")
-    )
+# ---------- Fetchers ----------
+def fetch_static(url: str, referer: Optional[str] = None) -> str:
+    headers = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml", "Accept-Language": "en-US,en;q=0.9"}
+    if referer:
+        headers["Referer"] = referer
+    r = requests.get(url, headers=headers, timeout=REQ_TIMEOUT)
+    r.raise_for_status()
+    return r.text
 
 
-def _guess_kind_from_url(url: str) -> str:
+def fetch_rendered(url: str, wait_selector: Optional[str] = None) -> str:
+    """Render with Playwright if available; otherwise return empty string."""
+    if not PLAYWRIGHT_AVAILABLE:
+        return ""
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+            context = browser.new_context(user_agent=UA, java_script_enabled=True)
+            page = context.new_page()
+            page.set_default_timeout(30000)
+            page.goto(url, wait_until="domcontentloaded")
+            if wait_selector:
+                try:
+                    page.wait_for_selector(wait_selector, state="visible", timeout=15000)
+                except Exception:
+                    # last resort: wait a bit more; some TEC apps lazy-load
+                    page.wait_for_timeout(3000)
+            html = page.content()
+            browser.close()
+            return html
+    except Exception:
+        return ""
+
+
+# ---------- Parsers ----------
+def parse_modern_tribe_html(html: str) -> List[Dict]:
     """
-    Heuristic: decide which parser to use based on the URL.
-    - travelwisconsin.com -> TravelWI widget
-    - business.* / chamber / /events/ -> GrowthZone/ChamberMaster
-    - otherwise -> Modern Tribe (The Events Calendar)
+    Lightweight Modern Tribe (TEC) list/month event extraction from HTML.
+    REST fallback will catch what's missed.
     """
-    host = urlparse(url).netloc.lower()
-    path = urlparse(url).path.lower()
+    items: List[Dict] = []
+    soup = BeautifulSoup(html or "", "html.parser")
 
-    if "travelwisconsin.com" in host:
-        return "travelwi"
-    if "business." in host or "chamber" in host or "/events/" in path:
-        return "growthzone"
-    return "modern_tribe"
+    # List view items
+    nodes = soup.select(".tribe-events-calendar-list__event, .tribe-events-calendar-month__calendar-event")
+    if not nodes:
+        # Some older skins
+        nodes = soup.select(".tribe-event, .type-tribe_events")
+
+    for n in nodes:
+        # title + link
+        a = n.select_one("a.tribe-events-calendar-list__event-title-link, a.tribe-event-url, h3 a, .tribe-events-calendar-event__link, a")
+        title = (a.get_text(strip=True) if a else "").strip()
+        url = (a["href"].strip() if a and a.has_attr("href") else "")
+
+        # date text
+        dt = n.select_one("time, .tribe-events-calendar-list__event-date, .tribe-event-date-start")
+        date_text = (dt.get_text(" ", strip=True) if dt else "").strip()
+
+        # venue text
+        venue = n.select_one(".tribe-events-venue, .tribe-venue, .tribe-events-calendar-list__event-venue, .tribe-events-venue-details")
+        venue_text = (venue.get_text(" ", strip=True) if venue else "").strip()
+
+        if title:
+            items.append({
+                "title": title,
+                "url": url,
+                "date_text": date_text,
+                "venue_text": venue_text,
+                "iso_datetime": "",
+                "iso_end": "",
+            })
+    return items
 
 
-def _parse_by_type(kind: str, html_or_text: str):
-    if kind == "modern_tribe":
-        return parse_mt(html_or_text)
-    if kind == "growthzone":
-        return parse_gz(html_or_text)
-    if kind in ("travelwi", "travelwi_widget"):
-        return parse_travelwi(html_or_text)
-    if kind == "ics":
-        return parse_ics(html_or_text)
+def parse_growthzone_html(html: str) -> List[Dict]:
+    """Very simple GrowthZone/ChamberMaster scraper."""
+    items: List[Dict] = []
+    soup = BeautifulSoup(html or "", "html.parser")
+    cards = soup.select(".mn-event, .mn-event-card, .event, .listing .item, .mn-calendar .event")
+    for n in cards:
+        a = n.select_one("a")
+        title = (a.get_text(strip=True) if a else "").strip()
+        url = (a["href"].strip() if a and a.has_attr("href") else "")
+        dateblock = n.select_one(".date, .mn-event-date, time, .when, .datetime")
+        date_text = (dateblock.get_text(" ", strip=True) if dateblock else "").strip()
+        venueblock = n.select_one(".venue, .location, .where, .mn-event-location")
+        venue_text = (venueblock.get_text(" ", strip=True) if venueblock else "").strip()
+        if title:
+            items.append({
+                "title": title,
+                "url": url,
+                "date_text": date_text,
+                "venue_text": venue_text,
+                "iso_datetime": "",
+                "iso_end": "",
+            })
+    return items
+
+
+def parse_by_type(kind: str, html: str) -> List[Dict]:
+    k = (kind or "").lower()
+    if k in ("modern_tribe", "modern-tribe", "tribe"):
+        return parse_modern_tribe_html(html)
+    if k in ("growthzone", "chambermaster"):
+        return parse_growthzone_html(html)
+    if k in ("ai1ec", "all_in_one", "all-in-one"):
+        return parse_ai1ec(html)
+    if k in ("travelwi", "travelwi_widget") and parse_travelwi is not None:
+        return parse_travelwi(html)  # type: ignore
     return []
 
 
-BLOCKED_IFRAME_HOSTS = (
-    "googletagmanager.com",
-    "google.com",
-    "www.google.com",
-    "facebook.com",
-    "www.facebook.com",
-    "twitter.com",
-    "www.twitter.com",
-    "youtube.com",
-    "www.youtube.com",
-)
-
-
-def _extract_iframe_srcs(html: str, base_url: str):
+# ---------- ICS ingest ----------
+def ingest_ics(text: str) -> List[Dict]:
     """
-    Pull absolute iframe src URLs from HTML, ignoring empty/about:blank/data:
-    and common analytics/social iframes.
+    Parse ICS text into normalized event rows (title, url, iso_datetime, iso_end, etc.)
+    We keep iso_datetime/iso_end for precise times and set date_text='' so normalizer won't re-parse.
     """
-    out = []
-    soup = BeautifulSoup(html or "", "lxml")
-    for fr in soup.find_all("iframe"):
-        src = (fr.get("src") or "").strip()
-        if not src or src.startswith(("about:", "data:")):
-            continue
-        abs_src = absolutize(src, base_url)
-        host = urlparse(abs_src).netloc.lower()
-        if any(host.endswith(b) for b in BLOCKED_IFRAME_HOSTS):
-            continue
-        out.append(abs_src)
-    if out:
-        print("IFRAMES FOUND:", out)
-    return list(dict.fromkeys(out))  # de-dup preserve order
-
-
-def _format_dt_local(dt: datetime, tzname: str) -> str:
-    # display helper for digest
-    tz = pytz.timezone(tzname)
-    local = dt.astimezone(tz)
-    return local.strftime("%Y-%m-%d (%a) %I:%M %p %Z")
-
-
-def _build_digest(new_items: list, tzname: str) -> tuple[str, str]:
-    """
-    Build plain-text and HTML digests for the email, grouped by date (YYYY-MM-DD) and source.
-    new_items: list of events dicts with 'title','start','end','location','url','source','all_day'
-    """
-    if not new_items:
-        return "", ""
-
-    by_date = defaultdict(list)
-    tz = pytz.timezone(tzname)
-    for e in new_items:
-        key = e["start"].astimezone(tz).strftime("%Y-%m-%d")
-        by_date[key].append(e)
-
-    # sort dates and items
-    ordered_dates = sorted(by_date.keys())
-    lines = []
-    html = []
-    lines.append("New Northwoods Events added today:\n")
-    html.append("<h2>New Northwoods Events added today</h2>")
-
-    for d in ordered_dates:
-        lines.append(f"{d}")
-        html.append(f"<h3>{d}</h3><ul>")
-        # group by source within the date for readability
-        by_source = defaultdict(list)
-        for e in sorted(by_date[d], key=lambda x: (x.get('source',''), x["start"])):
-            by_source[e.get("source","Unknown")].append(e)
-        for src, items in by_source.items():
-            lines.append(f"  Source: {src}")
-            html.append(f"<li><strong>Source:</strong> {src}<ul>")
-            for e in items:
-                when = "All-day" if e.get("all_day") else f"{_format_dt_local(e['start'], tzname)} – {_format_dt_local(e['end'], tzname)}"
-                loc = f" @ {e['location']}" if e.get("location") else ""
-                url = e.get("url") or ""
-                lines.append(f"    • {e['title']}{loc}")
-                lines.append(f"      {when}")
-                if url:
-                    lines.append(f"      {url}")
-                html.append("<li>")
-                html.append(f"<div><strong>{e['title']}</strong>{(' @ ' + e['location']) if e.get('location') else ''}</div>")
-                html.append(f"<div>{when}</div>")
-                if url:
-                    html.append(f'<div><a href="{url}">{url}</a></div>')
-                html.append("</li>")
-            html.append("</ul></li>")
-        html.append("</ul>")
-
-    return "\n".join(lines) + "\n", "\n".join(html)
-
-
-def main():
-    cfg = load_yaml()
-    tzname = cfg.get("timezone", "America/Chicago")
-    default_minutes = int(cfg.get("default_duration_minutes", 60))
-
-    # initialize dedupe and persistent event store BEFORE crawling
-    seen = load_seen()
-    events_store = load_events(EVENTS_STORE)
-
-    tz_local = pytz.timezone(tzname)
-    now = tz_local.localize(datetime.now())
-
-    os.makedirs(os.path.join(ROOT, "docs"), exist_ok=True)
-    os.makedirs(os.path.join(ROOT, "state"), exist_ok=True)
-    os.makedirs(SNAPDIR, exist_ok=True)
-
-    collected = []
-    report = {"when": now.isoformat(), "sources": []}
-
-    for s in cfg["sources"]:
-        src_report = {
-            "name": s["name"], "url": s["url"],
-            "fetched": 0, "parsed": 0, "added": 0,
-            "skipped_past": 0, "skipped_nodate": 0, "skipped_dupe": 0,
-            "samples": []
-        }
-
+    from ics import Calendar
+    rows: List[Dict] = []
+    cal = Calendar(text)
+    for ev in cal.events:
+        title = clean_text(getattr(ev, "name", "") or "")
+        loc = clean_text(getattr(ev, "location", "") or "")
+        link = ""
         try:
-            rows = []
+            link = getattr(ev, "url", "") or ""
+        except Exception:
+            link = ""
+        start = ev.begin
+        end = ev.end
+        iso_start = ""
+        iso_end = ""
+        try:
+            if start:
+                iso_start = start.datetime.astimezone(timezone.utc).isoformat()
+            if end:
+                iso_end = end.datetime.astimezone(timezone.utc).isoformat()
+        except Exception:
+            pass
+        if title and iso_start:
+            rows.append({
+                "title": title,
+                "url": link,
+                "date_text": "",
+                "venue_text": loc,
+                "iso_datetime": iso_start,
+                "iso_end": iso_end,
+            })
+    return rows
 
-            if s["type"] == "ics":
-                # Robust ICS fetch (tries alternates + proper headers)
-                fam = s.get("ics_family") or ("growthzone" if "business." in s["url"] else "modern_tribe")
-                ics_text = get_ics_text(s["url"], fam)
-                rows = _parse_by_type("ics", ics_text)
-                src_report["fetched"] = len(rows)
 
-            else:
-                # 1) STATIC HTML
-                html_static, final_url_static, status = get(s["url"])
-                rows = _parse_by_type(s["type"], html_static)
-
-                # Discover iframes in static HTML
-                iframe_srcs = _extract_iframe_srcs(html_static, final_url_static)
-
-                # 2) RENDERED HTML (Playwright) if needed
-                if not rows:
-                    try:
-                        wait_sel = s.get("wait_selector")
-                        html_dyn, final_url_dyn = render_url(
-                            s["url"],
-                            wait_selector=wait_sel,
-                            timeout_ms=25000
-                        )
-                        more = _parse_by_type(s["type"], html_dyn)
-                        rows.extend(more)
-
-                        # Save rendered snapshot
-                        slug = _slugify(s["name"])
-                        snap_path_dyn = os.path.join(SNAPDIR, f"{slug}.rendered.html")
-                        with open(snap_path_dyn, "w", encoding="utf-8") as f:
-                            f.write(f"<!-- URL: {s['url']} | Final: {final_url_dyn} (rendered) -->\n")
-                            f.write(html_dyn[:300000])
-                        src_report["snapshot_rendered"] = os.path.relpath(snap_path_dyn, ROOT)
-
-                        # Also collect iframes from rendered page (often added by JS)
-                        iframe_srcs += _extract_iframe_srcs(html_dyn, final_url_dyn)
-                        iframe_srcs = list(dict.fromkeys(iframe_srcs))
-                    except Exception as e:
-                        src_report["render_error"] = repr(e)
-
-                # 3) IF IFAME(S) EXIST, RENDER + PARSE THEM
-                frame_rows = []
-                for i, fr_url in enumerate(iframe_srcs[:5]):  # safety cap
-                    try:
-                        host = urlparse(fr_url).netloc.lower()
-                        wait_sel = None
-                        # Host-specific waits
-                        if "travelwisconsin.com" in host:
-                            wait_sel = ".event__list li.event__item"
-
-                        fr_html, fr_final = render_url(fr_url, wait_selector=wait_sel, timeout_ms=25000)
-                        kind = _guess_kind_from_url(fr_final)
-                        parsed = _parse_by_type(kind, fr_html)
-
-                        # Absolutize links relative to the IFRAME base
-                        for rr in parsed:
-                            if rr.get("url"):
-                                rr["url"] = urljoin(fr_final, rr["url"])
-
-                        frame_rows.extend(parsed)
-
-                        # Snapshot frame for debugging
-                        slug = _slugify(s["name"])
-                        fr_slug = _slugify(urlparse(fr_final).netloc + urlparse(fr_final).path.replace("/", "_"))
-                        snap_path_fr = os.path.join(SNAPDIR, f"{slug}.frame{i+1}.{fr_slug}.html")
-                        with open(snap_path_fr, "w", encoding="utf-8") as f:
-                            f.write(f"<!-- IFRAME: {fr_url} | Final: {fr_final} | Kind: {kind} -->\n")
-                            f.write(fr_html[:300000])
-                        src_report[f"snapshot_frame_{i+1}"] = os.path.relpath(snap_path_fr, ROOT)
-                    except Exception as e:
-                        src_report[f"frame_{i+1}_error"] = repr(e)
-
-                rows.extend(frame_rows)
-
-                src_report["fetched"] = len(rows)
-
-                # If still zero, save static snapshot for debugging
-                if len(rows) == 0:
-                    slug = _slugify(s["name"])
-                    snap_path = os.path.join(SNAPDIR, f"{slug}.html")
-                    try:
-                        with open(snap_path, "w", encoding="utf-8") as f:
-                            f.write(f"<!-- URL: {s['url']} | Final: {final_url_static} | Status: {status} -->\n")
-                            f.write(html_static[:200000])
-                        src_report["snapshot"] = os.path.relpath(snap_path, ROOT)
-                    except Exception:
-                        pass
-
-            # 4) Post-parse normalization & filtering
-            for r in rows:
-                title = clean_text(r.get("title"))
-                url = absolutize(r.get("url", ""), s["url"])
-                location = clean_text(r.get("venue_text") or "")
-                date_text = clean_text(r.get("date_text") or "")
-                iso_from_attr = r.get("iso_datetime")
-                iso_end = r.get("iso_end")
-
-                start, end, all_day = parse_datetime_range(
-                    date_text, tzname, default_minutes,
-                    iso_hint=iso_from_attr, iso_end_hint=iso_end
-                )
-                if not start or not end:
-                    src_report["skipped_nodate"] += 1
-                    if len(src_report["samples"]) < 5:
-                        src_report["samples"].append({
-                            "reason": "nodate",
-                            "title": title,
-                            "date_text": date_text,
-                            "iso_hint": iso_from_attr
-                        })
-                    continue
-
-                # Future or today only
-                if start.replace(hour=0, minute=0, second=0, microsecond=0) < now.replace(hour=0, minute=0, second=0, microsecond=0):
-                    src_report["skipped_past"] += 1
-                    if len(src_report["samples"]) < 5:
-                        src_report["samples"].append({
-                            "reason": "past",
-                            "title": title,
-                            "start": start.isoformat(),
-                            "date_text": date_text
-                        })
-                    continue
-
-                sid = stable_id(title, start.isoformat(), location, url)
-                if sid in seen:
-                    src_report["skipped_dupe"] += 1
-                    continue
-
-                collected.append({
-                    "title": title,
-                    "description": "",
-                    "location": location,
-                    "url": url,
-                    "start": start,
-                    "end": end,
-                    "all_day": all_day,
-                    "sid": sid,
-                    "source": s["name"],
-                })
-                seen[sid] = {"added": now.isoformat(), "source": s["name"]}
-                src_report["added"] += 1
-                src_report["parsed"] += 1
-
-        except Exception as e:
-            src_report["error"] = repr(e)
-
-        report["sources"].append(src_report)
-
-    # Identify NEW items for this run (those not in persistent store yet)
-    prev_sids = set(events_store.keys())
-    new_items = [e for e in collected if e["sid"] not in prev_sids]
-
-    # 5) Build ICS from persistent merged store
-    events_store = merge_events(events_store, collected, now)
-    save_events(EVENTS_STORE, events_store)
-    runtime_events = to_runtime_events(events_store)
-    build_ics(runtime_events, ICS_OUT)
-
-    # 6) Persist seen + report
-    save_seen(seen)
-    with open(REPORT, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2)
-
-    # 7) Create a digest ONLY if we have new items
-    if new_items:
-        # Write JSON for programmatic use
-        with open(NEW_ITEMS_JSON, "w", encoding="utf-8") as f:
-            json.dump([
-                {
-                    "title": e["title"],
-                    "start": e["start"].isoformat(),
-                    "end": e["end"].isoformat(),
-                    "location": e.get("location",""),
-                    "url": e.get("url",""),
-                    "source": e.get("source",""),
-                    "all_day": bool(e.get("all_day", False)),
-                }
-                for e in new_items
-            ], f, indent=2)
-
-        # Write TXT and HTML digests for email body
-        txt, html = _build_digest(new_items, tzname)
-        with open(DIGEST_TXT, "w", encoding="utf-8") as f:
-            f.write(txt)
-        with open(DIGEST_HTML, "w", encoding="utf-8") as f:
-            f.write(html)
-        print(f"NEW_ITEMS_COUNT: {len(new_items)}")
-    else:
-        # Ensure old digests (if any) don't trigger email on a no-change day
-        for p in (NEW_ITEMS_JSON, DIGEST_TXT, DIGEST_HTML):
-            try:
-                if os.path.exists(p):
-                    os.remove(p)
-            except Exception:
-                pass
-        print("NEW_ITEMS_COUNT: 0")
-
-    # 8) Print a short summary for Actions logs
-    total_added = sum(s["added"] for s in report["sources"])
-    summary = {
-        "total_added": total_added,
-        "per_source": [
-            {
-                "name": s["name"],
-                "fetched": s["fetched"],
-                "parsed": s["parsed"],
-                "added": s["added"],
-                "skipped_past": s["skipped_past"],
-                "skipped_nodate": s["skipped_nodate"],
-                "skipped_dupe": s["skipped_dupe"],
-                **({"snapshot": s.get("snapshot")} if s.get("snapshot") else {}),
-                **({"snapshot_rendered": s.get("snapshot_rendered")} if s.get("snapshot_rendered") else {}),
-                **({k: s[k] for k in s.keys() if k.startswith("snapshot_frame_")} if any(k.startswith("snapshot_frame_") for k in s.keys()) else {}),
-                **({k: s[k] for k in s.keys() if k.endswith("_error") and k.startswith("frame_")} if any(k.endswith("_error") and k.startswith("frame_") for k in s.keys()) else {}),
-                **({"error": s.get("error")} if s.get("error") else {}),
-            }
-            for s in report["sources"]
-        ]
+# ---------- Normalization pipeline ----------
+def normalize_rows(rows: List[Dict], default_duration_minutes: int) -> List[Dict]:
+    """
+    Turn raw rows into canonical event dicts used by store/ICS builder:
+    {
+      "id": <stable id>,
+      "title": str,
+      "start": datetime (tz-aware, UTC),
+      "end": datetime (tz-aware, UTC),
+      "location": str,
+      "url": str,
+      "all_day": bool,
+      "source": str
     }
-    print("SUMMARY:", json.dumps(summary, indent=2))
+    """
+    out: List[Dict] = []
+    for r in rows:
+        title = clean_text(r.get("title", ""))
+        url = r.get("url", "") or ""
+        venue_text = clean_text(r.get("venue_text", ""))
+
+        iso_hint = r.get("iso_datetime") or ""
+        iso_end_hint = r.get("iso_end") or ""
+        date_text = r.get("date_text") or ""
+
+        # parse date using your robust normalize.parse_datetime_range
+        start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)
+
+        if not start_dt:
+            # Skip if no start can be determined
+            continue
+
+        # If no end, synthesize using default duration (but ensure end > start)
+        if not end_dt:
+            end_dt = start_dt + timedelta(minutes=default_duration_minutes)
+
+        if end_dt <= start_dt:
+            # Ensure valid interval
+            end_dt = start_dt + timedelta(minutes=max(default_duration_minutes, 30))
+
+        ev = {
+            "title": title,
+            "start": start_dt,
+            "end": end_dt,
+            "location": venue_text,
+            "url": url,
+            "all_day": bool(all_day),
+        }
+        out.append(ev)
+    return out
+
+
+# ---------- Store / Merge / Digest ----------
+def load_events_store() -> Dict[str, Dict]:
+    store = read_json(EVENTS_STORE_PATH, default={})
+    # store is {id: event dict}, where datetimes are ISO strings; convert to Python for use if needed later
+    return store
+
+
+def serialize_event_for_store(ev: Dict[str, Any]) -> Dict[str, Any]:
+    j = dict(ev)
+    if isinstance(j.get("start"), datetime):
+        j["start"] = j["start"].astimezone(timezone.utc).isoformat()
+    if isinstance(j.get("end"), datetime):
+        j["end"] = j["end"].astimezone(timezone.utc).isoformat()
+    return j
+
+
+def merge_events(store: Dict[str, Dict], new_events: List[Dict], source_name: str) -> Tuple[Dict[str, Dict], List[Dict]]:
+    """
+    Merge new normalized events into the store.
+    Returns (updated_store, new_items_added_list)
+    """
+    added: List[Dict] = []
+    for e in new_events:
+        sid = stable_id(e["title"], e["start"].astimezone(timezone.utc).isoformat(), e.get("location", ""), e.get("url", ""))
+        if sid in store:
+            continue
+        ev = dict(e)
+        ev["source"] = source_name
+        store[sid] = serialize_event_for_store(ev)
+        added.append(ev)
+    return store, added
+
+
+def build_daily_digest(new_items: List[Dict]) -> None:
+    """Write state/new_items.json and state/daily_digest.{txt,html}."""
+    if not new_items:
+        # Clean up any prior digest so email step skips sending
+        for p in (NEW_ITEMS_JSON, DIGEST_TXT, DIGEST_HTML):
+            if p.exists():
+                try:
+                    p.unlink()
+                except Exception:
+                    pass
+        return
+
+    # Save machine-readable JSON
+    safe_items = []
+    for e in new_items:
+        safe_items.append({
+            "title": e["title"],
+            "start": e["start"].astimezone(timezone.utc).isoformat(),
+            "end": e["end"].astimezone(timezone.utc).isoformat(),
+            "location": e.get("location", ""),
+            "url": e.get("url", ""),
+            "source": e.get("source", ""),
+            "all_day": e.get("all_day", False),
+        })
+    save_json(NEW_ITEMS_JSON, safe_items)
+
+    # Human-readable digest
+    today = datetime.now(CHI).strftime("%Y-%m-%d")
+    lines = ["New Northwoods Events added today:\n", f"{today}"]
+    for e in new_items:
+        s_local = e["start"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
+        e_local = e["end"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
+        lines.append(f"  Source: {e.get('source','')}")
+        lines.append(f"    • {e['title']} @ {e.get('location','')}".rstrip())
+        lines.append(f"      {s_local} – {e_local}")
+        if e.get("url"):
+            lines.append(f"      {e['url']}")
+        lines.append("")
+    DIGEST_TXT.write_text("\n".join(lines).strip() + "\n", encoding="utf-8")
+
+    # Minimal HTML version
+    html_parts = [f"<h2>New Northwoods Events added today</h2><h3>{today}</h3><ul>"]
+    for e in new_items:
+        s_local = e["start"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
+        e_local = e["end"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
+        html_parts.append("<li>")
+        html_parts.append(f"<div><strong>Source:</strong> {e.get('source','')}</div>")
+        html_parts.append(f"<div><strong>{e['title']}</strong> @ {e.get('location','')}</div>")
+        html_parts.append(f"<div>{s_local} – {e_local}</div>")
+        if e.get("url"):
+            html_parts.append(f'<div><a href="{e["url"]}">{e["url"]}</a></div>')
+        html_parts.append("</li>")
+    html_parts.append("</ul>")
+    DIGEST_HTML.write_text("\n".join(html_parts), encoding="utf-8")
+
+
+# ---------- Runner ----------
+def main() -> None:
+    start_ts = now_utc()
+
+    cfg = load_yaml(SOURCES_YAML)
+    tzname = cfg.get("timezone", "America/Chicago")
+    default_duration = int(cfg.get("default_duration_minutes", 60))
+    sources_raw = cfg.get("sources", [])
+
+    sources: List[Source] = []
+    for s in sources_raw:
+        sources.append(Source(
+            name=s.get("name"),
+            type=s.get("type"),
+            url=s.get("url"),
+            wait_selector=s.get("wait_selector"),
+            ics_family=s.get("ics_family"),
+            extra={k: v for k, v in s.items() if k not in {"name", "type", "url", "wait_selector", "ics_family"}}
+        ))
+
+    events_store: Dict[str, Dict] = load_events_store()
+    collected: List[Dict] = []
+    total_new_items: List[Dict] = []
+
+    report: Dict[str, Any] = {
+        "when": datetime.now(CHI).isoformat(),
+        "timezone": tzname,
+        "sources": [],
+    }
+
+    # Playwright single context reuse (optional)
+    playwright = None
+    browser = None
+    context = None
+    if PLAYWRIGHT_AVAILABLE:
+        try:
+            p = sync_playwright().start()
+            playwright = p
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+            context = browser.new_context(user_agent=UA, java_script_enabled=True)
+            context.set_default_timeout(30000)
+        except Exception:
+            playwright = None
+            browser = None
+            context = None
+
+    try:
+        for s in sources:
+            src_report = {
+                "name": s.name,
+                "url": s.url,
+                "fetched": 0,
+                "parsed": 0,
+                "added": 0,
+                "skipped_past": 0,
+                "skipped_nodate": 0,
+                "skipped_dupe": 0,
+                "samples": [],
+            }
+            rows: List[Dict] = []
+            static_html = ""
+            rendered_html = ""
+            snap_rel = ""
+            snap_rendered_rel = ""
+
+            try:
+                stype = (s.type or "").lower()
+
+                if stype == "ics":
+                    # ICS direct ingest
+                    headers = {"User-Agent": UA, "Accept": "text/calendar"}
+                    r = requests.get(s.url, headers=headers, timeout=REQ_TIMEOUT)
+                    r.raise_for_status()
+                    txt = r.text
+                    rows = ingest_ics(txt)
+                    src_report["fetched"] = 1
+                    src_report["parsed"] = len(rows)
+
+                else:
+                    # HTML path
+                    static_html = fetch_static(s.url)
+                    snap_rel = snapshot_html(s.name, static_html, rendered=False)
+
+                    # Try HTML parse first
+                    rows = parse_by_type(stype, static_html)
+
+                    # If none found, try rendered (Playwright) when available
+                    if len(rows) == 0 and context is not None:
+                        page = context.new_page()
+                        page.goto(s.url, wait_until="domcontentloaded")
+                        if s.wait_selector:
+                            try:
+                                page.wait_for_selector(s.wait_selector, state="visible", timeout=15000)
+                            except Exception:
+                                page.wait_for_timeout(3000)
+                        rendered_html = page.content()
+                        page.close()
+                        snap_rendered_rel = snapshot_html(s.name, rendered_html, rendered=True)
+                        rows = parse_by_type(stype, rendered_html)
+
+                    # TEC REST fallback if still nothing
+                    if stype in ("modern_tribe", "modern-tribe", "tribe") and len(rows) == 0:
+                        try:
+                            api_rows = tec_rest_fetch(s.url, months_ahead=12)
+                            rows.extend(api_rows)
+                            src_report["rest_fallback"] = True
+                        except Exception as e:
+                            src_report["rest_error"] = repr(e)
+
+                    src_report["fetched"] = 1
+                    src_report["parsed"] = len(rows)
+
+                # Normalize -> canonical events
+                normalized = normalize_rows(rows, default_duration_minutes=default_duration)
+
+                # Drop past events (older than now - 1 day grace)
+                cutoff = now_utc() - timedelta(days=1)
+                future_only = [e for e in normalized if e["end"].astimezone(timezone.utc) >= cutoff]
+
+                # De-dupe across this run AND existing store
+                seen_run = set()
+                new_from_source: List[Dict] = []
+                for e in future_only:
+                    sid = stable_id(e["title"], e["start"].astimezone(timezone.utc).isoformat(), e.get("location", ""), e.get("url", ""))
+                    if sid in seen_run:
+                        src_report["skipped_dupe"] += 1
+                        continue
+                    seen_run.add(sid)
+
+                    # Merge into persistent store
+                    events_store, added_list = merge_events(events_store, [e], s.name)
+                    if added_list:
+                        new_from_source.extend(added_list)
+
+                src_report["added"] = len(new_from_source)
+
+                # Collect some sample titles for report
+                for e in (new_from_source[:3] if new_from_source else normalized[:3]):
+                    src_report["samples"].append({
+                        "title": e["title"],
+                        "start": e["start"].astimezone(timezone.utc).isoformat(),
+                        "location": e.get("location", ""),
+                        "url": e.get("url", ""),
+                    })
+
+                # Accumulate for ICS build (include everything in store at the end)
+                total_new_items.extend(new_from_source)
+
+            except requests.HTTPError as he:
+                src_report["error"] = f"HTTPError({he})"
+            except Exception as ex:
+                src_report["error"] = repr(ex)
+                src_report["traceback"] = traceback.format_exc()
+
+            if snap_rel:
+                src_report["snapshot"] = snap_rel
+            if snap_rendered_rel:
+                src_report["snapshot_rendered"] = snap_rendered_rel
+
+            report["sources"].append(src_report)
+
+        # Save updated store
+        save_json(EVENTS_STORE_PATH, events_store)
+
+        # Build unified ICS from the store (future events only)
+        # Convert store (ISO strings) back to event objects for ICS builder
+        future_events: List[Dict] = []
+        for sid, ev in events_store.items():
+            try:
+                st = datetime.fromisoformat(ev["start"]).astimezone(timezone.utc)
+                en = datetime.fromisoformat(ev["end"]).astimezone(timezone.utc)
+                if en >= (now_utc() - timedelta(days=1)):
+                    future_events.append({
+                        "title": ev["title"],
+                        "start": st,
+                        "end": en,
+                        "location": ev.get("location", ""),
+                        "url": ev.get("url", ""),
+                        "all_day": ev.get("all_day", False),
+                        "source": ev.get("source", ""),
+                    })
+            except Exception:
+                continue
+
+        build_ics(future_events, ICS_OUT)
+
+        # Build daily digest from only the new items detected this run
+        build_daily_digest(total_new_items)
+
+    finally:
+        # Close Playwright if we opened it
+        try:
+            if context is not None:
+                context.close()
+            if browser is not None:
+                browser.close()
+            if playwright is not None:
+                playwright.stop()
+        except Exception:
+            pass
+
+    # Write the run report
+    save_json(LAST_RUN_REPORT, report)
 
 
 if __name__ == "__main__":

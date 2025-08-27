@@ -8,7 +8,7 @@ on:
         type: choice
         required: true
         default: modern_tribe
-        options: [modern_tribe, ai1ec, growthzone, ics]
+        options: [modern_tribe, ai1ec, growthzone, ics, simpleview, squarespace]
       snapshot_pattern:
         description: "Glob for snapshots to list/test"
         type: string
@@ -58,7 +58,7 @@ jobs:
             echo "Directory state/snapshots does not exist."
           fi
 
-      - name: Collect matching files (safe single-line outputs)
+      - name: Collect matching files (safe outputs)
         id: setlist
         shell: bash
         env:
@@ -68,33 +68,29 @@ jobs:
           set -euo pipefail
           echo "Pattern: ${PATTERN}"
           echo "Limit: ${LIMIT}"
-
-          # Build compact JSON with Python to avoid pretty printing
-          FILES_JSON="$(python - <<'PY'
-import glob, json, os
+          python - <<'PY'
+import glob, json, os, sys
 pattern = os.environ.get("PATTERN", "state/snapshots/*.html")
 try:
-    limit = int(os.environ.get("LIMIT", "15"))
+    limit = int(os.environ.get("LIMIT","15"))
 except Exception:
     limit = 15
+
 matches = sorted([p for p in glob.glob(pattern) if os.path.isfile(p)])[:limit]
-# compact, single-line JSON
-print(json.dumps(matches, separators=(",",":")))
-PY
-)"
-          echo "Matched (raw JSON): ${FILES_JSON}"
 
-          # Derive count safely
-          COUNT="$(python - <<'PY'
-import json, os
-print(len(json.loads(os.environ["FILES_JSON"])))
-PY
-)"
-          export FILES_JSON
+print("=== Matched files (limited to %d) ===" % limit)
+if matches:
+    for i, p in enumerate(matches, 1):
+        print(f"{i:3d}. {p}")
+else:
+    print("(no matches)")
 
-          # Write outputs as single-line key=value (no leading spaces!)
-          echo "files_json=${FILES_JSON}" >> "$GITHUB_OUTPUT"
-          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+# Write compact, single-line JSON to GITHUB_OUTPUT
+out = os.environ["GITHUB_OUTPUT"]
+with open(out, "a", encoding="utf-8") as fh:
+    fh.write("files_json=" + json.dumps(matches, separators=(",", ":")) + "\n")
+    fh.write(f"count={len(matches)}\n")
+PY
 
       - name: Pretty list (always)
         shell: bash
@@ -102,19 +98,21 @@ PY
           FILES_JSON: ${{ steps.setlist.outputs.files_json }}
         run: |
           set -euo pipefail
-          echo
-          echo "Pretty list:"
-          if [ -z "${FILES_JSON:-}" ] || [ "${FILES_JSON}" = "[]" ]; then
-            echo "  (no files)"
-          else
-            python - <<'PY'
+          python - <<'PY'
 import json, os
-files = json.loads(os.environ["FILES_JSON"])
-for i, p in enumerate(files, 1):
-    print(f"  {i:2d}) {p}")
+try:
+    files = json.loads(os.environ.get("FILES_JSON", "[]"))
+except Exception as e:
+    print("Could not parse files_json:", e)
+    files = []
+print("\nPretty list:")
+if not files:
+    print("  (no files)")
+else:
+    for i, p in enumerate(files, 1):
+        print(f"  {i:2d}) {p}")
+print()
 PY
-          fi
-          echo
 
       - name: Pick single file (only if run_mode=single)
         id: pick
@@ -127,11 +125,15 @@ PY
           set -euo pipefail
           python - <<'PY'
 import json, os, sys
-files = json.loads(os.environ.get("FILES_JSON","[]"))
+try:
+    files = json.loads(os.environ.get("FILES_JSON","[]"))
+except Exception:
+    files = []
 try:
     idx = int(os.environ.get("INDEX","1"))
 except Exception:
     idx = 1
+
 chosen = ""
 if not files:
     print("No files to choose from.")
@@ -140,8 +142,11 @@ elif 1 <= idx <= len(files):
     print(f"Chosen #{idx}: {chosen}")
 else:
     print(f"Index {idx} out of range 1..{len(files)}")
-with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+
+out = os.environ["GITHUB_OUTPUT"]
+with open(out, "a", encoding="utf-8") as fh:
     fh.write(f"chosen_path={chosen}\n")
+
 if not chosen:
     sys.exit(1)
 PY
@@ -173,7 +178,7 @@ PY
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            pip install requests beautifulsoup4 lxml ics python-dateutil pytz
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
           fi
 
       - name: Show chosen file
@@ -210,8 +215,8 @@ PY
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
-          else:
-            pip install requests beautifulsoup4 lxml ics python-dateutil pytz
+          else
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
           fi
 
       - name: Show file

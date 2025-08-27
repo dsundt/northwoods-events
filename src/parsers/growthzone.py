@@ -4,8 +4,9 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from typing import Iterable, Dict, Any
+
+from normalize import parse_datetime_range, clean_text
 from .utils import absolutize
-from ..normalize import parse_datetime_range, clean_text
 
 DEFAULT_TIMEOUT = 12
 RETRIES = 2
@@ -28,10 +29,8 @@ def parse(html: str, base_url: str) -> Iterable[Dict[str, Any]]:
     GrowthZone calendar: handle server HTML (not the JSON API).
     """
     soup = BeautifulSoup(html, "lxml")
-    # Common GrowthZone listing rows
     rows = soup.select(".gz-list-item, .calendar-item, .event-list-item")
     if not rows:
-        # Some sites lazy-load; as a fallback, allow fetching directly when running “live”
         try:
             live = fetch_html(base_url)
             soup = BeautifulSoup(live, "lxml")

@@ -1,76 +1,112 @@
+# -*- coding: utf-8 -*-
+"""
+Simpleview (DMO) parser.
+- Prefer schema.org JSON-LD Events first.
+- DOM fallback: only accept real event cards/links, reject generic “Read More”, “Events”, “here”.
+"""
+
 from __future__ import annotations
-
-import re
+import json, re
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
-from typing import Iterable, Dict, Any
 
-from normalize import parse_datetime_range, clean_text
-from .utils import absolutize
+BAD_TITLES = re.compile(r"^(read more|events|here)$", re.I)
 
-DATE_RE = re.compile(
-    r"[A-Za-z]{3,9}\s+\d{1,2}(,\s*\d{4})?(\s*@\s*|\s+)\d{1,2}(:\d{2})?\s*(am|pm)?",
-    re.I,
-)
+def _clean(s: str) -> str:
+    return re.sub(r"\s+", " ", (s or "").strip())
 
-def parse(html: str, base_url: str) -> Iterable[Dict[str, Any]]:
-    """
-    Simpleview events list parser (used by many DMO sites like Minocqua, Oneida).
-    """
-    soup = BeautifulSoup(html, "lxml")
+def _coerce_event(obj: Any) -> Optional[Dict[str, Any]]:
+    if not isinstance(obj, dict):
+        return None
+    t = obj.get("@type")
+    if isinstance(t, list):
+        is_event = any(tt.lower() == "event" for tt in map(str, t))
+    else:
+        is_event = (str(t).lower() == "event")
+    if not is_event:
+        return None
+    name = _clean(obj.get("name") or "")
+    url = _clean(obj.get("url") or "")
+    start = _clean(obj.get("startDate") or "")
+    end = _clean(obj.get("endDate") or "")
+    loc = obj.get("location")
+    location = ""
+    if isinstance(loc, dict):
+        location = _clean(loc.get("name") or loc.get("address") or "")
+    if not name or not start:
+        return None
+    if BAD_TITLES.match(name):
+        return None
+    return {
+        "title": name,
+        "url": url,
+        "location": location,
+        "date_text": "",
+        "iso_hint": start,
+        "iso_end_hint": end or "",
+    }
 
-    cards = []
-    cards.extend(soup.select(".event-item, .sv-event, .listing, .v-calendar__event"))
-    cards.extend(soup.select("article.event, li.event"))
-
-    if not cards:
-        for a in soup.select("a[href]"):
-            href = a["href"]
-            if "/event" in href or "/events/" in href:
-                cards.append(a.parent)
-
-    seen = set()
-    for c in cards:
-        a = c.select_one("a[href*='/event']") or c.select_one("a[href*='/events/']") or c.select_one("a")
-        if not a or not a.has_attr("href"):
+def _iter_jsonld_events(soup: BeautifulSoup):
+    for tag in soup.find_all("script", attrs={"type": "application/ld+json"}):
+        txt = (tag.string or tag.get_text() or "").strip()
+        if not txt:
             continue
-        url = absolutize(base_url, a["href"])
-        title = clean_text(a.get_text(" ", strip=True))
-        if not title:
-            h = c.select_one("h2, h3")
-            title = clean_text(h.get_text(" ", strip=True)) if h else title
+        try:
+            data = json.loads(txt)
+        except Exception:
+            continue
+        if isinstance(data, dict) and "@graph" in data and isinstance(data["@graph"], list):
+            for it in data["@graph"]:
+                ev = _coerce_event(it)
+                if ev:
+                    yield ev
+        elif isinstance(data, list):
+            for it in data:
+                ev = _coerce_event(it)
+                if ev:
+                    yield ev
+        elif isinstance(data, dict):
+            ev = _coerce_event(data)
+            if ev:
+                yield ev
 
-        key = (title, url)
+def parse(html: str, base_url: str) -> List[Dict[str, Any]]:
+    soup = BeautifulSoup(html, "lxml")
+    rows: List[Dict[str, Any]] = []
+
+    # 1) JSON-LD first
+    for ev in _iter_jsonld_events(soup):
+        rows.append(ev)
+    if rows:
+        return rows
+
+    # 2) DOM fallback — try common Simpleview cards/listings
+    # Event cards often have links to /event/slug/ OR data-event
+    for a in soup.select('a[href*="/event/"]'):
+        title = _clean(a.get_text())
+        if not title or BAD_TITLES.match(title):
+            continue
+        url = a.get("href") or ""
+        # try to find a datetime near the link
+        container = a.find_parent(["article", "li", "div"]) or soup
+        time_el = container.select_one("time[datetime]")
+        iso = (time_el.get("datetime").strip() if time_el else "")
+        rows.append({
+            "title": title,
+            "url": url,
+            "location": "",
+            "date_text": "",       # rely on iso if present; otherwise main will treat as 2h default
+            "iso_hint": iso,
+            "iso_end_hint": "",
+        })
+
+    # Deduplicate by (title,url,iso_hint)
+    seen = set()
+    deduped = []
+    for r in rows:
+        key = (r["title"], r["url"], r["iso_hint"])
         if key in seen:
             continue
         seen.add(key)
-
-        date_text = ""
-        for sel in [".date", ".event-date", ".sv-date", ".event__date", ".card-date"]:
-            el = c.select_one(sel)
-            if el:
-                date_text = clean_text(el.get_text(" ", strip=True))
-                break
-        if not date_text:
-            txt = clean_text(c.get_text(" ", strip=True))
-            m = DATE_RE.search(txt)
-            if m:
-                date_text = m.group(0)
-
-        start_dt, end_dt, all_day = parse_datetime_range(date_text=date_text, tzname="America/Chicago")
-
-        location = ""
-        for sel in [".venue", ".location", ".event-venue", ".sv-venue"]:
-            el = c.select_one(sel)
-            if el:
-                location = clean_text(el.get_text(" ", strip=True))
-                break
-
-        if title and not url.rstrip("/").endswith("/events/"):
-            yield {
-                "title": title,
-                "url": url,
-                "location": location,
-                "start": start_dt.isoformat(),
-                "end": end_dt.isoformat(),
-                "all_day": all_day,
-            }
+        deduped.append(r)
+    return deduped

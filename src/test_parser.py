@@ -9,19 +9,20 @@ Usage:
 """
 
 import sys
+import json
 from pathlib import Path
 
 # Ensure local src/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from bs4 import BeautifulSoup
-
 from parse_ai1ec import parse_ai1ec
 from main import parse_modern_tribe_html, parse_growthzone_html, ingest_ics
+
 
 def usage():
     print(__doc__)
     sys.exit(1)
+
 
 def main():
     if len(sys.argv) < 3:
@@ -49,12 +50,27 @@ def main():
         print(f"Unknown parser kind: {kind}")
         sys.exit(1)
 
-    print(f"Parsed {len(events)} events from {file_path} using {kind} parser:\n")
-    for i, ev in enumerate(events[:20], 1):
-        print(f"{i:02d}. {ev.get('title')} | {ev.get('iso_datetime') or ev.get('date_text')} | {ev.get('url')}")
+    print(f"\nParsed {len(events)} events from {file_path} using {kind} parser:\n")
 
-    if len(events) > 20:
-        print(f"... {len(events)-20} more events not shown")
+    # Pretty-print all events to log
+    for i, ev in enumerate(events, 1):
+        title = ev.get("title", "")
+        start = ev.get("iso_datetime") or ev.get("date_text", "")
+        loc = ev.get("venue_text") or ev.get("location", "")
+        url = ev.get("url", "")
+        print(f"{i:02d}. {title}")
+        print(f"    Start: {start}")
+        if loc:
+            print(f"    Location: {loc}")
+        if url:
+            print(f"    URL: {url}")
+        print("")
+
+    # Write all events to JSON for artifact upload
+    out_file = Path("parsed_events.json")
+    out_file.write_text(json.dumps(events, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\n✅ Wrote all {len(events)} events to {out_file}\n")
+
 
 if __name__ == "__main__":
     main()

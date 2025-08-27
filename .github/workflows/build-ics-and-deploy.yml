@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Show Python and install deps
+      - name: Show Python & install deps
         run: |
           set -euo pipefail
           python -V
@@ -32,23 +32,8 @@ jobs:
           else
             pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
           fi
-          echo "---- pip freeze (for reproducibility) ----"
+          echo "---- pip freeze (first 200 lines) ----"
           pip freeze | sed -n '1,200p'
-
-      - name: Locate sources.yaml(yml)
-        run: |
-          set -euo pipefail
-          echo "Looking for sources.{yaml,yml} at repo root and in src/..."
-          found=0
-          for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do
-            if [ -f "$p" ]; then
-              echo " - found: $p"
-              found=1
-            fi
-          done
-          if [ $found -eq 0 ]; then
-            echo "::warning::No sources.yaml/yml found at repo root or in src/."
-          fi
 
       - name: Run builder and collect artifacts
         env:
@@ -58,19 +43,26 @@ jobs:
           rm -rf public
           mkdir -p public
 
-          echo "Running: python src/main.py"
           {
             echo "===== BUILD START $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
             echo "CWD: $(pwd)"
             echo "PYTHON: $(python -V)"
             echo "-------------------------------------------"
-            python src/main.py
+            ls -la
             echo "-------------------------------------------"
-            echo "Repo root listing:"
+            if [ -f src/main.py ]; then
+              echo "Running: python src/main.py"
+              python src/main.py
+            else
+              echo "::error::No src/main.py found."
+              exit 2
+            fi
+            echo "-------------------------------------------"
+            echo "Repo root after build:"
             ls -la
             echo "-------------------------------------------"
             if [ -d state ]; then
-              echo "state/ contents (top 200 files):"
+              echo "state/ (top 200 files):"
               find state -type f | sed -n '1,200p'
             else
               echo "NOTE: No state/ directory produced."
@@ -78,7 +70,7 @@ jobs:
             echo "===== BUILD END $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
           } 2>&1 | tee public/build.log
 
-          # If ICS ended up under src/, surface it to repo root
+          # Surface ICS from src/ to root if needed
           if [ -f src/northwoods.ics ] && [ ! -f northwoods.ics ]; then
             cp src/northwoods.ics ./northwoods.ics
           fi
@@ -92,7 +84,7 @@ jobs:
             cp northwoods.ics public/
           fi
 
-          # Create an index page that links to whatever exists
+          # Index
           {
             echo '<!doctype html>'
             echo '<meta charset="utf-8">'
@@ -103,18 +95,20 @@ jobs:
             [ -d public/state ] && echo '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>'
             echo '  <li><a href="build.log">build.log (full console output)</a></li>'
             echo '</ul>'
-            echo '<hr>'
-            echo '<p>Auto-published by GitHub Pages.</p>'
+            echo '<hr><p>Auto-published by GitHub Actions.</p>'
           } > public/index.html
 
           echo "Public artifact contents (top):"
           find public -maxdepth 3 -type f | sed -n '1,200p'
 
-          # Hard fail if nothing meaningful was produced
-          if [ ! -f public/northwoods.ics ] && [ ! -d public/state ] ; then
-            echo "::error::No northwoods.ics and no state/ produced by the builder. See build.log for details."
+          # Fail if nothing meaningful was produced
+          if [ ! -f public/northwoods.ics ] && [ ! -d public/state ]; then
+            echo "::error::No northwoods.ics and no state/ produced. See build.log."
             exit 1
           fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact (github-pages)
         uses: actions/upload-pages-artifact@v3

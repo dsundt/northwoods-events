@@ -1,69 +1,66 @@
-timezone: America/Chicago
-default_duration_minutes: 60
+# Consolidated sources list for Northwoods Events
 
-sources:
-  # --- Vilas County (Modern Tribe) ---
-  - name: Vilas County (Modern Tribe)
-    type: modern_tribe
-    url: https://vilaswi.com/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+# --- Modern Tribe (HTML list only; REST often blocked) ---
+- name: Vilas County (Modern Tribe)
+  type: modern_tribe
+  url: https://vilaswi.com/events/?eventDisplay=list
 
-  # --- Boulder Junction (Modern Tribe) ---
-  - name: Boulder Junction (Modern Tribe)
-    type: modern_tribe
-    url: https://boulderjct.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+- name: Boulder Junction (Modern Tribe)
+  type: modern_tribe
+  url: https://boulderjct.org/events/?eventDisplay=list
 
-  # --- Oneida County – Festivals & Events (Modern Tribe) ---
-  - name: Oneida County – Festivals & Events (Modern Tribe)
-    type: modern_tribe
-    url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+- name: Oneida County – Festivals & Events (Modern Tribe)
+  type: modern_tribe
+  url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
 
-  # --- Eagle River Chamber (Modern Tribe) ---
-  - name: Eagle River Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://eagleriver.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+- name: Eagle River Chamber (Modern Tribe)
+  type: modern_tribe
+  url: https://eagleriver.org/events/?eventDisplay=list
 
-  # --- Rhinelander Chamber (GrowthZone) ---
-  - name: Rhinelander Chamber (GrowthZone)
-    type: growthzone
-    url: https://business.rhinelanderchamber.com/events/calendar
-    wait_selector: ".mn-event, .mn-event-card, .event"
+- name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+  type: modern_tribe
+  url: https://sayner-starlake-cloverland.org/events/?eventDisplay=list
 
-  # --- St. Germain Chamber (Modern Tribe) ---
-  - name: St. Germain Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+- name: Presque Isle Chamber (Modern Tribe)
+  type: modern_tribe
+  url: https://presqueisle.com/events/?eventDisplay=list
 
-  # --- Minocqua Area Chamber (Modern Tribe) ---
-  - name: Minocqua Area Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://www.minocqua.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+- name: Manitowish Waters Chamber (Modern Tribe)
+  type: modern_tribe
+  url: https://manitowishwaters.org/events/?eventDisplay=list
 
-  # --- Town of Arbor Vitae (Ai1EC) ---
-  - name: Town of Arbor Vitae (Municipal Calendar)
-    type: ai1ec
-    url: https://www.townofarborvitae.org/calendar/
-    wait_selector: ".ai1ec-event-instance, .ai1ec-agenda-event, article.ai1ec_event, .ai1ec-event-summary"
+# --- GrowthZone (Micronet) ---
+- name: Rhinelander Chamber (GrowthZone)
+  type: growthzone
+  url: https://business.rhinelanderchamber.com/events/calendar
 
-  # --- Sayner–Star Lake–Cloverland Chamber (Modern Tribe) ---
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://sayner-starlake-cloverland.org/events/
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+- name: St. Germain Chamber (GrowthZone)
+  type: growthzone
+  url: https://st-germain.com/events-calendar/
 
-  # --- Manitowish Waters Chamber (Modern Tribe) ---
-  - name: Manitowish Waters Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://manitowishwaters.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+# --- Simpleview (Minocqua) ---
+- name: Minocqua Area Chamber (Simpleview)
+  type: simpleview
+  url: https://www.minocqua.org/events
 
-  # --- Presque Isle Chamber (Modern Tribe) ---
-  - name: Presque Isle Chamber (Modern Tribe)
-    type: modern_tribe
-    url: https://presqueisle.com/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
+# --- Squarespace (Arbor Vitae) ---
+- name: Town of Arbor Vitae (Squarespace Calendar)
+  type: squarespace
+  url: https://www.townofarborvitae.org/calendar/
+
+# --- Optional: ICS endpoints (only if known to return real ICS) ---
+# Keep disabled by default—many of these return HTML when bot-detected.
+# - name: Minocqua Area Chamber (ICS)
+#   type: ics
+#   url: https://www.minocqua.org/events/?ical=1
+#   enabled: false
+#
+# - name: St. Germain Chamber (ICS)
+#   type: ics
+#   url: https://st-germain.com/events-calendar/?ical=1
+#   enabled: false
+#
+# - name: Town of Arbor Vitae (ICS)
+#   type: ics
+#   url: https://www.townofarborvitae.org/calendar/?ical=1
+#   enabled: false

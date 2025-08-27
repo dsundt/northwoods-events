@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T11:31:48.990712-05:00",
+  "when": "2025-08-27T12:03:42.608934-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -60,55 +60,37 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 12,
-      "added": 12,
+      "parsed": 316,
+      "added": 316,
       "samples": [
         {
-          "title": "Back To School Drive",
-          "start": "2025-08-15T00:00:00-05:00",
-          "location": "Vilas County Public Heath Department 330 Court Street, Eagle River, WI, United States",
-          "url": "https://eagleriver.org/events/back-to-school-drive/"
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "2025-08-31T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
         },
         {
-          "title": "Summer Day Camp at Old Paths Christian Ministries",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "Old Paths Christian Ministries",
-          "url": "https://eagleriver.org/events/summer-day-camp/2025-08-27/"
+          "title": "SepTimber Ride",
+          "start": "2025-09-13T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/septimber-ride/"
         },
         {
-          "title": "Eagle River Farmers Market and Artisans Market",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "Eagle River Farmers Market Lot",
-          "url": "https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-08-27/"
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/cranberry-fest/"
         }
       ]
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 1,
-      "parsed": 125,
-      "added": 125,
-      "samples": [
-        {
-          "title": "Oneida County Fair",
-          "start": "2025-08-01T00:00:00-05:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-01-2025-17402"
-        },
-        {
-          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
-          "start": "2025-08-01T00:00:00-05:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/youth-baseball-softball-clinic-with-the-wi-woodchucks-17592"
-        },
-        {
-          "title": "ArtStart Gallery Exhibitions",
-          "start": "2025-08-01T00:00:00-05:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027"
-        }
-      ]
+      "fetched": 0,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "error": "HTTPSConnectionPool(host='business.rhinelanderchamber.com', port=443): Read timed out. (read timeout=30)"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",

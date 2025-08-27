@@ -78,7 +78,7 @@ import glob, json, os
 pattern = os.environ.get("PATTERN","state/snapshots/*.html")
 try:
     limit = int(os.environ.get("LIMIT","15"))
-except:
+except Exception:
     limit = 15
 matches = sorted([p for p in glob.glob(pattern) if os.path.isfile(p)])[:limit]
 print("=== Matched files (limited to %d) ===" % limit)
@@ -128,11 +128,11 @@ PY
 import json, os, sys
 try:
     files = json.loads(os.environ.get("FILES_JSON","[]"))
-except:
+except Exception:
     files = []
 try:
     idx = int(os.environ.get("INDEX","1"))
-except:
+except Exception:
     idx = 1
 chosen = ""
 if not files:

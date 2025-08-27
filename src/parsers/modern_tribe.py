@@ -1,138 +1,86 @@
 # -*- coding: utf-8 -*-
-"""
-Modern Tribe (The Events Calendar) HTML parser with JSON-LD first strategy.
-
-- Prefer schema.org Event objects embedded in <script type="application/ld+json">.
-- Fallback to common Modern Tribe list view DOM when JSON-LD not present.
-- Produces rows of dicts with keys: title, url, location, date_text, iso_hint, iso_end_hint.
-
-Assumes upstream main.py will call normalize.parse_datetime_range() on iso hints.
-"""
 from __future__ import annotations
-
-import json
-import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from bs4 import BeautifulSoup
+import re
 
-def _coerce_event(obj: Any) -> Optional[Dict[str, Any]]:
-    """Return an Event-like dict from a JSON-LD entity if it looks like an Event."""
-    if not isinstance(obj, dict):
-        return None
-    t = obj.get("@type")
-    if isinstance(t, list):
-        is_event = any(tt.lower() == "event" for tt in map(str, t))
-    else:
-        is_event = (str(t).lower() == "event")
-    if not is_event:
-        return None
+from .common_ldjson import extract_events_from_ldjson
 
-    name = (obj.get("name") or "").strip()
-    url = (obj.get("url") or "").strip()
-    start = (obj.get("startDate") or "").strip()
-    end = (obj.get("endDate") or "").strip()
-    location = ""
-    loc = obj.get("location")
-    if isinstance(loc, dict):
-        location = (loc.get("name") or loc.get("address") or "").strip()
-    elif isinstance(loc, list) and loc:
-        l0 = loc[0]
-        if isinstance(l0, dict):
-            location = (l0.get("name") or l0.get("address") or "").strip()
-    if not name or not start:
-        return None
-    return {
-        "title": name,
-        "url": url,
-        "location": location,
-        "date_text": "",              # not needed when iso hints are available
-        "iso_hint": start,
-        "iso_end_hint": end or "",
-    }
-
-def _iter_jsonld_events(soup: BeautifulSoup):
-    for tag in soup.find_all("script", attrs={"type": "application/ld+json"}):
-        txt = (tag.string or tag.get_text() or "").strip()
-        if not txt:
-            continue
-        try:
-            data = json.loads(txt)
-        except Exception:
-            # Some sites wrap multiple JSON objects; try bracket patch
-            try:
-                data = json.loads(re.sub(r"}\s*{", "},{", txt))
-            except Exception:
-                continue
-
-        # Data might be dict, list, graph, etc.
-        candidates: List[Dict[str, Any]] = []
-        if isinstance(data, list):
-            for it in data:
-                ev = _coerce_event(it)
-                if ev:
-                    candidates.append(ev)
-        elif isinstance(data, dict):
-            # direct event
-            ev = _coerce_event(data)
-            if ev:
-                candidates.append(ev)
-            # graph form
-            graph = data.get("@graph")
-            if isinstance(graph, list):
-                for it in graph:
-                    ev = _coerce_event(it)
-                    if ev:
-                        candidates.append(ev)
-        for c in candidates:
-            yield c
-
-def _clean(s: str) -> str:
-    return re.sub(r"\s+", " ", (s or "").strip())
-
-def parse(html: str, base_url: str) -> List[Dict[str, Any]]:
-    soup = BeautifulSoup(html, "lxml")
-
+def parse(html: str) -> List[Dict[str, Any]]:
+    """
+    WordPress 'The Events Calendar' (Modern Tribe) – robust:
+    1) Prefer schema.org JSON-LD Events
+    2) Fallback to DOM patterns used by Classic/Blocks list views
+    Returns normalized rows with keys: title, date_text, iso_hint, iso_end_hint, url, location
+    """
     rows: List[Dict[str, Any]] = []
 
-    # 1) JSON-LD first (very reliable on Modern Tribe)
-    for ev in _iter_jsonld_events(soup):
-        rows.append(ev)
-
+    # 1) JSON-LD first (covers most sites)
+    ld = extract_events_from_ldjson(html)
+    for ev in ld:
+        rows.append({
+            "title": ev["title"],
+            "date_text": "",                 # normalize.py will rely on ISO hints when present
+            "iso_hint": ev["start_iso"],
+            "iso_end_hint": ev.get("end_iso"),
+            "url": ev.get("url", ""),
+            "location": ev.get("location", ""),
+        })
     if rows:
         return rows
 
-    # 2) DOM fallback for list view
-    # Common wrappers: .tribe-events-calendar-list__event or article.tribe-events-calendar-list__event
-    for ev in soup.select(".tribe-events-calendar-list__event, article.tribe-events-calendar-list__event"):
-        title = _clean((ev.select_one(".tribe-events-calendar-list__event-title, .tribe-events-list-event-title, h3 a, h3") or {}).get_text() if ev else "")
-        link = ev.select_one("a")
-        url = _clean(link.get("href") if link else "")
+    # 2) Very forgiving HTML fallback
+    soup = BeautifulSoup(html or "", "lxml")
 
-        # Modern Tribe often includes data-start-datetime/end in attributes
-        start_attr = (ev.get("data-start-datetime") or "").strip()
-        end_attr = (ev.get("data-end-datetime") or "").strip()
-
-        # Or the time block contains <time> elements with datetime=
-        time_tag_start = ev.select_one("time[datetime]")
-        time_tag_end = None
-        # A second time element if present
-        times = ev.select("time[datetime]")
-        if len(times) >= 2:
-            time_tag_end = times[1]
-
-        iso_hint = start_attr or (time_tag_start.get("datetime").strip() if time_tag_start else "")
-        iso_end_hint = end_attr or (time_tag_end.get("datetime").strip() if time_tag_end else "")
-
-        venue = _clean((ev.select_one(".tribe-events-venue-details, .tribe-events-calendar-list__event-venue") or {}).get_text() if ev else "")
-
-        if title and (iso_hint or url):
+    # Newer TEC list view
+    cards = soup.select("[class*='tribe-events-calendar-list__event']") or \
+            soup.select("[class*='tribe-common-g-row'] [class*='tribe-events-calendar-list__event']")
+    for c in cards:
+        title_el = c.select_one("h3 a, h2 a, a[class*='tribe-events-calendar-list__event-title-link']")
+        date_el = c.select_one("[class*='tribe-events-calendar-list__event-date'], time, .tribe-event-date-start")
+        where_el = c.select_one("[class*='venue'], [class*='tribe-events-calendar-list__event-venue']")
+        title = (title_el.get_text(strip=True) if title_el else "").strip()
+        url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
+        date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
+        location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
+        if title:
             rows.append({
                 "title": title,
+                "date_text": date_text,
+                "iso_hint": None,
+                "iso_end_hint": None,
                 "url": url,
-                "location": venue,
-                "date_text": "",
-                "iso_hint": iso_hint,
-                "iso_end_hint": iso_end_hint,
+                "location": location,
             })
 
-    return rows
+    # Older TEC (v5/v6 mix)
+    if not rows:
+        items = soup.select(".tribe-events-calendar-list__event, .type-tribe_events")
+        for c in items:
+            title_el = c.select_one(".tribe-event-title a, .tribe-events-event-title a, h2 a, h3 a")
+            date_el = c.select_one("time, .tribe-event-date-start, .tribe-events-event-datetime")
+            where_el = c.select_one(".tribe-venue, .tribe-events-venue-details, .tribe-venue-location")
+            title = (title_el.get_text(strip=True) if title_el else "").strip()
+            url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
+            date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
+            location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
+            if title:
+                rows.append({
+                    "title": title,
+                    "date_text": date_text,
+                    "iso_hint": None,
+                    "iso_end_hint": None,
+                    "url": url,
+                    "location": location,
+                })
+
+    # De-dup by title+url
+    seen = set()
+    deduped = []
+    for r in rows:
+        k = (r["title"], r.get("url",""))
+        if k in seen:
+            continue
+        seen.add(k)
+        deduped.append(r)
+    return deduped

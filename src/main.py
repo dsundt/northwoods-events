@@ -159,8 +159,8 @@ def fetch_rendered_with_context(context, url: str, wait_selector: Optional[str] 
 # ---------- Parsers ----------
 def parse_modern_tribe_html(html: str) -> List[Dict]:
     """
-    Extract events from Modern Tribe / The Events Calendar markup.
-    Uses <time datetime="..."> ISO attributes when available so dates are accurate.
+    Extract events from The Events Calendar (Modern Tribe) markup.
+    Handles both classic list/month views and new block editor ("latest events") markup.
     """
     items: List[Dict] = []
     soup = BeautifulSoup(html or "", "html.parser")
@@ -168,24 +168,37 @@ def parse_modern_tribe_html(html: str) -> List[Dict]:
     nodes = soup.select(
         ".tribe-events-calendar-list__event, "
         ".tribe-events-calendar-month__calendar-event, "
+        ".tribe-events-calendar-latest__event, "
         "article.type-tribe_events"
     )
+
     for n in nodes:
         # Title + link
-        a = n.select_one("a.tribe-events-calendar-list__event-title-link, a.tribe-event-url, h3 a")
+        a = n.select_one(
+            "a.tribe-events-calendar-list__event-title-link, "
+            "a.tribe-event-url, "
+            ".tribe-events-calendar-latest__event-title a, "
+            "h3 a"
+        )
         title = (a.get_text(strip=True) if a else "").strip()
         url = (a["href"].strip() if a and a.has_attr("href") else "")
 
-        # Time: prefer ISO attribute
-        t = n.select_one("time[datetime]")
+        # Prefer ISO datetime attributes
+        t = n.select_one(
+            "time[datetime], "
+            ".tribe-event-date-start, "
+            ".tribe-events-calendar-latest__event-datetime time"
+        )
         iso_start = t["datetime"].strip() if t and t.has_attr("datetime") else ""
         date_text = t.get_text(" ", strip=True) if t else ""
 
-        # Venue
+        # Venue/location
         venue = n.select_one(
-            ".tribe-events-venue, .tribe-venue, "
+            ".tribe-events-venue, "
+            ".tribe-venue, "
             ".tribe-events-calendar-list__event-venue, "
-            ".tribe-events-venue-details"
+            ".tribe-events-venue-details, "
+            ".tribe-events-calendar-latest__event-venue"
         )
         venue_text = (venue.get_text(" ", strip=True) if venue else "").strip()
 
@@ -198,7 +211,9 @@ def parse_modern_tribe_html(html: str) -> List[Dict]:
                 "iso_datetime": iso_start,
                 "iso_end": "",
             })
+
     return items
+
 
 
 

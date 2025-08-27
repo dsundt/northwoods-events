@@ -1,106 +1,85 @@
-# src/parsers/simpleview.py
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-from urllib.parse import urljoin
-
-import requests
 from bs4 import BeautifulSoup
+from typing import Iterable, Dict, Any
+from .utils import absolutize
+from ..normalize import parse_datetime_range, clean_text
 
-CENTRAL_TZ = "America/Chicago"
-HEADERS = {
-    "User-Agent": "northwoods-events (+https://github.com/dsundt/northwoods-events)"
-}
+DATE_RE = re.compile(r"[A-Za-z]{3,9}\s+\d{1,2}(,\s*\d{4})?(\s*@\s*|\s+)\d{1,2}(:\d{2})?\s*(am|pm)?", re.I)
 
-def _fmt_mmddyyyy(d: datetime) -> str:
-    return d.strftime("%-m/%-d/%Y") if "%" in "%-m" else d.strftime("%m/%d/%Y")
-
-def _absolutize(base: str, href: Optional[str]) -> Optional[str]:
-    if not href:
-        return None
-    return urljoin(base, href)
-
-def _text(el) -> str:
-    return re.sub(r"\s+", " ", (el.get_text(" ", strip=True) if el else "")).strip()
-
-def _build_print_url(base_url: str, start: datetime, end: datetime) -> str:
-    # Simpleview exposes a server-rendered print view that the site itself builds.
-    # /print-events/?startDate=MM/DD/YYYY&endDate=MM/DD/YYYY
-    root = base_url.rstrip("/")
-    start_s = _fmt_mmddyyyy(start)
-    end_s = _fmt_mmddyyyy(end)
-    return f"{root}/print-events/?startDate={start_s}&endDate={end_s}"
-
-def parse_simpleview(base_url: str, *, window_days: int = 180, session: Optional[requests.Session] = None) -> List[Dict]:
+def parse(html: str, base_url: str) -> Iterable[Dict[str, Any]]:
     """
-    Fetch the Simpleview 'print-events' HTML for a date window and parse it.
-    Works for Minocqua (simpleview).
+    Simpleview events list parser (used by many DMO sites like Minocqua, Oneida).
+    Targets common card/list patterns.
     """
-    sess = session or requests.Session()
-    now = datetime.utcnow()
-    start = now
-    end = now + timedelta(days=window_days)
-
-    print_url = _build_print_url(base_url, start, end)
-    resp = sess.get(print_url, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    html = resp.text
-
     soup = BeautifulSoup(html, "lxml")
-    rows: List[Dict] = []
 
-    # The print view typically renders a list of events with title links and a block of
-    # date/time text. We'll be permissive with selectors.
-    event_blocks = soup.select("article, .event, .sv-event, .listing, li")
-    if not event_blocks:
-        event_blocks = soup.find_all(["div", "li", "article"])
+    # Common selectors seen on Simpleview sites
+    cards = []
+    cards.extend(soup.select(".event-item, .sv-event, .listing, .v-calendar__event"))
+    cards.extend(soup.select("article.event, li.event"))
 
-    for blk in event_blocks:
-        a = blk.find("a", href=True)
-        title = _text(a) if a else _text(blk)
-        if not title:
+    # Fallback: links that look like /event/... or contain "events/"
+    if not cards:
+        for a in soup.select("a[href]"):
+            href = a["href"]
+            if "/event" in href or "/events/" in href:
+                cards.append(a.parent)
+
+    seen = set()
+    for c in cards:
+        # Anchor + title
+        a = c.select_one("a[href*='/event']") or c.select_one("a[href*='/events/']") or c.select_one("a")
+        if not a or not a.has_attr("href"):
             continue
+        url = absolutize(base_url, a["href"])
+        title = clean_text(a.get_text(" ", strip=True))
+        if not title:
+            # Sometimes title lives in a heading sibling
+            h = c.select_one("h2, h3")
+            title = clean_text(h.get_text(" ", strip=True)) if h else title
 
-        link = _absolutize(print_url, a["href"]) if a else base_url
+        # Skip duplicates
+        key = (title, url)
+        if key in seen:
+            continue
+        seen.add(key)
 
-        # Try to find a date/time string near the title
+        # Date text — try a few nearby containers
         date_text = ""
-        # Common patterns: <time>, or spans with 'date', 'time'
-        time_el = blk.find("time")
-        if time_el:
-            date_text = _text(time_el)
-
+        for sel in [".date", ".event-date", ".sv-date", ".event__date", ".card-date"]:
+            el = c.select_one(sel)
+            if el:
+                date_text = clean_text(el.get_text(" ", strip=True))
+                break
         if not date_text:
-            # search small/meta blocks
-            for sel in [".date", ".time", ".datetime", ".event-date", ".event-time"]:
-                el = blk.select_one(sel)
-                if el:
-                    date_text = _text(el)
-                    break
+            # Look around the card for a readable date pattern
+            txt = clean_text(c.get_text(" ", strip=True))
+            m = DATE_RE.search(txt)
+            if m:
+                date_text = m.group(0)
 
-        # Fallback: use entire block text (noisy but normalize.py handles it)
-        if not date_text:
-            date_text = _text(blk)
+        start_dt, end_dt, all_day = parse_datetime_range(
+            date_text=date_text,
+            tzname="America/Chicago",
+        )
 
         # Location (best-effort)
         location = ""
-        for sel in [".location", ".event-location", ".venue"]:
-            el = blk.select_one(sel)
+        for sel in [".venue", ".location", ".event-venue", ".sv-venue"]:
+            el = c.select_one(sel)
             if el:
-                location = _text(el)
+                location = clean_text(el.get_text(" ", strip=True))
                 break
 
-        rows.append({
-            "title": title,
-            "date_text": date_text,
-            "iso_hint": None,
-            "iso_end_hint": None,
-            "location": location,
-            "url": link,
-            "source": print_url,
-            "tzname": CENTRAL_TZ,
-        })
-
-    return rows
+        # Only accept cards with a real title and a non-list URL
+        if title and not url.rstrip("/").endswith("/events/"):
+            yield {
+                "title": title,
+                "url": url,
+                "location": location,
+                "start": start_dt.isoformat(),
+                "end": end_dt.isoformat(),
+                "all_day": all_day,
+            }

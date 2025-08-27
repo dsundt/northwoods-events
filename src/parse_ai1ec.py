@@ -1,52 +1,37 @@
 # src/parse_ai1ec.py
 from __future__ import annotations
 from bs4 import BeautifulSoup
-from datetime import datetime
 from typing import List, Dict
 
 def parse_ai1ec(html: str) -> List[Dict]:
     """
-    Extracts events from All-in-One Event Calendar (Ai1EC)-style markup.
-    Returns rows with: title, url, date_text, venue_text, iso_datetime, iso_end
-    (date_text is parsed later by your normalize.parse_datetime_range)
+    Parse events from All-in-One Event Calendar (Ai1EC).
+    Handles common Ai1EC classes like .ai1ec-event-instance, .ai1ec-agenda-event.
     """
     soup = BeautifulSoup(html or "", "html.parser")
-    items = []
+    items: List[Dict] = []
 
-    # Common Ai1EC selectors
-    candidates = soup.select(".ai1ec-event, .ai1ec-event-instance, .ai1ec-agenda-event, .ai1ec-event-card")
-    if not candidates:
-        # Fallback: look for generic event summaries
-        candidates = soup.select(".event, .events-list article, article.type-ai1ec_event")
-
+    candidates = soup.select(
+        ".ai1ec-event, .ai1ec-event-instance, "
+        ".ai1ec-agenda-event, article.ai1ec_event"
+    )
     for node in candidates:
-        title = ""
-        url = ""
-        date_text = ""
-        venue_text = ""
+        title_el = node.select_one(".ai1ec-event-title, a")
+        title = title_el.get_text(strip=True) if title_el else ""
+        url = title_el["href"] if title_el and title_el.has_attr("href") else ""
 
-        # Title + URL
-        a = node.select_one("a.ai1ec-event-title, h3 a, .entry-title a, a")
-        if a:
-            title = (a.get_text(strip=True) or "").strip()
-            url = (a.get("href") or "").strip()
+        date_el = node.select_one(".ai1ec-event-time, time, .ai1ec-date")
+        date_text = date_el.get_text(" ", strip=True) if date_el else ""
 
-        # Date text often in .ai1ec-event-time, .ai1ec-time, or meta spans
-        dt = node.select_one(".ai1ec-event-time, .ai1ec-time, time, .event-date, .ai1ec-date")
-        if dt:
-            date_text = dt.get_text(" ", strip=True).strip()
-
-        # Venue
-        venue = node.select_one(".ai1ec-location, .venue, .event-venue, .ai1ec-venue")
-        if venue:
-            venue_text = venue.get_text(" ", strip=True).strip()
+        venue_el = node.select_one(".ai1ec-location, .venue, .ai1ec-venue")
+        venue = venue_el.get_text(" ", strip=True) if venue_el else ""
 
         if title:
             items.append({
                 "title": title,
                 "url": url,
                 "date_text": date_text,
-                "venue_text": venue_text,
+                "venue_text": venue,
                 "iso_datetime": "",
                 "iso_end": "",
             })

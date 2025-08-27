@@ -1,64 +1,47 @@
 _defaults:
-  tzname: America/Chicago
-  default_duration_minutes: 120
+  tz: America/Chicago
 
 sources:
-  # Modern Tribe (HTML list parsing)
-  - name: Vilas County (Modern Tribe)
-    kind: modern_tribe_html
-    url: https://vilaswi.com/events/?eventDisplay=list
-    enabled: true
+  - name: "Vilas County (Modern Tribe)"
+    kind: modern_tribe
+    url: "https://vilaswi.com/events/?eventDisplay=list"
+    snapshot_path: "state/snapshots/vilas_county_(modern_tribe).html"
 
-  - name: Boulder Junction (Modern Tribe)
-    kind: modern_tribe_html
-    url: https://boulderjct.org/events/?eventDisplay=list
-    enabled: true
+  - name: "Boulder Junction (Modern Tribe)"
+    kind: modern_tribe
+    url: "https://boulderjct.org/events/?eventDisplay=list"
+    snapshot_path: "state/snapshots/boulder_junction_(modern_tribe).html"
 
-  - name: Eagle River Chamber (Modern Tribe)
-    kind: modern_tribe_html
-    url: https://eagleriver.org/events/?eventDisplay=list
-    enabled: true
+  - name: "Eagle River Chamber (Modern Tribe)"
+    kind: modern_tribe
+    url: "https://eagleriver.org/events/?eventDisplay=list"
+    snapshot_path: "state/snapshots/eagle_river_chamber_(modern_tribe).html"
 
-  # GrowthZone (month grid)
-  - name: Rhinelander Chamber (GrowthZone)
-    kind: growthzone_month
-    url: https://business.rhinelanderchamber.com/events/calendar
-    list_url: https://business.rhinelanderchamber.com/events/calendar
-    enabled: true
+  - name: "Rhinelander Chamber (GrowthZone)"
+    kind: growthzone
+    url: "https://business.rhinelanderchamber.com/events/calendar"
+    snapshot_path: "state/snapshots/rhinelander_chamber_(growthzone).html"
 
-  # Squarespace Event List
-  - name: Town of Arbor Vitae (Municipal Calendar)
-    kind: squarespace_eventlist
-    url: https://www.townofarborvitae.org/calendar/
-    list_url: https://www.townofarborvitae.org/calendar/
-    enabled: true
+  - name: "Town of Arbor Vitae (Municipal Calendar)"
+    kind: simpleview   # Squarespace/municipal-like; our Simpleview parser is tolerant
+    url: "https://www.townofarborvitae.org/calendar/"
+    snapshot_path: "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
 
-  # Simpleview-backed sites (JS list; use detail-page JSON-LD fallback)
-  - name: Minocqua Area Chamber (Simpleview)
+  - name: "Minocqua Area Chamber (Simpleview)"
     kind: simpleview
-    url: https://www.minocqua.org/events/
-    list_url: https://www.minocqua.org/events/
-    max_detail_visits: 20
-    enabled: true
-    notes: Simpleview site; list is JS. Parser follows detail links and reads JSON-LD.
+    url: "https://www.minocqua.org/events/"
+    snapshot_path: "state/snapshots/minocqua_area_chamber_(modern_tribe).html"
 
-  - name: Oneida County – Festivals & Events (Simpleview)
+  - name: "Oneida County – Festivals & Events (Simpleview)"
     kind: simpleview
-    url: https://oneidacountywi.com/festivals-events/
-    list_url: https://oneidacountywi.com/festivals-events/
-    max_detail_visits: 20
-    enabled: true
-    notes: Simpleview site; list is JS. Parser follows detail links and reads JSON-LD.
+    url: "https://oneidacountywi.com/festivals-events/"
+    snapshot_path: "state/snapshots/oneida_county_-_festivals_and_events_(modern_tribe).html"
 
-  # If St. Germain actually runs Modern Tribe, keep it on HTML parsing; if not, flip to simpleview.
-  - name: St. Germain Chamber (Modern Tribe)
-    kind: modern_tribe_html
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    enabled: true
+  - name: "St. Germain Chamber (Modern Tribe)"
+    kind: modern_tribe
+    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
+    snapshot_path: "state/snapshots/st._germain_chamber_(modern_tribe).html"
 
-  # ICS examples (keep if you want feeds that work)
-  - name: Sayner–Star Lake–Cloverland Chamber (ICS)
+  - name: "Sayner–Star Lake–Cloverland Chamber (ICS)"
     kind: ics
-    url: https://sayner-starlake-cloverland.org/events/
-    ics_url: https://sayner-starlake-cloverland.org/events/?ical=1
-    enabled: true
+    url: "https://sayner-starlake-cloverland.org/events/?ical=1"

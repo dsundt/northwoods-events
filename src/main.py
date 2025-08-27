@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Northwoods Events builder: fetch -> parse -> normalize -> emit ICS + report.
-
-This main.py is hardened to:
-- avoid stdlib 'types' shadowing crashes
-- make parsers that import "from types import Event" work (monkey-patch)
-- make relative imports inside parser modules work even when run as a script
-- find sources.yaml/yml in repo root or src/
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -18,65 +8,78 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-# ---------------------------------------------------------------------------
-# 0) Ensure import paths are sane (repo root and src/)
-# ---------------------------------------------------------------------------
+# ---------- Path hygiene ----------
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC_DIR = os.path.join(REPO_ROOT, "src")
 for p in (REPO_ROOT, SRC_DIR):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-# ---------------------------------------------------------------------------
-# 1) Provide an Event dataclass via the REAL stdlib `types` module
-#    (so existing "from types import Event" in parsers continues to work).
-# ---------------------------------------------------------------------------
+# ---------- Make stdlib `types` export Event ----------
 import types as _stdlib_types  # real stdlib
 try:
-    # Prefer a dedicated local model if you already have one
-    from models import Event  # type: ignore
+    from models import Event  # if you have it
 except Exception:
-    # Lightweight fallback so parsers never crash on Event import
     from dataclasses import dataclass
-    from typing import Optional
-
+    from typing import Optional as _Optional
     @dataclass
-    class Event:  # type: ignore
+    class Event:  # minimal schema
         title: str
         start: datetime
-        end: Optional[datetime] = None
+        end: _Optional[datetime] = None
         location: str = ""
         url: str = ""
         all_day: bool = False
-
-# monkey-patch the stdlib `types` module to expose Event
-# (safe: we only add a new attribute; we don’t replace existing ones)
 setattr(_stdlib_types, "Event", Event)
 
-# ---------------------------------------------------------------------------
-# 2) Now we can safely import normalize and parser registry
-# ---------------------------------------------------------------------------
+# ---------- Import normalize (tolerant) ----------
 try:
-    from normalize import parse_datetime_range, clean_text  # noqa: F401
+    from normalize import parse_datetime_range, clean_text  # type: ignore
 except Exception:
-    # As a fallback, allow relative to work if running as a package
-    from .normalize import parse_datetime_range, clean_text  # type: ignore  # noqa: F401
+    from .normalize import parse_datetime_range, clean_text  # type: ignore
 
-# Provide a tiny registry wrapper so main doesn’t depend on individual parsers.
+# ---------- Utils ----------
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+
+def _ensure_dir(path: str) -> None:
+    os.makedirs(path, exist_ok=True)
+
+def _write_json(path: str, obj: Any) -> None:
+    _ensure_dir(os.path.dirname(path) or ".")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, ensure_ascii=False)
+
+def _snapshot_path(name: str) -> str:
+    safe = (
+        name.lower()
+        .replace(" ", "_").replace("/", "_")
+        .replace("–", "-").replace("—", "-")
+        .replace("&", "and")
+    )
+    d = os.path.join(REPO_ROOT, "state", "snapshots")
+    _ensure_dir(d)
+    return os.path.join(d, f"{safe}.html")
+
+def fetch_url(url: str, timeout: float = 30.0) -> Tuple[int, str]:
+    import requests
+    headers = {
+        "User-Agent": "northwoods-events/1.0 (+github actions)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    r = requests.get(url, headers=headers, timeout=timeout)
+    return r.status_code, r.text
+
 def _get_parser(kind: str):
-    """
-    Dynamically map 'kind' -> parser function. We import lazily so import
-    errors are localized to the specific kind.
-    """
     k = (kind or "").strip().lower()
+
     if k in ("modern_tribe", "tribe", "the_events_calendar", "moderntribe"):
         try:
             try:
                 from parsers.modern_tribe import parse_modern_tribe
             except Exception:
-                # fallback if pkg relative import fails
                 from modern_tribe import parse_modern_tribe  # type: ignore
             return parse_modern_tribe
         except Exception as e:
@@ -124,141 +127,69 @@ def _get_parser(kind: str):
 
     raise ValueError(f"No parser available for kind='{kind}'")
 
-# ---------------------------------------------------------------------------
-# 3) Utilities
-# ---------------------------------------------------------------------------
-def load_sources(path_arg: Optional[str]) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    """
-    Read sources YAML. If path_arg is None, try:
-      - sources.yaml, sources.yml, then src/sources.yaml, src/sources.yml
-    Returns: (sources_list, defaults_dict)
-    """
-    import yaml  # pyyaml
-
-    candidate_paths: List[str] = []
+def load_sources(path_arg: Optional[str]) -> Tuple[List[Dict[str, Any]], Dict[str, Any], str]:
+    import yaml
+    candidates: List[str] = []
     if path_arg:
-        candidate_paths.append(path_arg)
-    candidate_paths += [
+        candidates.append(path_arg)
+    candidates += [
         os.path.join(REPO_ROOT, "sources.yaml"),
         os.path.join(REPO_ROOT, "sources.yml"),
         os.path.join(SRC_DIR, "sources.yaml"),
         os.path.join(SRC_DIR, "sources.yml"),
     ]
-
-    chosen: Optional[str] = None
-    for p in candidate_paths:
-        if os.path.isfile(p):
-            chosen = p
-            break
-
+    chosen = next((p for p in candidates if os.path.isfile(p)), None)
     if not chosen:
-        raise FileNotFoundError(
-            f"Could not find sources.yaml/yml. Tried: {', '.join(candidate_paths)}"
-        )
-
+        raise FileNotFoundError(f"Could not find sources.yaml/yml. Tried: {', '.join(candidates)}")
     with open(chosen, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
+    return (data.get("sources", []) or [], data.get("defaults", {}) or {}, chosen)
 
-    sources = data.get("sources", []) or []
-    defaults = data.get("defaults", {}) or {}
-    return sources, defaults
-
-
-def fetch_url(url: str, timeout: float = 30.0) -> Tuple[int, str]:
-    import requests
-
-    headers = {
-        "User-Agent": "northwoods-events/1.0 (+github actions)",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    }
-    r = requests.get(url, headers=headers, timeout=timeout)
-    return r.status_code, r.text
-
-
-def snapshot_path(name: str) -> str:
-    safe = (
-        name.lower()
-        .replace(" ", "_")
-        .replace("/", "_")
-        .replace("–", "-")
-        .replace("—", "-")
-        .replace("—", "-")
-        .replace("&", "and")
-    )
-    d = os.path.join(REPO_ROOT, "state", "snapshots")
-    os.makedirs(d, exist_ok=True)
-    return os.path.join(d, f"{safe}.html")
-
-
-def write_json(path: str, obj: Any) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=2, ensure_ascii=False)
-
-
-# ---------------------------------------------------------------------------
-# 4) Main pipeline
-# ---------------------------------------------------------------------------
+# ---------- Pipeline ----------
 def run_pipeline(sources: List[Dict[str, Any]], defaults: Dict[str, Any]) -> Dict[str, Any]:
     report: Dict[str, Any] = {
-        "when": datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds"),
+        "when": _now_iso(),
         "timezone": os.environ.get("TZ") or "America/Chicago",
         "sources": [],
     }
-
-    total_added = 0
 
     for src in sources:
         name = src.get("name", "(unnamed)")
         url = src.get("url")
         kind = src.get("kind") or defaults.get("kind") or ""
-        row: Dict[str, Any] = {
-            "name": name,
-            "url": url,
-            "fetched": 0,
-            "parsed": 0,
-            "added": 0,
-            "samples": [],
-        }
+        row: Dict[str, Any] = {"name": name, "url": url, "fetched": 0, "parsed": 0, "added": 0, "samples": []}
 
         try:
             if not url:
                 raise ValueError("Missing 'url'")
 
-            # Fetch
             status, text = fetch_url(url)
             row["fetched"] = 1
             row["http_status"] = status
 
-            # Snapshot
-            snap = snapshot_path(name)
-            with open(snap, "w", encoding="utf-8") as f:
+            # snapshot
+            spath = _snapshot_path(name)
+            with open(spath, "w", encoding="utf-8") as f:
                 f.write(text)
-            row["snapshot"] = os.path.relpath(snap, REPO_ROOT)
+            row["snapshot"] = os.path.relpath(spath, REPO_ROOT)
 
-            # Parse
+            # parse
             parser_fn = _get_parser(kind)
             items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore
             row["parsed"] = len(items)
 
-            # Normalize (very light; assume parsers produce dicts)
+            # normalize
             normalized: List[Dict[str, Any]] = []
             for it in items:
                 title = clean_text(it.get("title"))
                 location = clean_text(it.get("location", ""))
                 href = it.get("url", "")
-
-                # Expect either iso hints or human text; let normalize handle both
                 iso = it.get("iso") or it.get("start_iso")
                 iso_end = it.get("iso_end") or it.get("end_iso")
                 date_text = it.get("date_text") or it.get("when") or ""
-
                 start_dt, end_dt, all_day = parse_datetime_range(
-                    date_text=date_text,
-                    iso_hint=iso,
-                    iso_end_hint=iso_end,
-                    tzname="America/Chicago",
+                    date_text=date_text, iso_hint=iso, iso_end_hint=iso_end, tzname="America/Chicago"
                 )
-
                 normalized.append(
                     {
                         "title": title,
@@ -271,62 +202,73 @@ def run_pipeline(sources: List[Dict[str, Any]], defaults: Dict[str, Any]) -> Dic
                 )
 
             row["added"] = len(normalized)
-            total_added += len(normalized)
-
-            # Stash a few samples for the report
             row["samples"] = [
-                {
-                    "title": n["title"],
-                    "start": n["start"],
-                    "location": n.get("location", ""),
-                    "url": n.get("url", ""),
-                }
+                {"title": n["title"], "start": n["start"], "location": n.get("location", ""), "url": n.get("url", "")}
                 for n in normalized[:3]
             ]
 
-            # Persist per-source JSON (optional)
-            # with open(os.path.join(REPO_ROOT, "state", "latest.json"), "w", encoding="utf-8") as f:
-            #     json.dump(normalized, f, indent=2, ensure_ascii=False)
-
         except Exception as e:
             row["error"] = repr(e)
-            # Best-effort traceback for debugging
             try:
                 import traceback as _tb
-
                 row["traceback"] = "".join(_tb.format_exception(type(e), e, e.__traceback__))
             except Exception:
                 pass
 
         report["sources"].append(row)
 
-    # Write top-level report
-    os.makedirs(os.path.join(REPO_ROOT, "state"), exist_ok=True)
-    write_json(os.path.join(REPO_ROOT, "last_run_report.json"), report)
-
-    # Optionally: write/merge ICS here if you have an ICS emitter;
-    # we’ll keep it no-op to avoid colliding with your existing builder.
     return report
 
+# ---------- Main ----------
+def _write_reports(report: Dict[str, Any]) -> List[str]:
+    paths = []
+    # repo root
+    p1 = os.path.join(REPO_ROOT, "last_run_report.json")
+    _write_json(p1, report)
+    paths.append(p1)
+    # state/
+    _ensure_dir(os.path.join(REPO_ROOT, "state"))
+    p2 = os.path.join(REPO_ROOT, "state", "last_run_report.json")
+    _write_json(p2, report)
+    paths.append(p2)
+    return paths
 
 def main(argv: Optional[List[str]] = None) -> None:
-    ap = argparse.ArgumentParser(description="Northwoods Events: build ICS and report")
-    ap.add_argument(
-        "--sources",
-        help="Path to sources.yaml/yml. If omitted, search repo root then src/.",
-        default=None,
-    )
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--sources", help="Path to sources.yaml/yml (optional).", default=None)
     args = ap.parse_args(argv)
 
-    sources, defaults = load_sources(args.sources)
-    report = run_pipeline(sources, defaults)
+    # Build a minimal report up-front; expand as we succeed.
+    report: Dict[str, Any] = {
+        "when": _now_iso(),
+        "timezone": os.environ.get("TZ") or "America/Chicago",
+        "sources": [],
+        "meta": {"status": "starting"},
+    }
 
-    # Print a tiny summary for logs
-    total_parsed = sum(s.get("parsed", 0) for s in report["sources"])
-    total_added = sum(s.get("added", 0) for s in report["sources"])
-    print(f"Summary: parsed={total_parsed}, added={total_added}")
-    # Non-fatal if 0 added; CI shouldn’t fail because of empty days.
+    try:
+        sources, defaults, chosen_path = load_sources(args.sources)
+        report["meta"] = {"status": "loaded", "sources_file": os.path.relpath(chosen_path, REPO_ROOT)}
+        report = run_pipeline(sources, defaults)
+        report["meta"] = {"status": "ok", "sources_file": os.path.relpath(chosen_path, REPO_ROOT)}
+    except Exception as e:
+        # Fatal errors still produce a report
+        report["meta"] = {"status": "fatal_error", "error": repr(e)}
+        try:
+            import traceback as _tb
+            report["meta"]["traceback"] = "".join(_tb.format_exception(type(e), e, e.__traceback__))  # type: ignore
+        except Exception:
+            pass
+    finally:
+        paths = _write_reports(report)
+        print("last_run_report.json written to:")
+        for p in paths:
+            print(" -", os.path.relpath(p, REPO_ROOT))
 
+        # Small summary line
+        total_parsed = sum(s.get("parsed", 0) for s in report.get("sources", []))
+        total_added = sum(s.get("added", 0) for s in report.get("sources", []))
+        print(f"Summary: parsed={total_parsed}, added={total_added}")
 
 if __name__ == "__main__":
     main()

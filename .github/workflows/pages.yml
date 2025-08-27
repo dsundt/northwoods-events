@@ -1,0 +1,106 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Required for Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent parallel deployments from cancelling each other
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Optional but recommended
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Create public site
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf public
+          mkdir -p public
+
+          # Basic index
+          cat > public/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Northwoods Events – Artifacts</title>
+          <h1>Northwoods Events – Artifacts</h1>
+          <p>This page lists useful generated files from the repo.</p>
+          <ul>
+            <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>
+            <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>
+          </ul>
+          <hr>
+          <p>Auto-published by GitHub Pages workflow.</p>
+          HTML
+
+          # Expose state/ if it exists
+          if [ -d state ]; then
+            mkdir -p public/state
+            # Copy everything (snapshots, last_run_report.json, etc.)
+            rsync -a state/ public/state/
+            # Add a simple directory listing index
+            python - <<'PY'
+import os, html
+root = "public/state"
+items = []
+for base, dirs, files in os.walk(root):
+    rel = os.path.relpath(base, root)
+    if rel == ".":
+        rel = ""
+    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
+        f.write("<!doctype html><meta charset='utf-8'><title>state/{}</title>".format(html.escape(rel)))
+        f.write("<h1>state/{}</h1><ul>".format(html.escape(rel)))
+        # subdirs first
+        for d in sorted(dirs):
+            f.write("<li>[dir] <a href='{0}/'>{0}/</a></li>".format(html.escape(d)))
+        for fn in sorted(files):
+            if fn == "index.html": continue
+            f.write("<li><a href='{0}'>{0}</a></li>".format(html.escape(fn)))
+        f.write("</ul>")
+PY
+          fi
+
+          # Publish ICS at root if it exists
+          if [ -f northwoods.ics ]; then
+            cp northwoods.ics public/
+          elif [ -f src/northwoods.ics ]; then
+            cp src/northwoods.ics public/
+          fi
+
+          echo "Public tree:"
+          find public -maxdepth 3 -type f | sed -n '1,200p'
+
+      - name: Upload artifact (github-pages)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Must be the directory to publish
+          path: public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,30 +1,90 @@
 {
-  "when": "2025-08-27T13:54:43-0500",
+  "when": "2025-08-27T14:20:28-0500",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
+      "parsed": 139,
+      "added": 139,
+      "samples": [
+        {
+          "title": "St. Germain Flea Market",
+          "start": "2025-07-28T08:00:00-05:00",
+          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/",
+          "location": "St Germain Community Park, 545 Hwy 155, St Germain, WI, 54558, United States"
+        },
+        {
+          "title": "Manitowish Waters Lions Club Bingo",
+          "start": "2025-07-28T18:00:00-05:00",
+          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/",
+          "location": "Manitowish Waters Community Center, 5733 Airport Rd, Manitowish Waters, WI, 54545"
+        },
+        {
+          "title": "Monday Night Bingo",
+          "start": "2025-07-28T18:15:00-05:00",
+          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/",
+          "location": "St Germain Community Center, 545 Hwy 155, St Germain, WI, 54558, United States"
+        }
+      ],
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
+      "parsed": 76,
+      "added": 76,
+      "samples": [
+        {
+          "title": "Northwoods Children&#8217;s Museum Nature Education Classes",
+          "start": "2025-07-28T10:30:00-05:00",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/",
+          "location": "Northwoods Childrens Museum, 346 W Division St, Eagle River, Wisconsin, 54521"
+        },
+        {
+          "title": "Mah Jongg at the Boulder Junction Public Library",
+          "start": "2025-07-28T13:00:00-05:00",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/",
+          "location": "Bouder Junction Public Library"
+        },
+        {
+          "title": "Boulder Junction Lions Club Flea Market",
+          "start": "2025-07-29T08:00:00-05:00",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/",
+          "location": "Boulder Junction Community Center, 5392 Park Street, Boulder Junction, WI, 54512, United States"
+        }
+      ],
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
+      "parsed": 404,
+      "added": 404,
+      "samples": [
+        {
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "2025-08-31T10:00:00-05:00",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
+          "location": "Downtown Eagle River"
+        },
+        {
+          "title": "SepTimber Ride",
+          "start": "2025-09-13T07:00:00-05:00",
+          "url": "https://eagleriver.org/events/septimber-ride/",
+          "location": "Tribute Brewing Company, 1106 North Bluebird Road, Eagle River, Wisconsin, 54521"
+        },
+        {
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T00:00:00-05:00",
+          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "location": "Eagle River Area Chamber of Commerce and Visitors Center, 201 North Railroad Street, Eagle River, Wisconsin, 54521"
+        }
+      ],
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -32,7 +92,9 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "error": "NameError(\"name 're' is not defined\")",
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -40,7 +102,9 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "error": "NameError(\"name 're' is not defined\")",
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -48,15 +112,19 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "error": "NameError(\"name 're' is not defined\")",
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
     },
     {
-      "name": "Oneida County – Festivals & Events (Simpleview)",
+      "name": "Oneida County \u2013 Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "error": "NameError(\"name 're' is not defined\")",
+      "snapshot": "state/snapshots/oneida_county__festivals__events_(simpleview).html"
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -64,15 +132,37 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "error": "NameError(\"name 're' is not defined\")",
+      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html"
     },
     {
-      "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
+      "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
+      "parsed": 11,
+      "added": 11,
+      "samples": [
+        {
+          "title": "Plum Ski-ters Water Ski Show",
+          "start": "2025-08-27T18:30:00-05:00",
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/",
+          "location": "Plum Lake, 3230 State House Point Road, Sayner, WI, 54558, United States"
+        },
+        {
+          "title": "Plum Ski-ters Water Ski Show",
+          "start": "2025-08-30T18:30:00-05:00",
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
+          "location": "Plum Lake, 3230 State House Point Road, Sayner, WI, 54558, United States"
+        },
+        {
+          "title": "23rd Annual Stillwaters Star Lake Mayor\u2019s Race",
+          "start": "2025-08-31T15:00:00-05:00",
+          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
+          "location": "Stillwaters, 7914 Co. Rd K, Star Lake, WI, 54561"
+        }
+      ],
+      "snapshot": "state/snapshots/saynerstar_lakecloverland_chamber_(modern_tribe).html"
     }
   ]
 }

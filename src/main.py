@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
 import sys
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pytz
 import requests
 import yaml
 from bs4 import BeautifulSoup
 
-# If you have src/normalize.py from earlier, we’ll use it.
-# It provides: parse_datetime_range(date_text|positional, iso_hint, iso_end_hint, tzname)
+# ====== normalize helpers ======
 try:
     from normalize import parse_datetime_range, clean_text  # type: ignore
 except Exception:
-    # Tiny safe fallbacks if normalize.py is missing (not as robust)
     def clean_text(s: Optional[str]) -> str:
         if not s:
             return ""
@@ -28,12 +27,11 @@ except Exception:
         return s.replace("\u200b", "")
 
     def parse_datetime_range(*args, **kwargs):
-        # Absolute fallback: treat everything as all-day today
-        tz = pytz.timezone(kwargs.get("tzname") or "America/Chicago")
+        tzname = kwargs.get("tzname") or "America/Chicago"
+        tz = pytz.timezone(tzname)
         start = tz.localize(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0))
         end = start + timedelta(days=1) - timedelta(seconds=1)
         return start, end, True
-
 
 CENTRAL = pytz.timezone("America/Chicago")
 REQ_TIMEOUT = 30
@@ -71,9 +69,7 @@ class Normalized:
     source: str
 
 
-# -----------------------
-# Helpers
-# -----------------------
+# ====== FS helpers ======
 def ensure_dirs():
     os.makedirs(STATE_DIR, exist_ok=True)
     os.makedirs(SNAP_DIR, exist_ok=True)
@@ -84,7 +80,7 @@ def now_iso() -> str:
 
 
 def save_snapshot(name: str, content: str, rendered: bool = False) -> str:
-    safe = re.sub(r"[^a-z0-9._\-() ]+", "_", name.lower())
+    safe = re.sub(r"[^a-z0-9._\\-() ]+", "_", name.lower())
     suffix = ".rendered.html" if rendered else ".html"
     path = os.path.join(SNAP_DIR, f"{safe}{suffix}")
     with open(path, "w", encoding="utf-8") as f:
@@ -100,25 +96,59 @@ def get_text(url: str, headers: Optional[Dict[str, str]] = None) -> Tuple[str, i
     return r.text, r.status_code, dict(r.headers)
 
 
-def make_ics_url_from_events_list_url(url: str) -> str:
-    # Most Modern Tribe and many WP calendars expose ?ical=1 on same path
-    if "?" in url:
-        base = url.split("?")[0]
-    else:
-        base = url
-    return f"{base}?ical=1"
+# ====== path resolution for sources.{yml,yaml} ======
+def resolve_sources_path(cli_path: Optional[str] = None) -> str:
+    """
+    Find a config file to load. Resolution order:
+
+    1) --config PATH (CLI) if provided and exists
+    2) $SOURCES_PATH (env) if provided and exists
+    3) ./sources.yaml
+    4) ./sources.yml
+    5) <repo-root>/sources.yaml           # repo-root = parent of this file's dir
+    6) <repo-root>/sources.yml
+
+    If none found, raise FileNotFoundError listing tried paths.
+    """
+    tried: List[str] = []
+
+    def existing(p: Optional[str]) -> Optional[str]:
+        if p and os.path.isfile(p):
+            return p
+        if p:
+            tried.append(os.path.abspath(p))
+        return None
+
+    # 1) CLI
+    if existing(cli_path):
+        return cli_path  # type: ignore
+
+    # 2) env
+    env_path = os.environ.get("SOURCES_PATH")
+    if existing(env_path):
+        return env_path  # type: ignore
+
+    # 3) & 4) CWD
+    for name in ("sources.yaml", "sources.yml"):
+        p = os.path.join(os.getcwd(), name)
+        if existing(p):
+            return p  # type: ignore
+
+    # 5) & 6) repo root (parent of src/)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(script_dir, ".."))
+    for name in ("sources.yaml", "sources.yml"):
+        p = os.path.join(repo_root, name)
+        if existing(p):
+            return p  # type: ignore
+
+    raise FileNotFoundError(
+        "Could not find sources config. Tried:\n  - " + "\n  - ".join(tried) +
+        "\nYou can also set --config PATH or SOURCES_PATH."
+    )
 
 
-def tribe_rest_root(url: str) -> str:
-    # Build /wp-json/tribe/events/v1/events root from a page URL
-    # e.g., https://example.com/events/?eventDisplay=list -> https://example.com/wp-json/tribe/events/v1/events
-    m = re.match(r"^(https?://[^/]+)/", url)
-    if not m:
-        return ""
-    root = m.group(1)
-    return root + "/wp-json/tribe/events/v1/events"
-
-
+# ====== normalizing ======
 def to_local(dt: datetime, tzname: str) -> datetime:
     tz = pytz.timezone(tzname or "America/Chicago")
     if dt.tzinfo is None:
@@ -129,8 +159,6 @@ def to_local(dt: datetime, tzname: str) -> datetime:
 def normalize_rows(rows: List[Row], default_duration_minutes: int = 120) -> List[Normalized]:
     out: List[Normalized] = []
     for r in rows:
-        # Try new-style kwargs call first; if the normalize module is the earlier version,
-        # we fall back to positional.
         try:
             start_dt, end_dt, all_day = parse_datetime_range(
                 date_text=r.date_text,
@@ -139,13 +167,9 @@ def normalize_rows(rows: List[Row], default_duration_minutes: int = 120) -> List
                 tzname=r.tzname or "America/Chicago",
             )
         except TypeError:
-            # old signature fallback
             try:
-                start_dt, end_dt, all_day = parse_datetime_range(
-                    r.date_text, r.iso_hint, r.iso_end_hint
-                )
+                start_dt, end_dt, all_day = parse_datetime_range(r.date_text, r.iso_hint, r.iso_end_hint)
             except Exception:
-                # last chance: assume default duration from iso_hint or now
                 if r.iso_hint:
                     try:
                         start_dt, _, _ = parse_datetime_range(r.iso_hint, "", "")
@@ -160,7 +184,6 @@ def normalize_rows(rows: List[Row], default_duration_minutes: int = 120) -> List
                     end_dt = start_dt + timedelta(minutes=default_duration_minutes)
                     all_day = False
 
-        # Enforce timezone
         start_dt = to_local(start_dt, r.tzname)
         end_dt = to_local(end_dt, r.tzname)
 
@@ -182,23 +205,28 @@ def dedupe_events(items: List[Normalized]) -> List[Normalized]:
     seen = set()
     keep: List[Normalized] = []
     for it in items:
-        key = (it.title.lower().strip(), it.start[:10])  # same title + same start date (local)
+        key = (it.title.lower().strip(), it.start[:10])
         if key not in seen:
             keep.append(it)
             seen.add(key)
     return keep
 
 
-# -----------------------
-# Parsers
-# -----------------------
+# ====== tribe / growthzone / municipal parsers ======
+def make_ics_url_from_events_list_url(url: str) -> str:
+    base = url.split("?")[0] if "?" in url else url
+    return f"{base}?ical=1"
+
+
+def tribe_rest_root(url: str) -> str:
+    m = re.match(r"^(https?://[^/]+)/", url)
+    if not m:
+        return ""
+    root = m.group(1)
+    return root + "/wp-json/tribe/events/v1/events"
+
+
 def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
-    """
-    Try in order:
-      1) Tribe REST API
-      2) HTML scrape
-      3) ICS fallback (if enabled by caller)
-    """
     report: Dict[str, Any] = {"name": source_name, "url": url, "fetched": 0, "parsed": 0}
     rows: List[Row] = []
 
@@ -209,20 +237,14 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
             params = {
                 "page": 1,
                 "per_page": 100,
-                # generous window: yesterday .. + 1 year
                 "start_date": (datetime.utcnow() - timedelta(days=1)).isoformat() + "Z",
                 "end_date": (datetime.utcnow() + timedelta(days=365)).isoformat() + "Z",
             }
             page = 1
             total = 0
             while True:
-                params["page"] = page
-                txt, status, hdrs = get_text(api, headers={"Accept": "application/json"})
-                # The Tribe API needs query string; requests above missed it if we didn't pass params to GET.
-                # Do a proper GET with params:
                 r = requests.get(api, params=params, headers={"Accept": "application/json", **HEADERS}, timeout=REQ_TIMEOUT)
                 status = r.status_code
-                txt = r.text
                 if status != 200:
                     if status == 404:
                         report["rest_fallback_unavailable"] = True
@@ -254,7 +276,7 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
                     ))
                 total += len(events)
                 page += 1
-                # Stop after 10 pages just in case
+                params["page"] = page
                 if page > 10:
                     break
             if total > 0:
@@ -264,20 +286,14 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
     except Exception as e:
         report["rest_error"] = repr(e)
 
-    # 2) HTML scrape (list page)
+    # 2) HTML scrape
     try:
         txt, status, hdrs = get_text(url)
         report["fetched"] = 1
         save_snapshot(f"{source_name}", txt, rendered=False)
         soup = BeautifulSoup(txt, "lxml")
-
-        # Common patterns on Tribe list pages:
-        # - article.tribe_events, article.type-tribe_events
-        # - a.tribe-event-url
-        # - time[itemprop=startDate]
         articles = soup.select("article.type-tribe_events, article.tribe_events")
         if not articles:
-            # Try generic cards
             articles = soup.select("[data-tribe-event-id], .tribe-common-c-card")
         for art in articles:
             a = art.select_one("a.tribe-event-url, a.url, a[href*='/event/']")
@@ -285,7 +301,6 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
                 continue
             link = a.get("href") or url
             title = clean_text(a.get_text())
-            # Try to extract time info
             time_tag = art.select_one("time[itemprop='startDate'], time.tribe-event-date-start")
             date_text = ""
             iso = ""
@@ -293,13 +308,10 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
                 iso = (time_tag.get("datetime") or "").strip()
                 if not iso:
                     date_text = clean_text(time_tag.get_text())
-
-            # location if present
             loc = ""
             loc_tag = art.select_one(".tribe-event-venue, .tribe-events-venue__meta, [class*='venue'], .location")
             if loc_tag:
                 loc = clean_text(loc_tag.get_text())
-
             rows.append(Row(
                 title=title or "(untitled)",
                 url=link,
@@ -316,29 +328,21 @@ def parse_modern_tribe(source_name: str, url: str, tzname: str) -> Dict[str, Any
     except Exception as e:
         report["error_html"] = repr(e)
 
-    # 3) Caller may try ICS fallback next
     return {"rows": [], "report": report}
 
 
 def parse_growthzone(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
-    """
-    Basic GrowthZone calendar scraper for the listing page.
-    If only day cells are available, we collect event URLs and fetch details.
-    """
     report: Dict[str, Any] = {"name": source_name, "url": url, "fetched": 0, "parsed": 0}
     rows: List[Row] = []
-
     try:
         txt, status, hdrs = get_text(url)
         report["fetched"] = 1
         save_snapshot(f"{source_name}", txt)
         soup = BeautifulSoup(txt, "lxml")
 
-        # Pattern 1: list view entries
         items = soup.select(".gz-event-list-item, .event-listing, .gz-event, .event-item, .item-event")
-        # Pattern 2: calendar cells with links
         if not items:
-            items = soup.select("a[href*='/events/details/'], a[href*='/events/details/']")
+            items = soup.select("a[href*='/events/details/']")
 
         links: List[str] = []
         for it in items:
@@ -355,7 +359,6 @@ def parse_growthzone(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
             links.append(href)
 
         links = sorted(set(links))
-        # If nothing found, try to read inline JSON
         if not links:
             for a in soup.find_all("a", href=True):
                 if "/events/details/" in a["href"]:
@@ -367,32 +370,22 @@ def parse_growthzone(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
                     links.append(href)
             links = sorted(set(links))
 
-        # Fetch each detail page and extract title/date
         for href in links[:50]:
             try:
                 dtxt, st, hh = get_text(href)
                 dsoup = BeautifulSoup(dtxt, "lxml")
-                title = clean_text(
-                    (dsoup.select_one("h1") or dsoup.select_one(".event-title") or dsoup.title or {}).get_text() if (dsoup.select_one("h1") or dsoup.select_one(".event-title") or dsoup.title) else ""
-                )
-                if not title:
-                    title = "(untitled)"
-
-                # Date/time extraction heuristics
-                # Try <time datetime> first
+                el = dsoup.select_one("h1") or dsoup.select_one(".event-title") or dsoup.title
+                title = clean_text(el.get_text()) if el else "(untitled)"
                 time_tag = dsoup.select_one("time[datetime]")
                 iso = time_tag.get("datetime").strip() if time_tag and time_tag.has_attr("datetime") else ""
                 date_text = ""
                 if not iso:
-                    # Look for recognizable date strings on the page
                     dt_block = dsoup.select_one(".event-date, .date, .gz-event-date, .event-details__date, .time")
                     date_text = clean_text(dt_block.get_text()) if dt_block else clean_text(dsoup.get_text()[:4000])
-
                 loc = ""
                 loc_tag = dsoup.select_one(".event-location, .location, .venue, .gz-event-location")
                 if loc_tag:
                     loc = clean_text(loc_tag.get_text())
-
                 rows.append(Row(
                     title=title,
                     url=href,
@@ -414,31 +407,23 @@ def parse_growthzone(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
 
 
 def parse_municipal_calendar(source_name: str, url: str, tzname: str) -> Dict[str, Any]:
-    """
-    Generic municipal calendar scraper (like Town of Arbor Vitae).
-    Tries multiple selectors for titles, links, dates.
-    """
     report: Dict[str, Any] = {"name": source_name, "url": url, "fetched": 0, "parsed": 0}
     rows: List[Row] = []
-
     try:
         txt, status, hdrs = get_text(url)
         report["fetched"] = 1
         save_snapshot(f"{source_name}", txt)
         soup = BeautifulSoup(txt, "lxml")
 
-        # Common WP calendar/table plugins: look for anchors in calendar/list sections
         candidates = soup.select(
             ".calendar a, .events a, .ai1ec-event-title a, a.event, a[href*='/event/'], a[href*='?event']"
         )
         if not candidates:
-            # Try generic list items
             candidates = soup.select("li a, .entry-content a")
 
         for a in candidates:
             href = a.get("href") or url
             title = clean_text(a.get_text()) or "(untitled)"
-            # Nearby text might have date
             holder = a.find_parent(["li", "div", "tr"]) or a
             dt_text = clean_text(holder.get_text())
             rows.append(Row(
@@ -459,22 +444,17 @@ def parse_municipal_calendar(source_name: str, url: str, tzname: str) -> Dict[st
     return {"rows": rows, "report": report}
 
 
+# ====== ICS handling (safe) ======
 def ingest_ics_text(source_name: str, ics_text: str, tzname: str) -> Dict[str, Any]:
-    """
-    Parse ICS text using a simple line parser (no ics lib dependency) to avoid
-    failures when hosts return HTML with 200 OK.
-    """
     report: Dict[str, Any] = {"name": source_name, "fetched": 0, "parsed": 0}
     rows: List[Row] = []
 
     txt = ics_text.strip()
     if not txt.startswith("BEGIN:VCALENDAR"):
         report["error"] = "ICS endpoint returned non-ICS (likely HTML/blocked)"
-        # Save what we got for debugging
         save_snapshot(f"{source_name} (ics) (ics_response)", ics_text)
         return {"rows": [], "report": report}
 
-    # Unfold lines per RFC (join lines starting with space)
     lines = []
     for raw in txt.splitlines():
         if raw.startswith(" "):
@@ -499,8 +479,12 @@ def ingest_ics_text(source_name: str, ics_text: str, tzname: str) -> Dict[str, A
         rows.append(Row(
             title=title or "(untitled)",
             url=url or "",
-            date_text="", iso_hint=dtstart, iso_end_hint=dtend,
-            location=loc, tzname=tzname, source=source_name
+            date_text="",
+            iso_hint=dtstart,
+            iso_end_hint=dtend,
+            location=loc,
+            tzname=tzname,
+            source=source_name,
         ))
         parsed += 1
 
@@ -513,7 +497,6 @@ def ingest_ics_text(source_name: str, ics_text: str, tzname: str) -> Dict[str, A
             flush()
             cur = {}
         elif in_event:
-            # split name:params:value — we only need the left-most name and value
             if ":" in ln:
                 keypart, val = ln.split(":", 1)
                 name = keypart.split(";", 1)[0].upper()
@@ -525,7 +508,8 @@ def ingest_ics_text(source_name: str, ics_text: str, tzname: str) -> Dict[str, A
 
 
 def try_ics_fallback(source_name: str, page_url: str, tzname: str) -> Dict[str, Any]:
-    ics_url = make_ics_url_from_events_list_url(page_url)
+    base = page_url.split("?")[0] if "?" in page_url else page_url
+    ics_url = f"{base}?ical=1"
     try:
         txt, status, hdrs = get_text(ics_url, headers={"Accept": "text/calendar,*/*"})
         return ingest_ics_text(source_name, txt, tzname)
@@ -533,9 +517,7 @@ def try_ics_fallback(source_name: str, page_url: str, tzname: str) -> Dict[str, 
         return {"rows": [], "report": {"name": source_name, "url": ics_url, "error": repr(e)}}
 
 
-# -----------------------
-# Sources loader
-# -----------------------
+# ====== sources loader ======
 @dataclass
 class SourceCfg:
     name: str
@@ -546,8 +528,8 @@ class SourceCfg:
     default_duration_minutes: int
 
 
-def load_sources(path: str = "sources.yaml") -> Tuple[List[SourceCfg], Dict[str, Any]]:
-    with open(path, "r", encoding="utf-8") as f:
+def load_sources(resolved_path: str) -> Tuple[List[SourceCfg], Dict[str, Any]]:
+    with open(resolved_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     defaults = data.get("defaults", {})
     out: List[SourceCfg] = []
@@ -565,9 +547,7 @@ def load_sources(path: str = "sources.yaml") -> Tuple[List[SourceCfg], Dict[str,
     return out, defaults
 
 
-# -----------------------
-# ICS writer
-# -----------------------
+# ====== ICS writer ======
 def write_ics(items: List[Normalized], path: str = OUT_ICS):
     lines = [
         "BEGIN:VCALENDAR",
@@ -579,7 +559,6 @@ def write_ics(items: List[Normalized], path: str = OUT_ICS):
     for i, ev in enumerate(items):
         uid = f"{abs(hash((ev.title, ev.start, ev.url)))}@northwoods-events"
         def fmt(dt_iso: str) -> str:
-            # Use local time (floating) to avoid TZ conversion surprises in viewers
             dt = datetime.fromisoformat(dt_iso)
             return dt.strftime("%Y%m%dT%H%M%S")
         lines += [
@@ -598,12 +577,18 @@ def write_ics(items: List[Normalized], path: str = OUT_ICS):
         f.write("\n".join(lines))
 
 
-# -----------------------
-# Main
-# -----------------------
-def main():
+# ====== main ======
+def main(argv: Optional[List[str]] = None):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", help="Path to sources.{yml,yaml}", default=None)
+    args = parser.parse_args(argv)
+
     ensure_dirs()
-    sources, defaults = load_sources("sources.yaml")
+
+    cfg_path = resolve_sources_path(args.config)
+    print(f"[info] Using config: {cfg_path}")
+
+    sources, defaults = load_sources(cfg_path)
 
     all_norm: List[Normalized] = []
     run_report: Dict[str, Any] = {
@@ -620,11 +605,9 @@ def main():
                 res = parse_modern_tribe(cfg.name, cfg.url, cfg.tz)
                 rows.extend(res["rows"])
                 report.update(res["report"])
-                # ICS fallback if nothing parsed
                 if cfg.ics_fallback and not rows:
                     ics_res = try_ics_fallback(f"{cfg.name} (ICS)", cfg.url, cfg.tz)
                     rows.extend(ics_res["rows"])
-                    # Attach ICS subreport fields for visibility
                     for k, v in ics_res["report"].items():
                         report.setdefault(f"ics_{k}", v)
 
@@ -637,17 +620,14 @@ def main():
                 res = parse_municipal_calendar(cfg.name, cfg.url, cfg.tz)
                 rows.extend(res["rows"])
                 report.update(res["report"])
-                # ICS fallback (some WP calendars expose ?ical=1)
                 if cfg.ics_fallback and not rows:
                     ics_res = try_ics_fallback(f"{cfg.name} (ICS)", cfg.url, cfg.tz)
                     rows.extend(ics_res["rows"])
                     for k, v in ics_res["report"].items():
                         report.setdefault(f"ics_{k}", v)
 
-            # Normalize
             normalized = normalize_rows(rows, default_duration_minutes=cfg.default_duration_minutes)
 
-            # Track quick samples for the report
             samples = []
             for n in normalized[:3]:
                 samples.append({
@@ -664,17 +644,13 @@ def main():
             all_norm.extend(normalized)
 
         except Exception as e:
-            # Capture any unhandled exception per source but continue
             report["error"] = repr(e)
             run_report["sources"].append(report)
 
-        # be nice to hosts
         time.sleep(1.0)
 
-    # Dedupe across sources
     all_norm = dedupe_events(all_norm)
 
-    # Write ICS and report
     write_ics(all_norm, OUT_ICS)
     with open(OUT_JSON, "w", encoding="utf-8") as f:
         json.dump(run_report, f, indent=2)

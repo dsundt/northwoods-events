@@ -37,3 +37,9 @@ jobs:
         run: |
           echo "Running parser: ${{ github.event.inputs.parser }} on ${{ github.event.inputs.snapshot }}"
           python test_parser.py "${{ github.event.inputs.snapshot }}" "${{ github.event.inputs.parser }}"
+
+      - name: Upload parsed events artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-events
+          path: parsed_events.json

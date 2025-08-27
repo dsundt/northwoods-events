@@ -1,47 +1,46 @@
-_defaults:
+# Where to read sources from; this version aims for best-parsing backends per site.
+defaults:
   tz: America/Chicago
+  default_duration_minutes: 120
 
 sources:
-  - name: "Vilas County (Modern Tribe)"
+  - name: Vilas County (Modern Tribe)
+    url: https://vilaswi.com/events/?eventDisplay=list
     kind: modern_tribe
-    url: "https://vilaswi.com/events/?eventDisplay=list"
-    snapshot_path: "state/snapshots/vilas_county_(modern_tribe).html"
 
-  - name: "Boulder Junction (Modern Tribe)"
+  - name: Boulder Junction (Modern Tribe)
+    url: https://boulderjct.org/events/?eventDisplay=list
     kind: modern_tribe
-    url: "https://boulderjct.org/events/?eventDisplay=list"
-    snapshot_path: "state/snapshots/boulder_junction_(modern_tribe).html"
 
-  - name: "Eagle River Chamber (Modern Tribe)"
+  - name: Eagle River Chamber (Modern Tribe)
+    url: https://eagleriver.org/events/?eventDisplay=list
     kind: modern_tribe
-    url: "https://eagleriver.org/events/?eventDisplay=list"
-    snapshot_path: "state/snapshots/eagle_river_chamber_(modern_tribe).html"
 
-  - name: "Rhinelander Chamber (GrowthZone)"
+  # GrowthZone can be JS-heavy; JSON-LD/SSR fallback in parser will try its best.
+  - name: Rhinelander Chamber (GrowthZone)
+    url: https://business.rhinelanderchamber.com/events/calendar
     kind: growthzone
-    url: "https://business.rhinelanderchamber.com/events/calendar"
-    snapshot_path: "state/snapshots/rhinelander_chamber_(growthzone).html"
 
-  - name: "Town of Arbor Vitae (Municipal Calendar)"
-    kind: simpleview   # Squarespace/municipal-like; our Simpleview parser is tolerant
-    url: "https://www.townofarborvitae.org/calendar/"
-    snapshot_path: "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
+  # Municipal calendar (WordPress) – ignore “Google Calendar” export links
+  - name: Town of Arbor Vitae (Municipal Calendar)
+    url: https://www.townofarborvitae.org/calendar/
+    kind: municipal_calendar
 
-  - name: "Minocqua Area Chamber (Simpleview)"
+  # Minocqua & Oneida run on Simpleview; JSON-LD first, strict fallbacks.
+  - name: Minocqua Area Chamber (Simpleview)
+    url: https://www.minocqua.org/events/
     kind: simpleview
-    url: "https://www.minocqua.org/events/"
-    snapshot_path: "state/snapshots/minocqua_area_chamber_(modern_tribe).html"
 
-  - name: "Oneida County – Festivals & Events (Simpleview)"
+  - name: Oneida County – Festivals & Events (Simpleview)
+    url: https://oneidacountywi.com/festivals-events/
     kind: simpleview
-    url: "https://oneidacountywi.com/festivals-events/"
-    snapshot_path: "state/snapshots/oneida_county_-_festivals_and_events_(modern_tribe).html"
 
-  - name: "St. Germain Chamber (Modern Tribe)"
+  # St. Germain Modern Tribe (REST blocked often) – use HTML with JSON-LD.
+  - name: St. Germain Chamber (Modern Tribe)
+    url: https://st-germain.com/events-calendar/?eventDisplay=list
     kind: modern_tribe
-    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
-    snapshot_path: "state/snapshots/st._germain_chamber_(modern_tribe).html"
 
-  - name: "Sayner–Star Lake–Cloverland Chamber (ICS)"
-    kind: ics
-    url: "https://sayner-starlake-cloverland.org/events/?ical=1"
+  # Sayner: prefer Modern Tribe HTML over ICS due to sporadic ICS blocks.
+  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+    url: https://sayner-starlake-cloverland.org/events/
+    kind: modern_tribe

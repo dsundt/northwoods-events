@@ -1,7 +1,9 @@
 defaults:
-  timezone: America/Chicago
+  tzname: America/Chicago
+  default_duration_minutes: 120
 
 sources:
+  # --- Modern Tribe (The Events Calendar / WordPress) ---
   - name: Vilas County (Modern Tribe)
     url: https://vilaswi.com/events/?eventDisplay=list
     kind: modern_tribe
@@ -14,14 +16,20 @@ sources:
     url: https://eagleriver.org/events/?eventDisplay=list
     kind: modern_tribe
 
+  - name: St. Germain Chamber (Modern Tribe)
+    url: https://st-germain.com/events-calendar/?eventDisplay=list
+    kind: modern_tribe
+
+  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+    url: https://sayner-starlake-cloverland.org/events/
+    kind: modern_tribe
+
+  # --- GrowthZone (ChamberMaster / GrowthZone platform) ---
   - name: Rhinelander Chamber (GrowthZone)
     url: https://business.rhinelanderchamber.com/events/calendar
     kind: growthzone
 
-  - name: Town of Arbor Vitae (Municipal Calendar)
-    url: https://www.townofarborvitae.org/calendar/
-    kind: modern_tribe   # many municipal WP sites also embed JSON-LD; this will pick it up
-
+  # --- Simpleview (Destination Marketing Organization sites) ---
   - name: Minocqua Area Chamber (Simpleview)
     url: https://www.minocqua.org/events/
     kind: simpleview
@@ -30,10 +38,7 @@ sources:
     url: https://oneidacountywi.com/festivals-events/
     kind: simpleview
 
-  - name: St. Germain Chamber (Modern Tribe)
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    kind: modern_tribe
-
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
-    url: https://sayner-starlake-cloverland.org/events/
-    kind: modern_tribe
+  # --- Municipal WordPress Calendar ---
+  - name: Town of Arbor Vitae (Municipal Calendar)
+    url: https://www.townofarborvitae.org/calendar/
+    kind: municipal_calendar

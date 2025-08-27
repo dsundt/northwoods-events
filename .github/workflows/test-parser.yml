@@ -1,48 +1,196 @@
-- name: List snapshots
-  run: ls -R state/snapshots
-
-name: Test Parser
+name: test-parser
 
 on:
   workflow_dispatch:
     inputs:
-      snapshot:
-        description: "Path to snapshot file (relative to repo root)"
+      parser_kind:
+        description: "Parser to use"
+        type: choice
         required: true
-        default: "state/snapshots/vilas_county_(modern_tribe).html"
-      parser:
-        description: "Parser type (modern_tribe, ai1ec, growthzone, ics)"
+        default: modern_tribe
+        options:
+          - modern_tribe
+          - ai1ec
+          - growthzone
+          - ics
+      snapshot_pattern:
+        description: "Glob for snapshots to list/test"
+        type: string
         required: true
-        default: "modern_tribe"
+        default: "state/snapshots/*.html"
+      max_files:
+        description: "Max files to list/test"
+        type: number
+        required: true
+        default: 15
+      run_mode:
+        description: "What to do after listing"
+        type: choice
+        required: true
+        default: list
+        options:
+          - list      # only list files (no parsing)
+          - single    # parse just one by index
+          - matrix    # parse first N as a matrix
+      index:
+        description: "1-based index to parse when run_mode=single"
+        type: number
+        required: true
+        default: 1
 
 jobs:
-  run-parser:
+  gather:
+    name: Gather snapshot files
     runs-on: ubuntu-latest
-
+    outputs:
+      files_json: ${{ steps.collect.outputs.files_json }}
+      count: ${{ steps.collect.outputs.count }}
+      chosen_path: ${{ steps.pick.outputs.chosen_path }}
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          clean: true
+
+      - name: List directory (for debug)
+        run: |
+          echo "Repo root:"
+          pwd
+          echo
+          echo "Tree (top-level):"
+          ls -la
+          echo
+          echo "Snapshots dir (if exists):"
+          if [ -d state/snapshots ]; then ls -la state/snapshots | sed -n '1,200p'; else echo "state/snapshots/ (missing)"; fi
+
+      - name: Collect matching files
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          PATTERN='${{ inputs.snapshot_pattern }}'
+          LIMIT='${{ inputs.max_files }}'
+
+          echo "Searching with pattern: ${PATTERN}"
+          # Use python to glob (more reliable than shell for weird chars)
+          python - << 'PY'
+import json, glob, os, sys
+pattern = os.environ["PATTERN"]
+limit = int(os.environ["LIMIT"])
+matches = sorted(glob.glob(pattern))
+# keep only files
+matches = [m for m in matches if os.path.isfile(m)]
+limited = matches[:limit]
+# pretty print numbered list
+print("\n=== Matched files (limited to %d) ===" % limit)
+if not limited:
+    print("  (no matches)")
+else:
+    for i, p in enumerate(limited, 1):
+        print(f"  {i:>3}. {p}")
+# emit outputs
+print("\nFound:", len(limited))
+payload = json.dumps(limited)
+# GitHub outputs
+with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
+    fh.write(f"files_json={payload}\n")
+    fh.write(f"count={len(limited)}\n")
+PY
+
+      - name: Pick single file (when run_mode=single)
+        id: pick
+        if: ${{ inputs.run_mode == 'single' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          INDEX='${{ inputs.index }}'
+          FILES='${{ steps.collect.outputs.files_json }}'
+
+          python - << 'PY'
+import json, os, sys
+files = json.loads(os.environ["FILES"] or "[]")
+idx = int(os.environ["INDEX"])
+if not files:
+    print("❌ No files matched the pattern.")
+    # still set an empty chosen_path to avoid undefined
+    with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
+        fh.write(f"chosen_path=\n")
+    sys.exit(1)
+if idx < 1 or idx > len(files):
+    print(f"❌ Index {idx} is out of range 1..{len(files)}")
+    with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
+        fh.write(f"chosen_path=\n")
+    sys.exit(1)
+chosen = files[idx-1]
+print(f"Chosen file #{idx}: {chosen}")
+with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
+    fh.write(f"chosen_path={chosen}\n")
+PY
+
+      - name: Stop after listing (when run_mode=list)
+        if: ${{ inputs.run_mode == 'list' }}
+        run: |
+          echo "Run mode is 'list' — not parsing anything. Re-run with run_mode=single or matrix."
+          exit 0
+
+  run-single:
+    name: Parse one snapshot
+    runs-on: ubuntu-latest
+    needs: gather
+    if: ${{ inputs.run_mode == 'single' && needs.gather.outputs.chosen_path != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || pip install requests beautifulsoup4 lxml ics pyyaml python-dateutil pytz
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz
+          fi
 
-      - name: Run test_parser
+      - name: Show chosen file
+        run: echo "Parsing: ${{ needs.gather.outputs.chosen_path }} with parser ${{ inputs.parser_kind }}"
+
+      - name: Run parser
         run: |
-          echo "Running parser: ${{ github.event.inputs.parser }} on ${{ github.event.inputs.snapshot }}"
-          python test_parser.py "${{ github.event.inputs.snapshot }}" "${{ github.event.inputs.parser }}"
+          python src/test_parser.py "${{ needs.gather.outputs.chosen_path }}" "${{ inputs.parser_kind }}"
 
-      - name: Upload parsed events artifact
-        uses: actions/upload-artifact@v4
+  run-matrix:
+    name: Parse N snapshots (matrix)
+    runs-on: ubuntu-latest
+    needs: gather
+    if: ${{ inputs.run_mode == 'matrix' && needs.gather.outputs.count != '0' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJSON(needs.gather.outputs.files_json) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          name: parsed-events
-          path: parsed_events.json
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz
+          fi
+
+      - name: Show file
+        run: echo "Parsing: ${{ matrix.file }} with parser ${{ inputs.parser_kind }}"
+
+      - name: Run parser
+        run: |
+          python src/test_parser.py "${{ matrix.file }}" "${{ inputs.parser_kind }}"

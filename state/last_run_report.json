@@ -1,34 +1,34 @@
 {
-  "when": "2025-08-26T20:31:05.131931-05:00",
+  "when": "2025-08-26T20:45:15.652197-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 18,
-      "added": 0,
+      "parsed": 95,
+      "added": 14,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 2,
       "samples": [
         {
-          "title": "Community Garage Sale Weekend",
-          "start": "2000-01-01T14:00:00+00:00",
+          "title": "Chain Skimmers Water Ski Show",
+          "start": "2025-08-26T05:00:00+00:00",
           "location": "",
-          "url": "https://vilaswi.com/event/community-garage-sale-weekend-2/"
+          "url": "https://vilaswi.com/event/chain-skimmers-water-ski-show-2/2025-08-26/"
         },
         {
-          "title": "Presque Isle Lions Rummage Sale",
-          "start": "2000-01-01T15:00:00+00:00",
+          "title": "Eagle River Wednesday Farmers Market",
+          "start": "2025-08-27T05:00:00+00:00",
           "location": "",
-          "url": "https://vilaswi.com/event/presque-isle-lions-rummage-sale/"
+          "url": "https://vilaswi.com/event/eagle-river-wednesday-farmers-market-3/2025-08-27/"
         },
         {
-          "title": "Manitowish Waters Pontoon & Boat Poker Run",
-          "start": "2000-01-01T18:00:00+00:00",
+          "title": "Landover ATV-UTV Wednesday Night Bingo",
+          "start": "2025-08-27T05:00:00+00:00",
           "location": "",
-          "url": "https://vilaswi.com/event/2025-pontoon-boat-poker-run/"
+          "url": "https://vilaswi.com/event/landover-atv-utv-wednesday-night-bingo-2/2025-08-27/"
         }
       ],
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
@@ -37,29 +37,29 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 62,
-      "added": 0,
+      "parsed": 70,
+      "added": 10,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
       "samples": [
         {
-          "title": "Recurring",
-          "start": "2000-01-01T16:30:00+00:00",
+          "title": "Friends of the Library Weekly Book Sale",
+          "start": "2025-08-26T05:00:00+00:00",
           "location": "",
-          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/"
+          "url": "https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-08-26/"
         },
         {
-          "title": "Recurring",
-          "start": "2000-01-01T19:00:00+00:00",
+          "title": "Boulder Junction Lions Club Flea Market",
+          "start": "2025-08-26T05:00:00+00:00",
           "location": "",
-          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/"
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-08-26/"
         },
         {
-          "title": "Recurring",
-          "start": "2000-01-01T14:00:00+00:00",
+          "title": "HeArt Centered Meditation with Lia Montgomery",
+          "start": "2025-08-27T05:00:00+00:00",
           "location": "",
-          "url": "https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/all/"
+          "url": "https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/2025-08-27/"
         }
       ],
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
@@ -81,29 +81,29 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 12,
-      "added": 0,
+      "parsed": 167,
+      "added": 41,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 10,
       "samples": [
         {
-          "title": "Chain Skimmers Jr. Club Water Ski Show",
-          "start": "2000-01-01T18:00:00+00:00",
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "2025-08-31T05:00:00+00:00",
           "location": "",
-          "url": "https://eagleriver.org/events/chain-skimmers-independence-day-water-ski-show/"
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
         },
         {
-          "title": "“Fore” Our Youth Golf Tournament",
-          "start": "2000-01-01T14:00:00+00:00",
+          "title": "SepTimber Ride",
+          "start": "2025-09-13T05:00:00+00:00",
           "location": "",
-          "url": "https://eagleriver.org/events/northern-lakes-catholic-communities-5th-annual-golfing-fore-our-youth/"
+          "url": "https://eagleriver.org/events/septimber-ride/"
         },
         {
-          "title": "Library Pop Up at Eagle River Farmers Market",
-          "start": "2000-01-01T14:30:00+00:00",
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T05:00:00+00:00",
           "location": "",
-          "url": "https://eagleriver.org/events/library-pop-up-at-eagle-river-farmers-market/"
+          "url": "https://eagleriver.org/events/cranberry-fest/"
         }
       ],
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
@@ -134,20 +134,6 @@
       "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html"
     },
     {
-      "name": "St. Germain Chamber (ICS)",
-      "url": "https://st-germain.com/events-calendar/?ical=1",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "ICS endpoint returned non-ICS (likely HTML/blocked)",
-      "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(ics)_(ics_response).html"
-    },
-    {
       "name": "Minocqua Area Chamber (Modern Tribe)",
       "url": "https://www.minocqua.org/events/?eventDisplay=list",
       "fetched": 1,
@@ -159,20 +145,6 @@
       "samples": [],
       "rest_fallback_unavailable": true,
       "snapshot": "state/snapshots/minocqua_area_chamber_(modern_tribe).html"
-    },
-    {
-      "name": "Minocqua Area Chamber (ICS)",
-      "url": "https://www.minocqua.org/events/?ical=1",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "ICS endpoint returned non-ICS (likely HTML/blocked)",
-      "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(ics)_(ics_response).html"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -187,25 +159,11 @@
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
     },
     {
-      "name": "Town of Arbor Vitae (ICS)",
-      "url": "https://www.townofarborvitae.org/calendar/?ical=1",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "ICS endpoint returned non-ICS (likely HTML/blocked)",
-      "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(ics)_(ics_response).html"
-    },
-    {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
       "parsed": 11,
-      "added": 11,
+      "added": 10,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
@@ -214,52 +172,22 @@
           "title": "Plum Ski-ters Water Ski Show",
           "start": "2025-08-27T05:00:00+00:00",
           "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/"
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/"
         },
         {
           "title": "Plum Ski-ters Water Ski Show",
           "start": "2025-08-30T05:00:00+00:00",
           "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/"
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
         },
         {
-          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31T05:00:00+00:00",
-          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
+          "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
+          "start": "2025-09-01T05:00:00+00:00",
+          "location": "Weber's 2649 Co. Rd C, Sayner, WI",
+          "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/"
         }
       ],
       "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html"
-    },
-    {
-      "name": "Sayner–Star Lake–Cloverland Chamber (ICS)",
-      "url": "https://sayner-starlake-cloverland.org/events/?ical=1",
-      "fetched": 1,
-      "parsed": 11,
-      "added": 11,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [
-        {
-          "title": "Plum Lake EMS Annual Pork Loin Benefit Dinner",
-          "start": "2025-09-15T21:00:00+00:00",
-          "location": "Whitetail Inn, 9038 WI-70, St. Germain, WI, 54558",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31T20:00:00+00:00",
-          "location": "Stillwaters, 7914 Co. Rd K, Star Lake, WI, 54561",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
-        },
-        {
-          "title": "Colorama Weekend",
-          "start": "2025-09-26T00:00:00+00:00",
-          "location": "Sayner Star Lake Chamber, Sayner, WI, 54560",
-          "url": "https://sayner-starlake-cloverland.org/event/colorama-weekend/"
-        }
-      ]
     },
     {
       "name": "Manitowish Waters Chamber (Modern Tribe)",
@@ -275,79 +203,35 @@
       "snapshot": "state/snapshots/manitowish_waters_chamber_(modern_tribe).html"
     },
     {
-      "name": "Manitowish Waters Chamber (ICS)",
-      "url": "https://manitowishwaters.org/events/?ical=1",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "error": "ICS endpoint returned non-ICS (likely HTML/blocked)",
-      "http_status": 200,
-      "snapshot": "state/snapshots/manitowish_waters_chamber_(ics)_(ics_response).html"
-    },
-    {
       "name": "Presque Isle Chamber (Modern Tribe)",
       "url": "https://presqueisle.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 11,
-      "added": 0,
+      "parsed": 52,
+      "added": 13,
       "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [
-        {
-          "title": "Memory Check-In Presented by ADRC",
-          "start": "2000-01-01T19:00:00+00:00",
-          "location": "",
-          "url": "https://presqueisle.com/event/memory-check-in-presented-by-adrc/"
-        },
-        {
-          "title": "Web Wonders / NLDC",
-          "start": "2000-01-01T16:00:00+00:00",
-          "location": "",
-          "url": "https://presqueisle.com/event/web-wonders-nldc/"
-        },
-        {
-          "title": "Tunes on the Water w/ Tom Katalin",
-          "start": "2000-01-01T22:30:00+00:00",
-          "location": "",
-          "url": "https://presqueisle.com/event/tunes-on-the-water-w-tom-katalin/"
-        }
-      ],
-      "snapshot": "state/snapshots/presque_isle_chamber_(modern_tribe).html"
-    },
-    {
-      "name": "Presque Isle Chamber (ICS)",
-      "url": "https://presqueisle.com/events/?ical=1",
-      "fetched": 1,
-      "parsed": 6,
-      "added": 6,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "skipped_dupe": 3,
       "samples": [
         {
           "title": "Martha Kelly Catering/ American Legion Post 480",
-          "start": "2025-08-28T22:00:00+00:00",
-          "location": "American Legion Post 480, Hwy W, Presque Isle, WI, 54557-, United States",
-          "url": "https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/"
-        },
-        {
-          "title": "Loggers Breakfast / Presque Isle Lions Club",
-          "start": "2025-08-31T13:00:00+00:00",
-          "location": "Presque Isle Community Center, 8306 School Loop Rd, Presque Isle, WI, 54557, United States",
-          "url": "https://presqueisle.com/event/loggers-breakfast-presque-isle-lions-club-3/"
+          "start": "2025-08-27T05:00:00+00:00",
+          "location": "",
+          "url": "https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-08-27/"
         },
         {
           "title": "Northwoods Table Tennis Club",
-          "start": "2025-08-28T13:30:00+00:00",
-          "location": "Presque Isle Community Center, 8306 School Loop Rd, Presque Isle, WI, 54557, United States",
+          "start": "2025-08-28T05:00:00+00:00",
+          "location": "",
           "url": "https://presqueisle.com/event/northwoods-table-tennis-club/2025-08-28/"
+        },
+        {
+          "title": "Martha Kelly Catering/ American Legion Post 480",
+          "start": "2025-08-28T05:00:00+00:00",
+          "location": "",
+          "url": "https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/"
         }
-      ]
+      ],
+      "snapshot": "state/snapshots/presque_isle_chamber_(modern_tribe).html"
     }
   ]
 }

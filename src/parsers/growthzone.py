@@ -1,114 +1,60 @@
 # -*- coding: utf-8 -*-
-"""
-GrowthZone parser.
-
-Note: Many GrowthZone calendars are JS-rendered. This parser:
-- Tries JSON-LD first (if the site emits schema on the page).
-- Then falls back to server-rendered anchors that look like event details: /events/details/ or /events/<slug>
-- Skips nav/placeholder links.
-"""
-
 from __future__ import annotations
-import json, re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from bs4 import BeautifulSoup
+import re
 
-def _clean(s: str) -> str:
-    return re.sub(r"\s+", " ", (s or "").strip())
+from .common_ldjson import extract_events_from_ldjson
 
-def _coerce_event(obj: Any) -> Optional[Dict[str, Any]]:
-    if not isinstance(obj, dict):
-        return None
-    t = obj.get("@type")
-    if isinstance(t, list):
-        is_event = any(tt.lower() == "event" for tt in map(str, t))
-    else:
-        is_event = (str(t).lower() == "event")
-    if not is_event:
-        return None
-    name = _clean(obj.get("name") or "")
-    url = _clean(obj.get("url") or "")
-    start = _clean(obj.get("startDate") or "")
-    end = _clean(obj.get("endDate") or "")
-    if not name or not start:
-        return None
-    location = ""
-    loc = obj.get("location")
-    if isinstance(loc, dict):
-        location = _clean(loc.get("name") or loc.get("address") or "")
-    return {
-        "title": name,
-        "url": url,
-        "location": location,
-        "date_text": "",
-        "iso_hint": start,
-        "iso_end_hint": end or "",
-    }
-
-def _iter_jsonld_events(soup: BeautifulSoup):
-    for tag in soup.find_all("script", attrs={"type": "application/ld+json"}):
-        txt = (tag.string or tag.get_text() or "").strip()
-        if not txt:
-            continue
-        try:
-            data = json.loads(txt)
-        except Exception:
-            continue
-        if isinstance(data, dict) and "@graph" in data and isinstance(data["@graph"], list):
-            for it in data["@graph"]:
-                ev = _coerce_event(it)
-                if ev:
-                    yield ev
-        elif isinstance(data, list):
-            for it in data:
-                ev = _coerce_event(it)
-                if ev:
-                    yield ev
-        elif isinstance(data, dict):
-            ev = _coerce_event(data)
-            if ev:
-                yield ev
-
-DETAIL_RE = re.compile(r"/events?/(details|[^/]+)", re.I)
-
-def parse(html: str, base_url: str) -> List[Dict[str, Any]]:
-    soup = BeautifulSoup(html, "lxml")
+def parse(html: str) -> List[Dict[str, Any]]:
+    """
+    GrowthZone calendars are often JS-driven. We attempt:
+    1) JSON-LD Events (some chambers inject schema)
+    2) Static fallbacks for server-rendered calendars (when present)
+    """
     rows: List[Dict[str, Any]] = []
 
-    # 1) JSON-LD first
-    for ev in _iter_jsonld_events(soup):
-        rows.append(ev)
+    ld = extract_events_from_ldjson(html)
+    for ev in ld:
+        rows.append({
+            "title": ev["title"],
+            "date_text": "",
+            "iso_hint": ev["start_iso"],
+            "iso_end_hint": ev.get("end_iso"),
+            "url": ev.get("url", ""),
+            "location": ev.get("location", ""),
+        })
     if rows:
         return rows
 
-    # 2) Server-side anchors that look like event detail pages
-    for a in soup.select("a[href]"):
-        href = a.get("href") or ""
-        if not DETAIL_RE.search(href):
-            continue
-        title = _clean(a.get_text())
-        if not title or len(title) < 3:
-            continue
-        # pick up time near link if present
-        container = a.find_parent(["article", "li", "div"]) or soup
-        time_tag = container.select_one("time[datetime]")
-        iso = (time_tag.get("datetime").strip() if time_tag else "")
-        rows.append({
-            "title": title,
-            "url": href,
-            "location": "",
-            "date_text": "",
-            "iso_hint": iso,
-            "iso_end_hint": "",
-        })
+    soup = BeautifulSoup(html or "", "lxml")
+    # Fallback guesses: some GrowthZone sites render a basic server list
+    items = soup.select(".gz_event, .event-item, li.event, .calendar-item, .list-item")
+    for it in items:
+        title_el = it.select_one("a[href], .event-title a, h3 a, h2 a")
+        date_el  = it.select_one("time, .event-date, .dates")
+        where_el = it.select_one(".location, .venue")
+        title = (title_el.get_text(" ", strip=True) if title_el else "").strip()
+        url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
+        date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
+        location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
+        if title:
+            rows.append({
+                "title": title,
+                "date_text": date_text,
+                "iso_hint": None,
+                "iso_end_hint": None,
+                "url": url,
+                "location": location,
+            })
 
     # Dedup
     seen = set()
-    deduped = []
+    out = []
     for r in rows:
-        key = (r["title"], r["url"], r["iso_hint"])
-        if key in seen:
+        k = (r["title"], r.get("url",""))
+        if k in seen:
             continue
-        seen.add(key)
-        deduped.append(r)
-    return deduped
+        seen.add(k)
+        out.append(r)
+    return out

@@ -1,60 +1,67 @@
-# -*- coding: utf-8 -*-
-from __future__ import annotations
-from typing import List, Dict, Any
-from bs4 import BeautifulSoup
 import re
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup
+from datetime import datetime
 
-from .common_ldjson import extract_events_from_ldjson
+try:
+    from ..normalize import parse_datetime_range, clean_text
+    from ..types import Event
+except Exception:
+    from normalize import parse_datetime_range, clean_text
+    from types import Event  # noqa: F401
 
-def parse(html: str) -> List[Dict[str, Any]]:
+
+def _text(el):
+    return clean_text(el.get_text(" ", strip=True)) if el else ""
+
+
+def parse_growthzone(html, base_url):
     """
-    GrowthZone calendars are often JS-driven. We attempt:
-    1) JSON-LD Events (some chambers inject schema)
-    2) Static fallbacks for server-rendered calendars (when present)
+    GrowthZone calendar (e.g., business.rhinelanderchamber.com/events/calendar)
+    often renders a grid with event popups or inline list rows containing
+    anchors to /events/details/.... We’ll scrape those anchors and parse
+    the nearest date text or <time>.
     """
-    rows: List[Dict[str, Any]] = []
+    soup = BeautifulSoup(html, "lxml")
+    events = []
 
-    ld = extract_events_from_ldjson(html)
-    for ev in ld:
-        rows.append({
-            "title": ev["title"],
-            "date_text": "",
-            "iso_hint": ev["start_iso"],
-            "iso_end_hint": ev.get("end_iso"),
-            "url": ev.get("url", ""),
-            "location": ev.get("location", ""),
-        })
-    if rows:
-        return rows
-
-    soup = BeautifulSoup(html or "", "lxml")
-    # Fallback guesses: some GrowthZone sites render a basic server list
-    items = soup.select(".gz_event, .event-item, li.event, .calendar-item, .list-item")
-    for it in items:
-        title_el = it.select_one("a[href], .event-title a, h3 a, h2 a")
-        date_el  = it.select_one("time, .event-date, .dates")
-        where_el = it.select_one(".location, .venue")
-        title = (title_el.get_text(" ", strip=True) if title_el else "").strip()
-        url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
-        date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
-        location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
-        if title:
-            rows.append({
-                "title": title,
-                "date_text": date_text,
-                "iso_hint": None,
-                "iso_end_hint": None,
-                "url": url,
-                "location": location,
-            })
-
-    # Dedup
+    # Common: links to /events/details/ or /event/details/
+    links = soup.select("a[href*='/events/details/'], a[href*='/event/details/']")
     seen = set()
-    out = []
-    for r in rows:
-        k = (r["title"], r.get("url",""))
-        if k in seen:
+    for a in links:
+        href = urljoin(base_url, a.get("href"))
+        if href in seen:
             continue
-        seen.add(k)
-        out.append(r)
-    return out
+        seen.add(href)
+
+        title = _text(a) or _text(a.find("span")) or _text(a.parent)
+        # Try to find a nearby time element or date text in the same row/card
+        parent = a.closest("tr") or a.closest("li") or a.closest("div") or a.parent
+        tnode = None
+        if parent:
+            tnode = parent.find("time") or parent.select_one(".date, .dates, .when")
+        start, end = (None, None)
+        if tnode and tnode.get("datetime"):
+            try:
+                start = datetime.fromisoformat(tnode["datetime"].replace("Z", "+00:00"))
+            except Exception:
+                start, end = parse_datetime_range(_text(tnode))
+        else:
+            start, end = parse_datetime_range(_text(parent))
+
+        location = _text(parent.select_one(".where, .location, .venue")) if parent else ""
+        desc = _text(parent.select_one(".desc, .description, .summary")) if parent else ""
+
+        if title and start:
+            events.append(
+                Event(
+                    title=title,
+                    start=start,
+                    end=end,
+                    url=href,
+                    location=location or None,
+                    description=desc or None,
+                )
+            )
+
+    return events

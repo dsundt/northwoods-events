@@ -1,4 +1,4 @@
-name: Refactor: stop shadowing stdlib "types"
+name: "Refactor: stop shadowing stdlib types"
 
 on:
   workflow_dispatch:
@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "Repo root: $(pwd)"
-          git status --porcelain=v1
+          git status --porcelain=v1 || true
           echo
           echo "Tree (top-level):"
           ls -la
@@ -78,8 +78,7 @@ jobs:
           echo "Would rename: $OLD  ->  $NEW"
           echo
           echo "Would update imports under src/:"
-          # Show files that contain "from types import" or "import types" (likely your own module)
-          rg -n --glob 'src/**' -e '^\s*from\s+types\s+import\s+' -e '^\s*import\s+types(\s|$)' || echo "(none)"
+          grep -RIn --include='*.py' -E '^\s*from\s+types\s+import\s+|^\s*import\s+types(\s|$)' src || echo "(none)"
           echo
           echo "No changes are applied because apply_changes=false."
 
@@ -95,26 +94,17 @@ jobs:
           git mv "$OLD" "$NEW"
 
           # 2) Replace likely imports in our code (src/**)
-          #    We target two common patterns:
-          #    - from types import Something  -> from models import Something
-          #    - import types                 -> import models
-          #    This is conservative: we only touch files inside src/.
-          files=$(git ls-files 'src/**/*.py' || true)
-          if [ -n "$files" ]; then
-            echo "$files" | while read -r f; do
-              # Skip the new file we just created (no need to mutate it)
-              [ "$f" = "$NEW" ] && continue
-
-              # Show if file contains a candidate pattern
-              if grep -qE '^\s*from\s+types\s+import\s+' "$f" || grep -qE '^\s*import\s+types(\s|$)' "$f"; then
-                echo "Updating imports in $f"
-                # Replace 'from types import' -> 'from models import'
-                perl -0777 -pe 's/^(\s*from\s+)types(\s+import\s+)/${1}models${2}/mg' -i "$f"
-                # Replace 'import types' (standalone) -> 'import models'
-                perl -0777 -pe 's/^(\s*)import\s+types(\s|$)/${1}import models$2/mg' -i "$f"
-              fi
-            done
-          fi
+          mapfile -t pyfiles < <(git ls-files 'src/**/*.py' || true)
+          for f in "${pyfiles[@]}"; do
+            [ "$f" = "$NEW" ] && continue
+            if grep -qE '^\s*from\s+types\s+import\s+' "$f" || grep -qE '^\s*import\s+types(\s|$)' "$f"; then
+              echo "Updating imports in $f"
+              # from types import X -> from models import X
+              perl -0777 -pe 's/^(\s*from\s+)types(\s+import\s+)/${1}models${2}/mg' -i "$f"
+              # import types -> import models
+              perl -0777 -pe 's/^(\s*)import\s+types(\s|$)/${1}import models$2/mg' -i "$f"
+            fi
+          done
 
           echo
           echo "Preview git diff:"
@@ -143,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "------- git status -------"
-          git status --porcelain=v1
+          git status --porcelain=v1 || true
           echo
           echo "------- tree: src -------"
           ls -la src || true

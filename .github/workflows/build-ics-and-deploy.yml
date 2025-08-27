@@ -22,26 +22,102 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: 'bash -lc "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml; fi"'
+      - name: Show Python and install deps
+        run: |
+          set -euo pipefail
+          python -V
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
+          fi
+          echo "---- pip freeze (for reproducibility) ----"
+          pip freeze | sed -n '1,200p'
 
-      - name: Show sources
-        run: 'bash -lc "echo \"Looking for sources.{yaml,yml} at repo root and in src/...\"; found=0; for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do [ -f \"$p\" ] && echo \" - found: $p\" && found=1; done; [ $found -eq 0 ] && echo \"::warning::No sources.yaml/yml found at repo root or in src/.\" || true"'
+      - name: Locate sources.yaml(yml)
+        run: |
+          set -euo pipefail
+          echo "Looking for sources.{yaml,yml} at repo root and in src/..."
+          found=0
+          for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do
+            if [ -f "$p" ]; then
+              echo " - found: $p"
+              found=1
+            fi
+          done
+          if [ $found -eq 0 ]; then
+            echo "::warning::No sources.yaml/yml found at repo root or in src/."
+          fi
 
-      - name: Run builder
-        run: 'bash -lc "echo \"Running: python src/main.py\"; TZ=America/Chicago python src/main.py; echo; echo \"Outputs at repo root:\"; ls -la || true; if [ -d state ]; then echo \"state/ (top 200 files):\"; find state -type f | sed -n \"1,200p\"; else echo \"::warning::No state/ dir produced.\"; fi; if [ -f src/northwoods.ics ] && [ ! -f northwoods.ics ]; then cp src/northwoods.ics northwoods.ics; fi; [ -f northwoods.ics ] && echo \"northwoods.ics present at repo root.\" || echo \"::warning::northwoods.ics not found.\""'
-
-      - name: Commit and push changes (if any)
+      - name: Run builder and collect artifacts
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: 'bash -lc "git config user.name \"github-actions[bot]\"; git config user.email \"github-actions[bot]@users.noreply.github.com\"; git add -A; git diff --cached --quiet && echo \"No changes to commit.\" || (git commit -m \"Daily update: ICS + state\" && git push)"'
+          TZ: America/Chicago
+        run: |
+          set -euo pipefail
+          rm -rf public
+          mkdir -p public
 
-      - uses: actions/configure-pages@v5
+          echo "Running: python src/main.py"
+          {
+            echo "===== BUILD START $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
+            echo "CWD: $(pwd)"
+            echo "PYTHON: $(python -V)"
+            echo "-------------------------------------------"
+            python src/main.py
+            echo "-------------------------------------------"
+            echo "Repo root listing:"
+            ls -la
+            echo "-------------------------------------------"
+            if [ -d state ]; then
+              echo "state/ contents (top 200 files):"
+              find state -type f | sed -n '1,200p'
+            else
+              echo "NOTE: No state/ directory produced."
+            fi
+            echo "===== BUILD END $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
+          } 2>&1 | tee public/build.log
 
-      - name: Build public site
-        run: 'bash -lc "rm -rf public && mkdir -p public && printf \"%s\n\" \"<!doctype html>\" \"<meta charset=\\\"utf-8\\\">\" \"<title>Northwoods Events - Artifacts</title>\" \"<h1>Northwoods Events - Artifacts</h1>\" \"<p>This page lists useful generated files from the repo.</p>\" \"<ul>\" \"  <li><a href=\\\"state/\\\">state/ (snapshots, last_run_report.json)</a></li>\" \"  <li><a href=\\\"northwoods.ics\\\">northwoods.ics (if present)</a></li>\" \"</ul>\" \"<hr>\" \"<p>Auto-published by GitHub Pages workflow.</p>\" > public/index.html; [ -d state ] && mkdir -p public/state && cp -a state/. public/state/ || true; [ -f northwoods.ics ] && cp northwoods.ics public/ || true; echo \"Public artifact contents (top):\"; find public -maxdepth 3 -type f | sed -n \"1,200p\" "'
+          # If ICS ended up under src/, surface it to repo root
+          if [ -f src/northwoods.ics ] && [ ! -f northwoods.ics ]; then
+            cp src/northwoods.ics ./northwoods.ics
+          fi
 
-      - uses: actions/upload-pages-artifact@v3
+          # Prepare public site
+          mkdir -p public/state
+          if [ -d state ]; then
+            cp -a state/. public/state/
+          fi
+          if [ -f northwoods.ics ]; then
+            cp northwoods.ics public/
+          fi
+
+          # Create an index page that links to whatever exists
+          {
+            echo '<!doctype html>'
+            echo '<meta charset="utf-8">'
+            echo '<title>Northwoods Events - Artifacts</title>'
+            echo '<h1>Northwoods Events - Artifacts</h1>'
+            echo '<ul>'
+            [ -f public/northwoods.ics ] && echo '  <li><a href="northwoods.ics">northwoods.ics</a></li>'
+            [ -d public/state ] && echo '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>'
+            echo '  <li><a href="build.log">build.log (full console output)</a></li>'
+            echo '</ul>'
+            echo '<hr>'
+            echo '<p>Auto-published by GitHub Pages.</p>'
+          } > public/index.html
+
+          echo "Public artifact contents (top):"
+          find public -maxdepth 3 -type f | sed -n '1,200p'
+
+          # Hard fail if nothing meaningful was produced
+          if [ ! -f public/northwoods.ics ] && [ ! -d public/state ] ; then
+            echo "::error::No northwoods.ics and no state/ produced by the builder. See build.log for details."
+            exit 1
+          fi
+
+      - name: Upload artifact (github-pages)
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public
 

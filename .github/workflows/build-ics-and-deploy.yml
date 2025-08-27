@@ -1,0 +1,178 @@
+name: Build ICS & Deploy Pages
+
+on:
+  schedule:
+    # Run daily at 09:15 UTC (3:15am CST/CDT-ish). Adjust as you like.
+    - cron: "15 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # commit/push changes (state/, northwoods.ics)
+  pages: write      # deploy to Pages
+  id-token: write   # required by deploy-pages
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build:
+    name: Build ICS & prepare site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true   # keep GITHUB_TOKEN for push
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
+          fi
+
+      - name: Show sources file(s) found
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Looking for sources.{yaml,yml} at repo root and in src/…"
+          for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do
+            if [ -f "$p" ]; then
+              echo " - found: $p"
+            fi
+          done
+
+      - name: Run builder (src/main.py)
+        shell: bash
+        env:
+          TZ: America/Chicago
+        run: |
+          set -euo pipefail
+          echo "Running: python src/main.py"
+          python src/main.py
+          echo
+          echo "Outputs (if any):"
+          ls -la || true
+          echo
+          if [ -d state ]; then
+            echo "State dir tree (top):"
+            find state -maxdepth 2 -type f | sed -n '1,200p'
+          else
+            echo "No state/ dir produced."
+          fi
+          if [ -f northwoods.ics ]; then
+            echo "Found ICS at repo root."
+          elif [ -f src/northwoods.ics ]; then
+            echo "Found ICS in src/; will copy to root and site later."
+            cp src/northwoods.ics ./northwoods.ics
+          else
+            echo "No ICS file found."
+          fi
+
+      - name: Commit & push changes (if any)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add typical outputs if present
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Daily update: ICS + state"
+          # Push back to the same branch this workflow run came from
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build public site
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf public
+          mkdir -p public
+
+          # Basic index
+          cat > public/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>Northwoods Events – Artifacts</title>
+          <h1>Northwoods Events – Artifacts</h1>
+          <p>This page lists useful generated files from the repo.</p>
+          <ul>
+            <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>
+            <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>
+          </ul>
+          <hr>
+          <p>Auto-published by GitHub Pages workflow.</p>
+          HTML
+
+          # Expose state/ if it exists
+          if [ -d state ]; then
+            mkdir -p public/state
+            rsync -a state/ public/state/
+            python - <<'PY'
+import os, html
+root = "public/state"
+for base, dirs, files in os.walk(root):
+    rel = os.path.relpath(base, root)
+    if rel == ".": rel = ""
+    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
+        f.write("<!doctype html><meta charset='utf-8'><title>state/{}</title>".format(html.escape(rel)))
+        f.write("<h1>state/{}</h1><ul>".format(html.escape(rel)))
+        for d in sorted(dirs):
+            f.write("<li>[dir] <a href='{0}/'>{0}/</a></li>".format(html.escape(d)))
+        for fn in sorted(files):
+            if fn == "index.html": continue
+            f.write("<li><a href='{0}'>{0}</a></li>".format(html.escape(fn)))
+        f.write("</ul>")
+PY
+          fi
+
+          # Put ICS at site root if available
+          if [ -f northwoods.ics ]; then
+            cp northwoods.ics public/
+          elif [ -f src/northwoods.ics ]; then
+            cp src/northwoods.ics public/
+          fi
+
+          echo "Public artifact contents (top):"
+          find public -maxdepth 3 -type f | sed -n '1,200p'
+
+      - name: Upload artifact (github-pages)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

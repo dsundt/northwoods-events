@@ -1,189 +1,76 @@
 {
-  "when": "2025-08-27T09:45:01.571446-05:00",
+  "when": "2025-08-27T10:26:20.839796-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 96,
-      "rest_fallback_unavailable": true,
-      "added": 96,
-      "samples": [
-        {
-          "title": "Chain Skimmers Water Ski Show",
-          "start": "2025-08-26T19:00:00-05:00",
-          "location": "5280 Hwy 45 North",
-          "url": "https://vilaswi.com/event/chain-skimmers-water-ski-show-2/2025-08-26/"
-        },
-        {
-          "title": "Eagle River Wednesday Farmers Market",
-          "start": "2025-08-27T08:30:00-05:00",
-          "location": "613 Michigan Street",
-          "url": "https://vilaswi.com/event/eagle-river-wednesday-farmers-market-3/2025-08-27/"
-        },
-        {
-          "title": "Landover ATV-UTV Wednesday Night Bingo",
-          "start": "2025-08-27T18:00:00-05:00",
-          "location": "5630 Rush Rd",
-          "url": "https://vilaswi.com/event/landover-atv-utv-wednesday-night-bingo-2/2025-08-27/"
-        }
-      ]
+      "parsed": 0,
+      "samples": []
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 89,
-      "rest_fallback_unavailable": true,
-      "added": 89,
-      "samples": [
-        {
-          "title": "Boulder Junction Lions Club Flea Market",
-          "start": "2025-08-26T08:00:00-05:00",
-          "location": "5392 Park Street",
-          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-08-26/"
-        },
-        {
-          "title": "Friends of the Library Weekly Book Sale",
-          "start": "2025-08-26T08:00:00-05:00",
-          "location": "5392 Park Street",
-          "url": "https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-08-26/"
-        },
-        {
-          "title": "HeArt Centered Meditation with Lia Montgomery",
-          "start": "2025-08-27T10:30:00-05:00",
-          "location": "5392 Park Street",
-          "url": "https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/2025-08-27/"
-        }
-      ]
+      "parsed": 0,
+      "samples": []
     },
     {
       "name": "Oneida County \u2013 Festivals & Events (Modern Tribe)",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 1,
       "parsed": 0,
-      "rest_fallback_unavailable": true,
-      "error_html": "error('bad character range \\\\\\\\-( at position 10')",
-      "ics_name": "Oneida County \u2013 Festivals & Events (Modern Tribe) (ICS)",
-      "ics_url": "https://oneidacountywi.com/festivals-events/?ical=1",
-      "ics_error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 500,
-      "added": 500,
-      "samples": [
-        {
-          "title": "Summer Day Camp at Old Paths Christian Ministries",
-          "start": "2025-08-26T07:30:00-05:00",
-          "location": "Old Paths Christian Ministries",
-          "url": "https://eagleriver.org/events/summer-day-camp/2025-08-26/"
-        },
-        {
-          "title": "Story Time",
-          "start": "2025-08-26T10:00:00-05:00",
-          "location": "203 North Main Street",
-          "url": "https://eagleriver.org/events/story-time/2025-08-26/"
-        },
-        {
-          "title": "Outdoor Yoga Classes at Cedaroma Lodge",
-          "start": "2025-08-26T10:30:00-05:00",
-          "location": "Cedaroma Lodge",
-          "url": "https://eagleriver.org/events/yoga-on-the-beach-3/2025-08-26/"
-        }
-      ]
+      "parsed": 0,
+      "samples": []
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 1,
       "parsed": 0,
-      "error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
-      "fetched": 1,
       "parsed": 0,
-      "rest_fallback_unavailable": true,
-      "error_html": "error('bad character range \\\\\\\\-( at position 10')",
-      "ics_name": "St. Germain Chamber (Modern Tribe) (ICS)",
-      "ics_url": "https://st-germain.com/events-calendar/?ical=1",
-      "ics_error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     },
     {
       "name": "Minocqua Area Chamber (Modern Tribe)",
       "url": "https://www.minocqua.org/events/?eventDisplay=list",
-      "fetched": 1,
       "parsed": 0,
-      "rest_fallback_unavailable": true,
-      "error_html": "error('bad character range \\\\\\\\-( at position 10')",
-      "ics_name": "Minocqua Area Chamber (Modern Tribe) (ICS)",
-      "ics_url": "https://www.minocqua.org/events/?ical=1",
-      "ics_error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
-      "fetched": 1,
       "parsed": 0,
-      "error": "error('bad character range \\\\\\\\-( at position 10')",
-      "ics_name": "Town of Arbor Vitae (Municipal Calendar) (ICS)",
-      "ics_url": "https://www.townofarborvitae.org/calendar/?ical=1",
-      "ics_error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     },
     {
       "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
-      "fetched": 1,
       "parsed": 11,
-      "rest_fallback_unavailable": true,
-      "added": 11,
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-27T18:30:00-05:00",
-          "location": "3230 State House Point Road",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/"
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/",
+          "source": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)"
         },
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T18:30:00-05:00",
-          "location": "3230 State House Point Road",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor\u2019s Race",
-          "start": "2025-08-31T15:00:00-05:00",
-          "location": "7914 Co. Rd K",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
+          "source": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)"
         }
       ]
     },
     {
       "name": "Manitowish Waters Chamber (Modern Tribe)",
       "url": "https://manitowishwaters.org/events/?eventDisplay=list",
-      "fetched": 1,
       "parsed": 0,
-      "rest_fallback_unavailable": true,
-      "error_html": "error('bad character range \\\\\\\\-( at position 10')",
-      "ics_name": "Manitowish Waters Chamber (Modern Tribe) (ICS)",
-      "ics_url": "https://manitowishwaters.org/events/?ical=1",
-      "ics_error": "error('bad character range \\\\\\\\-( at position 10')",
-      "added": 0,
       "samples": []
     }
   ]

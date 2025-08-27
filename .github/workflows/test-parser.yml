@@ -58,7 +58,7 @@ jobs:
             echo "Directory state/snapshots does not exist."
           fi
 
-      - name: Collect matching files (bash + jq)
+      - name: Collect matching files (safe single-line outputs)
         id: setlist
         shell: bash
         env:
@@ -68,34 +68,33 @@ jobs:
           set -euo pipefail
           echo "Pattern: ${PATTERN}"
           echo "Limit: ${LIMIT}"
-          shopt -s nullglob
-          # Expand glob safely, sort, then limit
-          mapfile -t _matches < <(printf "%s\n" ${PATTERN} | xargs -I{} bash -lc 'printf "%s\n" {}' | xargs -I{} bash -lc 'printf "%s\n" {}' 2>/dev/null || true)
-          # If the glob didn't expand literally (common), use compgen to expand
-          if [ ${#_matches[@]} -eq 1 ] && [ "${_matches[0]}" = "${PATTERN}" ]; then
-            mapfile -t _matches < <(compgen -G "${PATTERN}" || true)
-          fi
-          if [ ${#_matches[@]} -eq 0 ]; then
-            echo "No matches found."
-            FILES_JSON="[]"
-          else
-            # Sort and limit
-            mapfile -t _sorted < <(printf "%s\n" "${_matches[@]}" | sort)
-            # Limit
-            _n="${LIMIT}"
-            if ! [[ "$_n" =~ ^[0-9]+$ ]]; then _n=15; fi
-            mapfile -t _limited < <(printf "%s\n" "${_sorted[@]}" | head -n "$_n")
-            echo "=== Matched files (limited to ${_n}) ==="
-            i=1
-            for p in "${_limited[@]}"; do
-              printf "%3d. %s\n" "$i" "$p"
-              i=$((i+1))
-            done
-            # Build JSON array via jq
-            FILES_JSON=$(printf "%s\n" "${_limited[@]}" | jq -R -s 'split("\n")|map(select(length>0))')
-          fi
+
+          # Build compact JSON with Python to avoid pretty printing
+          FILES_JSON="$(python - <<'PY'
+import glob, json, os
+pattern = os.environ.get("PATTERN", "state/snapshots/*.html")
+try:
+    limit = int(os.environ.get("LIMIT", "15"))
+except Exception:
+    limit = 15
+matches = sorted([p for p in glob.glob(pattern) if os.path.isfile(p)])[:limit]
+# compact, single-line JSON
+print(json.dumps(matches, separators=(",",":")))
+PY
+)"
+          echo "Matched (raw JSON): ${FILES_JSON}"
+
+          # Derive count safely
+          COUNT="$(python - <<'PY'
+import json, os
+print(len(json.loads(os.environ["FILES_JSON"])))
+PY
+)"
+          export FILES_JSON
+
+          # Write outputs as single-line key=value (no leading spaces!)
           echo "files_json=${FILES_JSON}" >> "$GITHUB_OUTPUT"
-          echo "count=$(echo "${FILES_JSON}" | jq 'length')" >> "$GITHUB_OUTPUT"
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
 
       - name: Pretty list (always)
         shell: bash
@@ -105,7 +104,16 @@ jobs:
           set -euo pipefail
           echo
           echo "Pretty list:"
-          echo "${FILES_JSON}" | jq -r 'to_entries[] | "  \(.key+1)) \(.value)"' || echo "  (no files)"
+          if [ -z "${FILES_JSON:-}" ] || [ "${FILES_JSON}" = "[]" ]; then
+            echo "  (no files)"
+          else
+            python - <<'PY'
+import json, os
+files = json.loads(os.environ["FILES_JSON"])
+for i, p in enumerate(files, 1):
+    print(f"  {i:2d}) {p}")
+PY
+          fi
           echo
 
       - name: Pick single file (only if run_mode=single)
@@ -117,25 +125,26 @@ jobs:
           INDEX: ${{ inputs.index }}
         run: |
           set -euo pipefail
-          idx="${INDEX}"
-          if ! [[ "$idx" =~ ^[0-9]+$ ]]; then idx=1; fi
-          total=$(echo "${FILES_JSON}" | jq 'length')
-          chosen=""
-          if [ "${total}" -eq 0 ]; then
-            echo "No files to choose from."
-          else
-            i=$((idx-1))
-            if [ "$i" -ge 0 ] && [ "$i" -lt "${total}" ]; then
-              chosen=$(echo "${FILES_JSON}" | jq -r ".[$i]")
-              echo "Chosen #${idx}: ${chosen}"
-            else
-              echo "Index ${idx} out of range 1..${total}"
-            fi
-          fi
-          echo "chosen_path=${chosen}" >> "$GITHUB_OUTPUT"
-          if [ -z "${chosen}" ]; then
-            exit 1
-          fi
+          python - <<'PY'
+import json, os, sys
+files = json.loads(os.environ.get("FILES_JSON","[]"))
+try:
+    idx = int(os.environ.get("INDEX","1"))
+except Exception:
+    idx = 1
+chosen = ""
+if not files:
+    print("No files to choose from.")
+elif 1 <= idx <= len(files):
+    chosen = files[idx-1]
+    print(f"Chosen #{idx}: {chosen}")
+else:
+    print(f"Index {idx} out of range 1..{len(files)}")
+with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+    fh.write(f"chosen_path={chosen}\n")
+if not chosen:
+    sys.exit(1)
+PY
 
       - name: Stop after listing (when run_mode=list)
         if: ${{ inputs.run_mode == 'list' }}
@@ -201,7 +210,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
-          else
+          else:
             pip install requests beautifulsoup4 lxml ics python-dateutil pytz
           fi
 

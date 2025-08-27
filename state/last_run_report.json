@@ -1,86 +1,212 @@
 {
-  "when": "2025-08-27T10:36:31.360871-05:00",
+  "when": "",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/vilas_county_modern_tribe.html"
+      "parsed": 88,
+      "added": 88,
+      "samples": [
+        {
+          "title": "St. Germain Flea Market",
+          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/",
+          "location": "",
+          "start": "2025-08-28T00:00:00-05:00",
+          "end": "2025-07-29T08:00:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "Manitowish Waters Lions Club Bingo",
+          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/",
+          "location": "",
+          "start": "2025-08-28T00:00:00-05:00",
+          "end": "2025-07-29T18:00:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "Monday Night Bingo",
+          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/",
+          "location": "",
+          "start": "2025-08-28T00:00:00-05:00",
+          "end": "2025-07-29T18:15:00-05:00",
+          "all_day": false
+        }
+      ]
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/boulder_junction_modern_tribe.html"
-    },
-    {
-      "name": "Oneida County – Festivals & Events (Modern Tribe)",
-      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/oneida_county_-_festivals__events_modern_tribe.html",
-      "ics_error": "ICS endpoint returned non-ICS (likely HTML/blocked)"
+      "parsed": 65,
+      "added": 65,
+      "samples": [
+        {
+          "title": "Northwoods Children’s Museum Nature Education Classes",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/",
+          "location": "",
+          "start": "2025-08-28T00:00:00-05:00",
+          "end": "2025-07-29T10:30:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "Mah Jongg at the Boulder Junction Public Library",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/",
+          "location": "",
+          "start": "2025-08-28T00:00:00-05:00",
+          "end": "2025-07-29T13:00:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "Boulder Junction Lions Club Flea Market",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/",
+          "location": "",
+          "start": "2025-08-29T00:00:00-05:00",
+          "end": "2025-07-30T08:00:00-05:00",
+          "all_day": false
+        }
+      ]
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/eagle_river_chamber_modern_tribe.html"
+      "parsed": 135,
+      "added": 130,
+      "samples": [
+        {
+          "title": "Labor Day Arts and Crafts Show",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
+          "location": "",
+          "start": "2025-08-27T10:00:00-05:00",
+          "end": "2025-08-27T16:00:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "SepTimber Ride",
+          "url": "https://eagleriver.org/events/septimber-ride/",
+          "location": "",
+          "start": "2025-08-27T07:00:00-05:00",
+          "end": "2025-08-27T15:00:00-05:00",
+          "all_day": false
+        },
+        {
+          "title": "Cranberry Fest",
+          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "location": "",
+          "start": "2025-08-04T00:00:00-05:00",
+          "end": "2025-10-05T00:00:00-05:00",
+          "all_day": false
+        }
+      ]
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 1,
-      "parsed": 125,
+      "parsed": 0,
       "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
+      "samples": []
+    },
+    {
+      "name": "Town of Arbor Vitae (Municipal Calendar)",
+      "url": "https://www.townofarborvitae.org/calendar/",
+      "fetched": 1,
+      "parsed": 30,
+      "added": 30,
       "samples": [
         {
-          "title": "Oneida County Fair",
-          "start": "2025-08-27T00:00:00-05:00",
+          "title": "Google Calendar",
+          "url": "http://www.google.com/calendar/event?action=TEMPLATE&text=Brush%20Site%20Open%20&dates=20250824T130000Z/20250824T170000Z",
           "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-01-2025-17402"
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
         },
         {
-          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
-          "start": "2025-08-27T00:00:00-05:00",
+          "title": "Google Calendar",
+          "url": "http://www.google.com/calendar/event?action=TEMPLATE&text=Brush%20Site%20Open%20&dates=20250823T130000Z/20250823T210000Z",
           "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/youth-baseball-softball-clinic-with-the-wi-woodchucks-17592"
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
         },
         {
-          "title": "ArtStart Gallery Exhibitions",
-          "start": "2025-08-27T00:00:00-05:00",
+          "title": "Google Calendar",
+          "url": "http://www.google.com/calendar/event?action=TEMPLATE&text=Brush%20Site%20Open%20&dates=20250822T130000Z/20250822T210000Z",
           "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027"
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
         }
-      ],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/rhinelander_chamber_growthzone.html"
+      ]
+    },
+    {
+      "name": "Minocqua Area Chamber (Simpleview)",
+      "url": "https://www.minocqua.org/events/",
+      "fetched": 1,
+      "parsed": 8,
+      "added": 8,
+      "samples": [
+        {
+          "title": "Events",
+          "url": "https://www.minocqua.org/events/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        },
+        {
+          "title": "The Beef Is Back!",
+          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        },
+        {
+          "title": "Read More",
+          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        }
+      ]
+    },
+    {
+      "name": "Oneida County – Festivals & Events (Simpleview)",
+      "url": "https://oneidacountywi.com/festivals-events/",
+      "fetched": 1,
+      "parsed": 4,
+      "added": 4,
+      "samples": [
+        {
+          "title": "Learn more about Beef-a-Rama™",
+          "url": "http://www.minocqua.org/things-to-do/events/annual-events/beef-a-rama/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        },
+        {
+          "title": "here",
+          "url": "https://www.minocqua.org/events/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        },
+        {
+          "title": "here",
+          "url": "https://explorerhinelander.com/events/",
+          "location": "",
+          "start": "2025-08-27T00:00:00-05:00",
+          "end": "2025-08-27T23:59:59-05:00",
+          "all_day": true
+        }
+      ]
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -88,87 +214,15 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/st._germain_chamber_modern_tribe.html",
-      "ics_error": "ICS endpoint returned non-ICS (likely HTML/blocked)"
+      "samples": []
     },
     {
-      "name": "Minocqua Area Chamber (Modern Tribe)",
-      "url": "https://www.minocqua.org/events/?eventDisplay=list",
-      "fetched": 1,
+      "name": "Sayner–Star Lake–Cloverland Chamber (ICS)",
+      "url": "https://sayner-starlake-cloverland.org/events/?ical=1",
+      "fetched": 0,
       "parsed": 0,
       "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/minocqua_area_chamber_modern_tribe.html",
-      "ics_error": "ICS endpoint returned non-ICS (likely HTML/blocked)"
-    },
-    {
-      "name": "Town of Arbor Vitae (Municipal Calendar)",
-      "url": "https://www.townofarborvitae.org/calendar/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/town_of_arbor_vitae_municipal_calendar.html",
-      "error": "Unknown kind 'municipal'",
-      "ics_error": "ICS endpoint returned non-ICS (likely HTML/blocked)"
-    },
-    {
-      "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
-      "url": "https://sayner-starlake-cloverland.org/events/",
-      "fetched": 1,
-      "parsed": 22,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/"
-        },
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/"
-        },
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T00:00:00-05:00",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
-        }
-      ],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/sayner-star_lake-cloverland_chamber_modern_tribe.html"
-    },
-    {
-      "name": "Manitowish Waters Chamber (Modern Tribe)",
-      "url": "https://manitowishwaters.org/events/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "samples": [],
-      "snapshot": "/home/runner/work/northwoods-events/northwoods-events/state/snapshots/manitowish_waters_chamber_modern_tribe.html",
-      "ics_error": "ICS endpoint returned non-ICS (likely HTML/blocked)"
+      "samples": []
     }
-  ],
-  "totals": {
-    "normalized": 147,
-    "deduped": 136
-  }
+  ]
 }

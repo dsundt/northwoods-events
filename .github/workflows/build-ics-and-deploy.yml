@@ -46,4 +46,26 @@ jobs:
       - name: "Commit & push changes (if any)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash -eo pipefail -c "git config user.name 'github-actions[bot]'; git config user.email 'github-actions[bot]@users.noreply.github.com'; git add -A; if git diff --cached --quiet; then echo 'No changes to comm
+        run: bash -eo pipefail -c "git config user.name 'github-actions[bot]'; git config user.email 'github-actions[bot]@users.noreply.github.com'; git add -A; if git diff --cached --quiet; then echo 'No changes to commit.'; exit 0; fi; git commit -m 'Daily update: ICS + state'; git push"
+
+      - name: "Configure Pages"
+        uses: actions/configure-pages@v5
+
+      - name: "Build public site"
+        run: bash -eo pipefail -c "rm -rf public && mkdir -p public && printf '%s\n' '<!doctype html>' '<meta charset=\"utf-8\">' '<title>Northwoods Events - Artifacts</title>' '<h1>Northwoods Events - Artifacts</h1>' '<p>This page lists useful generated files from the repo.</p>' '<ul>' '  <li><a href=\"state/\">state/ (snapshots, last_run_report.json)</a></li>' '  <li><a href=\"northwoods.ics\">northwoods.ics (if present)</a></li>' '</ul>' '<hr>' '<p>Auto-published by GitHub Pages workflow.</p>' > public/index.html && if [ -d state ]; then mkdir -p public/state && cp -a state/. public/state/; fi && if [ -f northwoods.ics ]; then cp northwoods.ics public/; fi && echo 'Public artifact contents (top):' && find public -maxdepth 3 -type f | sed -n '1,200p'"
+
+      - name: "Upload artifact (github-pages)"
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    name: "Deploy to GitHub Pages"
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - name: "Deploy"
+        id: deployment
+        uses: actions/deploy-pages@v4

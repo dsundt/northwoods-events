@@ -1,3 +1,6 @@
+- name: List snapshots
+  run: ls -R state/snapshots
+
 name: Test Parser
 
 on:

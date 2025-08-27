@@ -1,49 +1,64 @@
-defaults:
-  tz: America/Chicago
+_defaults:
+  tzname: America/Chicago
+  default_duration_minutes: 120
 
 sources:
+  # Modern Tribe (HTML list parsing)
   - name: Vilas County (Modern Tribe)
-    kind: modern_tribe
+    kind: modern_tribe_html
     url: https://vilaswi.com/events/?eventDisplay=list
+    enabled: true
 
   - name: Boulder Junction (Modern Tribe)
-    kind: modern_tribe
+    kind: modern_tribe_html
     url: https://boulderjct.org/events/?eventDisplay=list
-
-  - name: Oneida County – Festivals & Events (Modern Tribe)
-    kind: modern_tribe
-    url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
-    ics_url: https://oneidacountywi.com/festivals-events/?ical=1
+    enabled: true
 
   - name: Eagle River Chamber (Modern Tribe)
-    kind: modern_tribe
+    kind: modern_tribe_html
     url: https://eagleriver.org/events/?eventDisplay=list
+    enabled: true
 
+  # GrowthZone (month grid)
   - name: Rhinelander Chamber (GrowthZone)
-    kind: growthzone
+    kind: growthzone_month
     url: https://business.rhinelanderchamber.com/events/calendar
+    list_url: https://business.rhinelanderchamber.com/events/calendar
+    enabled: true
 
-  - name: St. Germain Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    ics_url: https://st-germain.com/events-calendar/?ical=1
-
-  - name: Minocqua Area Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://www.minocqua.org/events/?eventDisplay=list
-    ics_url: https://www.minocqua.org/events/?ical=1
-
+  # Squarespace Event List
   - name: Town of Arbor Vitae (Municipal Calendar)
-    kind: municipal
+    kind: squarespace_eventlist
     url: https://www.townofarborvitae.org/calendar/
-    ics_url: https://www.townofarborvitae.org/calendar/?ical=1
+    list_url: https://www.townofarborvitae.org/calendar/
+    enabled: true
 
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
-    kind: modern_tribe
+  # Simpleview-backed sites (JS list; use detail-page JSON-LD fallback)
+  - name: Minocqua Area Chamber (Simpleview)
+    kind: simpleview
+    url: https://www.minocqua.org/events/
+    list_url: https://www.minocqua.org/events/
+    max_detail_visits: 20
+    enabled: true
+    notes: Simpleview site; list is JS. Parser follows detail links and reads JSON-LD.
+
+  - name: Oneida County – Festivals & Events (Simpleview)
+    kind: simpleview
+    url: https://oneidacountywi.com/festivals-events/
+    list_url: https://oneidacountywi.com/festivals-events/
+    max_detail_visits: 20
+    enabled: true
+    notes: Simpleview site; list is JS. Parser follows detail links and reads JSON-LD.
+
+  # If St. Germain actually runs Modern Tribe, keep it on HTML parsing; if not, flip to simpleview.
+  - name: St. Germain Chamber (Modern Tribe)
+    kind: modern_tribe_html
+    url: https://st-germain.com/events-calendar/?eventDisplay=list
+    enabled: true
+
+  # ICS examples (keep if you want feeds that work)
+  - name: Sayner–Star Lake–Cloverland Chamber (ICS)
+    kind: ics
     url: https://sayner-starlake-cloverland.org/events/
     ics_url: https://sayner-starlake-cloverland.org/events/?ical=1
-
-  - name: Manitowish Waters Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://manitowishwaters.org/events/?eventDisplay=list
-    ics_url: https://manitowishwaters.org/events/?ical=1
+    enabled: true

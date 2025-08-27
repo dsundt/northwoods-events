@@ -6,7 +6,7 @@ from typing import List, Dict
 def parse_ai1ec(html: str) -> List[Dict]:
     """
     Parse events from All-in-One Event Calendar (Ai1EC).
-    Supports various markup variants (.ai1ec-event-instance, .ai1ec-agenda-event, etc).
+    Supports common classes: .ai1ec-event-instance, .ai1ec-agenda-event, .ai1ec-event-summary.
     """
     soup = BeautifulSoup(html or "", "html.parser")
     items: List[Dict] = []
@@ -16,7 +16,8 @@ def parse_ai1ec(html: str) -> List[Dict]:
         ".ai1ec-event-instance, "
         ".ai1ec-agenda-event, "
         "article.ai1ec_event, "
-        ".ai1ec-event-container"
+        ".ai1ec-event-container, "
+        ".ai1ec-event-summary"
     )
 
     for node in candidates:

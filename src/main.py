@@ -5,8 +5,6 @@ import argparse
 import json
 import os
 import re
-import sys
-import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -15,7 +13,6 @@ import yaml
 
 from normalize import parse_datetime_range, clean_text
 from parsers import get_parser
-from types import Event  # simple @dataclass with title,start,end,url,location,description
 
 USER_AGENT = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -90,7 +87,7 @@ def fetch_html(url: str, timeout: int = 30) -> Tuple[str, str, int]:
 def normalize_events(rows: List[Dict[str, Any]],
                      default_duration_minutes: int = 120,
                      tzname: str = "America/Chicago") -> List[Dict[str, Any]]:
-    out = []
+    out: List[Dict[str, Any]] = []
     for r in rows:
         date_text = r.get("date_text") or ""
         iso_hint = r.get("iso_hint")
@@ -104,6 +101,7 @@ def normalize_events(rows: List[Dict[str, Any]],
                 tzname=tzname,
             )
         except Exception:
+            # If parsing fails for this row, skip it
             continue
 
         title = clean_text(r.get("title"))
@@ -179,19 +177,21 @@ def main():
     sources_file = find_sources_file(args.sources)
     sources, defaults = load_sources(sources_file)
 
-    reports = []
-    all_events = []
+    reports: List[Dict[str, Any]] = []
+    all_events: List[Dict[str, Any]] = []
 
     for src in sources:
         name = src.get("name", "Unknown")
         url = src["url"]
-        kind = src.get("kind", "").lower()
+        kind = (src.get("kind") or "").lower()
         tzname = src.get("tzname", defaults.get("tzname", "America/Chicago"))
         dur = int(src.get("default_duration_minutes",
                           defaults.get("default_duration_minutes", 120)))
 
         base = sanitize_filename(name)
-        report = {"name": name, "url": url, "fetched": 0, "parsed": 0, "added": 0}
+        report: Dict[str, Any] = {
+            "name": name, "url": url, "fetched": 0, "parsed": 0, "added": 0
+        }
 
         try:
             html, ctype, status = fetch_html(url)
@@ -199,14 +199,15 @@ def main():
             report["http_status"] = status
             report["snapshot"] = save_snapshot(base, html)
 
-            parser_fn = get_parser(kind)
-            rows = parser_fn(html, url)  # all our parsers accept (html, base_url)
+            parser_fn = get_parser(kind)  # will raise if kind unknown
+            rows = parser_fn(html, url)   # parsers accept (html, base_url)
             report["parsed"] = len(rows)
 
             normalized = normalize_events(rows, dur, tzname)
+
             # filter out past events
-            now = datetime.now().isoformat()
-            future = [ev for ev in normalized if ev["end"] >= now]
+            now_iso = datetime.now().isoformat()
+            future = [ev for ev in normalized if ev["end"] >= now_iso]
 
             deduped = dedupe(future)
             report["added"] = len(deduped)
@@ -215,8 +216,7 @@ def main():
             all_events.extend(deduped)
 
         except Exception as e:
-            report["error"] = repr(e)
-
+            report["error"] = f"{type(e).__name__}('{str(e)}')"
         reports.append(report)
 
     # Write ICS
@@ -226,9 +226,15 @@ def main():
     # Write last_run_report.json
     ensure_dir("state")
     with open("state/last_run_report.json", "w", encoding="utf-8") as f:
-        json.dump({"when": datetime.now().isoformat(),
-                   "timezone": defaults.get("tzname", "America/Chicago"),
-                   "sources": reports}, f, indent=2)
+        json.dump(
+            {
+                "when": datetime.now().isoformat(),
+                "timezone": defaults.get("tzname", "America/Chicago"),
+                "sources": reports,
+            },
+            f,
+            indent=2,
+        )
 
 
 if __name__ == "__main__":

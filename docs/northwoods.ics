@@ -2,840 +2,19 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:ics.py - http://git.io/lLljaA
 BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/historic-downtown-walking-tours-presented-by-the-eagle-river-historical-society/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Historic Downtown Walking Tours Presented by the Eagle River Historical Society
-UID:e8201363-8e1f-4450-8c8a-5ec8e7cce8ef@e820.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
-UID:43fa0df8-2c2e-4222-8903-c7b5d9264365@43fa.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-08-27/
-DTEND:20250828T000000Z
-LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
-DTSTART:20250827T220000Z
-SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:26e9bf21-c9ea-4563-a81a-f24585d6d3d4@26e9.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/hallowfest/
-DTEND:20251025T070000Z
-DTSTART:20251025T050000Z
-SUMMARY:Hallowfest
-UID:ff801284-f05b-40bc-96dd-45aaf7a34ac3@ff80.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/aunt-graces-sewing-circle/2025-09-04/
-DTEND:20250904T070000Z
-DTSTART:20250904T050000Z
-SUMMARY:Aunt Grace’s Sewing Circle
-UID:4cb3d1d7-35f9-445d-bc60-e4d45eb7a44b@4cb3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/story-time/2025-09-02/
-DTEND:20250902T070000Z
-DTSTART:20250902T050000Z
-SUMMARY:Story Time
-UID:d72eafd1-c567-43bc-a480-f451c12e7efa@d72e.org
+DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-08-29/
+DTEND:20250829T190000Z
+LOCATION:Presque Isle Main St\, MAIN STREET\, Presque Isle\, WI\, 54557-\, United States
+DTSTART:20250829T130000Z
+SUMMARY:Farm Fresh Friday Market
+UID:5fb33b1a-bc43-4a43-b97c-985c73dd5a98@5fb3.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://vilaswi.com/event/eagle-river-wednesday-farmers-market-3/2025-08-27/
 DTEND:20250827T070000Z
 DTSTART:20250827T050000Z
 SUMMARY:Eagle River Wednesday Farmers Market
-UID:1369e6f8-e4f2-4eea-853d-d9d8f1937ff0@1369.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-09-05/
-DTEND:20250905T070000Z
-DTSTART:20250905T050000Z
-SUMMARY:Farm Fresh Friday Market
-UID:89d27fa1-ca99-4f29-9a11-5aa9be9eff56@89d2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:553995b0-be2a-407f-a2c2-bb471fa4dbbd@5539.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/
-DTEND:20250830T233000Z
-LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
-DTSTART:20250830T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:fb619bdb-fed7-4e03-ae8f-c013ec2396e5@fb61.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
-DTEND:20250827T070000Z
-LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
-DTSTART:20250827T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:1386a358-0df4-4c0d-973a-cfa1301cc77a@1386.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Boulder Junction Lions Club Flea Market
-UID:b869cb81-7a32-4530-8bd6-0ae152fe1c89@b869.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/saturday-studio-drop-in-art-at-the-library/2025-09-06/
-DTEND:20250906T070000Z
-DTSTART:20250906T050000Z
-SUMMARY:Saturday Studio: Drop In Art at the Library
-UID:4b2b5f54-6842-4fa6-b1b4-d4362709e961@4b2b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:HeArt Centered Meditation with Lia Montgomery
-UID:6f8423a2-f8ba-4f69-8899-fdc9928f1c87@6f84.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
-DTEND:20250928T050000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20250826T050000Z
-SUMMARY:Colorama Weekend
-UID:4fc4950b-e6d8-4f07-8ce5-25de50d99c94@4fc4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/landover-atv-utv-wednesday-night-bingo-2/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Landover ATV-UTV Wednesday Night Bingo
-UID:77ef53e6-708e-47de-bdba-886d74693166@77ef.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/
-DTEND:20250827T233000Z
-LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
-DTSTART:20250827T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:4e3370d1-a1a2-4191-b7fe-f7b5e2082d9d@4e33.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Eagle River Farmers Market and Artisans Market
-UID:e47e2413-1585-432f-84cc-7a180385e597@e47e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
-DTEND:20251201T000000Z
-LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
-DTSTART:20251128T000000Z
-SUMMARY:Christmas in Downtown Sayner-Star Lake
-UID:69ae446f-4818-4474-bf5f-46d81d2f37e7@69ae.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/eagle-river-sunday-farmers-market-3/2025-08-31/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Eagle River Sunday Farmers Market
-UID:a8593449-b3e5-4bad-a08b-95d3d1bd4c7e@a859.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-29/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:97e68873-6dc1-4b45-997d-d570c9e6e5a2@97e6.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs/2025-09-01/
-DTEND:20250901T070000Z
-DTSTART:20250901T050000Z
-SUMMARY:School Walking Hours at NPHS
-UID:383cdc72-6895-4beb-8278-1c76d6c6c4ca@383c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/plum-ski-ters-water-ski-show/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:708b9937-738f-47a8-83ef-a2896c0b4cf1@708b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wiggle-giggle-shake/2025-09-05/
-DTEND:20250905T070000Z
-DTSTART:20250905T050000Z
-SUMMARY:Wiggle Giggle & Shake
-UID:f8b4d347-dd28-4ca3-81e6-7ba66f6e324f@f8b4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/plum-ski-ters-water-ski-show/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:205de2cc-c1e4-4e57-bbbc-c5209d1fe93a@205d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/under-the-northern-lights-summer-fundraiser-for-lola/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Under the Northern Lights-Summer Fundraiser for LOLA
-UID:431861f5-e205-4cda-b4b9-a18ec496dcaa@4318.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
-DTEND:20250915T070000Z
-LOCATION:Whitetail Inn 9038 WI-70\, St. Germain\, WI
-DTSTART:20250915T050000Z
-SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
-UID:1215d11d-8c82-4db4-b2ba-c2b2158e089e@1215.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/american-mah-jongg-for-beginners-classes/2025-09-04/
-DTEND:20250904T070000Z
-DTSTART:20250904T050000Z
-SUMMARY:American Mah Jongg For Beginners Classes
-UID:67c3df76-378d-4cab-9923-3dd870aa0ca9@67c3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/story-time/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Story Time
-UID:7d7b0b23-0f99-4bbe-989d-ca7841e7227f@7d7b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/holiday-flea-market/2025-08-31/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Zurko’s Midwest Promotions Flea Market
-UID:b5512e63-60d1-4621-91f6-c86add0e5a20@b551.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/seated-yoga-at-the-walter-e-memorial-library/2025-09-02/
-DTEND:20250902T070000Z
-DTSTART:20250902T050000Z
-SUMMARY:Seated Yoga at the Walter E. Memorial Library
-UID:a562dae7-88f1-4a08-946b-86b0f3c74681@a562.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-artisans-market/2025-08-31/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Eagle River Farmers & Artisans Market
-UID:8908960f-8561-4ddc-9b62-a1bc568e919f@8908.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/ukulele-practice-jam-session/2025-09-01/
-DTEND:20250901T070000Z
-DTSTART:20250901T050000Z
-SUMMARY:Ukulele Practice/ Jam Session
-UID:24042d95-acf0-4af5-9aa9-56b08ed09126@2404.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/open-mic-lab-w-jimmy-meiers-inspiration-bar-warehouse-community-arts-center/2025-09-05/
-DTEND:20250905T070000Z
-DTSTART:20250905T050000Z
-SUMMARY:Open Mic Lab @ Inspiration Bar\, Warehouse Community Arts Center
-UID:01055239-1369-4fd7-be52-64ccecd3cb67@0105.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-3/2025-09-06/
-DTEND:20250906T070000Z
-DTSTART:20250906T050000Z
-SUMMARY:School Walking Hours at NPHS
-UID:430af561-9250-43dc-9b8b-0a679d86ee37@430a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/
-DTEND:20250831T013000Z
-LOCATION:Plum Lake\, 3230 State House Point Road\, Sayner\, WI\, 54558\, United States
-DTSTART:20250830T233000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:443a6259-24d7-4772-8787-baad071f0403@443a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/holiday-flea-market/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Holiday Flea Market
-UID:70442f3a-8710-4c9a-a595-739d1e33c1ea@7044.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Aqualand Ale House Comedy Night
-UID:87f56b50-1b35-4f81-96b5-0394d04b84db@87f5.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/bingo-bingo-bingo-winegar-american-legion-post-480/2025-08-31/
-DTEND:20250901T013000Z
-LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
-DTSTART:20250831T230000Z
-SUMMARY:BINGO BINGO BINGO / Winegar American Legion Post 480
-UID:84d1f2b0-996f-4772-9cc3-09557116d620@84d1.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:88404484-dcbb-4661-a1a0-3c0ff22d3b78@8840.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:e68a411c-5fe1-46d0-81b3-08e80ab13a59@e68a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
-DTEND:20250904T070000Z
-DTSTART:20250904T050000Z
-SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
-UID:103ea720-95ad-4a9c-93bc-993a5193e223@103e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/bingo-bingo-bingo-winegar-american-legion-post-480/2025-08-31/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:BINGO BINGO BINGO / Winegar American Legion Post 480
-UID:4d96f156-d62c-4d01-ace7-e9227257b001@4d96.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/free-mending-day-at-walter-e-olson-memorial-library/2025-09-06/
-DTEND:20250906T070000Z
-DTSTART:20250906T050000Z
-SUMMARY:Free Mending Day at Walter E. Olson Memorial Library
-UID:1186cf2d-aa4c-4a3f-ab2c-8c22a2a3dc72@1186.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/
-DTEND:20250829T000000Z
-LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
-DTSTART:20250828T220000Z
-SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:7e3fb2d9-1095-4369-8706-ea0b1aa1f1b7@7e3f.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
-DTEND:20251115T160000Z
-LOCATION:Plum Lake Community Center 545 WI-155\, St. Germain\, WI
-DTSTART:20250815T050000Z
-SUMMARY:Christmas Fest
-UID:bd1864d6-ec70-48c0-8f91-50609e9a0e92@bd18.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
-DTEND:20251128T080000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20251128T060000Z
-SUMMARY:Christmas in Downtown Sayner-Star Lake
-UID:51da6c9b-52df-445d-b651-6b66a2f58fc2@51da.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
-DTEND:20251115T200000Z
-LOCATION:Plum Lake Community Center\, 545 WI-155\, St. Germain\, WI\, 54558
-DTSTART:20251115T160000Z
-SUMMARY:Christmas Fest
-UID:d401660e-a685-4eca-8fb4-f045b2e27570@d401.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:619384de-e30e-420e-89b2-f43d78b9a48b@6193.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/historic-downtown-walking-tours-presented-by-the-eagle-river-historical-society-2/2025-08-29/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Historic Downtown Walking Tours Presented by the Eagle River Historical Society
-UID:3cc5acbb-e93c-44b9-8e34-34b24743113a@3cc5.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
-DTEND:20250926T070000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20250926T050000Z
-SUMMARY:Colorama Weekend
-UID:698d3f58-6305-4779-af70-86358254b7c9@698d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/septimber-ride/
-DTEND:20250913T070000Z
-DTSTART:20250913T050000Z
-SUMMARY:SepTimber Ride
-UID:2abc49ad-9a2e-4b7e-bd78-306ecb3d4c79@2abc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/member-appreciation-weekend/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Member Appreciation Weekend
-UID:4377bc03-a0cf-4e9c-b3b8-7c8ae6538a25@4377.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
-DTEND:20250916T010000Z
-LOCATION:Whitetail Inn\, 9038 WI-70\, St. Germain\, WI\, 54558
-DTSTART:20250915T210000Z
-SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
-UID:0de01bc0-1c2a-4bd6-b3a0-368b38809cea@0de0.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
-DTEND:20251030T070000Z
-LOCATION:Plum Lake Library 8789 Peterson St.\, Sayner\, WI 54560
-DTSTART:20251030T050000Z
-SUMMARY:Trunk-N-Treat
-UID:3504ac0c-d7e2-4c0b-a482-ddf02417f6f9@3504.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/chain-skimmers-water-ski-show-2/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Chain Skimmers Water Ski Show
-UID:10373758-99cc-497c-bf5e-82a0f9d58c27@1037.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/manitowish-waters-lions-club-flea-farmers-market/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Manitowish Waters Lions Club Flea & Farmers Market
-UID:960d3ffe-a930-4286-b794-cfdc3fe52622@960d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
-UID:ac2066fe-fd4c-48ad-98dd-7fc4983cd774@ac20.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
-DTEND:20251021T000000Z
-LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
-DTSTART:20251020T210000Z
-SUMMARY:14th Annual Harvest Dinner
-UID:6631ba14-40d9-4884-a00d-52645d63ecd1@6631.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
-DTEND:20250901T190000Z
-LOCATION:Weber's 2649 Co. Rd C\, Sayner\, WI
-DTSTART:20250801T050000Z
-SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
-UID:699d0874-dc53-47f2-b2e5-78ca82416bc2@699d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
-DTEND:20251115T080000Z
-LOCATION:Plum Lake Community Center 545 WI-155\, St. Germain\, WI
-DTSTART:20251115T060000Z
-SUMMARY:Christmas Fest
-UID:400260eb-765c-4214-97b7-0190017969bd@4002.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/yoga-on-the-beach-3/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Outdoor Yoga Classes at Cedaroma Lodge
-UID:8f19da98-42c4-4785-b2ff-1a5810846f19@8f19.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
-DTEND:20250826T070000Z
-LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
-DTSTART:20250826T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:17c7fa9f-e3ce-4f50-8971-6b7166e306be@17c7.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
-DTEND:20251206T220000Z
-LOCATION:Sayner Community Center 545 WI-155\, Sayner\, WI
-DTSTART:20250806T050000Z
-SUMMARY:Hometown Holiday Celebration
-UID:ad00f0d9-5faf-43f3-9730-462fee057833@ad00.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
-UID:d95dd3f1-8f62-4608-8f7e-83f694162739@d95d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-2/2025-09-01/
-DTEND:20250901T070000Z
-DTSTART:20250901T050000Z
-SUMMARY:School Walking Hours at NPHS
-UID:325a0f47-dc81-4819-a9d5-3ce18a5b4428@325a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/
-DTEND:20250830T070000Z
-LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
-DTSTART:20250830T050000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:f87a71eb-9d7f-44a9-9947-4bf3cc4c9528@f87a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
-DTEND:20251030T230000Z
-LOCATION:Plum Lake Library\, 8789 Peterson St.\, Sayner\, WI 54560
-DTSTART:20251030T210000Z
-SUMMARY:Trunk-N-Treat
-UID:f6030833-7d97-41f7-8ee8-5a95303ae9df@f603.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-speedway-tuesday-night-races/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Eagle River Speedway Tuesday Night Races
-UID:c3aa39df-3eff-4b94-9419-ad970d90a476@c3aa.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/4-week-clay-classes-beginner-intermediate-at-warehouse-community-art-center/2025-09-03/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:4 Week Pottery Wheel Classes (beginner/intermediate) at Warehouse Community Art Center
-UID:3aa087d9-1bd0-485e-aec8-ff9f04c0d7f3@3aa0.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-08-28/
-DTEND:20250828T160000Z
-LOCATION:Presque Isle Community Center\, 8306 School Loop Rd\, Presque Isle\, WI\, 54557\, United States
-DTSTART:20250828T133000Z
-SUMMARY:Northwoods Table Tennis Club
-UID:835732f3-9373-4be7-b37e-63f6179a24bf@8357.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
-DTEND:20250901T070000Z
-LOCATION:Weber's 2649 Co. Rd C\, Sayner\, WI
-DTSTART:20250901T050000Z
-SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
-UID:a047e990-9705-4382-a6de-e9a4dd37886a@a047.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
-UID:ab4ade80-52db-47b8-a021-3a02d67c2212@ab4a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/
-DTEND:20250831T200000Z
-LOCATION:Stillwaters 7914 Co. Rd K\, Star Lake\, WI
-DTSTART:20250831T050000Z
-SUMMARY:23rd Annual Stillwaters Star Lake Mayor’s Race
-UID:d44b8b1c-b1ff-4dc5-aefc-2ddac82e0e2a@d44b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/aunt-graces-sewing-circle/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Aunt Grace’s Sewing Circle
-UID:8173b53a-c2e7-4c71-b66e-3f34298182f5@8173.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-09-03/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:Eagle River Farmers Market and Artisans Market
-UID:ee09d47d-ae83-4d4e-a6d2-90a3e687ff6f@ee09.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-farmers-market-2/2025-08-29/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Presque Isle Farmers Market
-UID:7a166108-8a1a-48bb-b5e2-580ecdb1b60d@7a16.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-09-03/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:e2060e63-cba4-4740-91bd-b7a9ea8723b0@e206.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Labor Day Arts and Crafts Show
-UID:a97a35ea-457d-4982-be84-fb8f2a778db2@a97a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/cranberry-fest/
-DTEND:20251004T070000Z
-DTSTART:20251004T050000Z
-SUMMARY:Cranberry Fest
-UID:0c733fb2-1ebf-4998-a97f-9936b90d196b@0c73.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/loggers-breakfast-presque-isle-lions-club-3/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Loggers Breakfast / Presque Isle Lions Club
-UID:a4c5ee4f-fe2c-4e5e-a5a1-4d45b61cfa3a@a4c5.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-08-29/
-DTEND:20250829T190000Z
-LOCATION:Presque Isle Main St\, MAIN STREET\, Presque Isle\, WI\, 54557-\, United States
-DTSTART:20250829T130000Z
-SUMMARY:Farm Fresh Friday Market
-UID:40805096-fe1b-47fc-a1da-6c2bda4a57ce@4080.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
-DTEND:20251207T010000Z
-LOCATION:Sayner Community Center\, 545 WI-155\, Sayner\, WI\, 54560
-DTSTART:20251206T220000Z
-SUMMARY:Hometown Holiday Celebration
-UID:69e43b3a-da68-4470-9ab3-0cb05f0be129@69e4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/holiday-flea-market/2025-08-31/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Holiday Flea Market
-UID:ae699167-ae6a-4707-a17e-ba7eda0d5513@ae69.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
-DTEND:20251206T080000Z
-LOCATION:Sayner Community Center 545 WI-155\, Sayner\, WI
-DTSTART:20251206T060000Z
-SUMMARY:Hometown Holiday Celebration
-UID:e219c30f-ce6d-4a81-aa65-cdfa2c91b7b8@e219.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/wiggle-giggle-shake/2025-08-29/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Wiggle Giggle & Shake
-UID:e1781233-9ab1-4dc0-b31a-3f806d2d2340@e178.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Guide on the Side at Northern Highland Sports
-UID:bbc299cd-3056-44f1-a17b-c36bfb26e7aa@bbc2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
-DTEND:20250828T013000Z
-LOCATION:Plum Lake\, 3230 State House Point Road\, Sayner\, WI\, 54558\, United States
-DTSTART:20250827T233000Z
-SUMMARY:Plum Ski-ters Water Ski Show
-UID:d74755e5-6007-4e91-a0b6-a16fc7dff7f8@d747.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-3/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:School Walking Hours at NPHS
-UID:062504d8-8f8f-4088-8933-006de1c1f6aa@0625.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/holiday-flea-market/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Zurko’s Midwest Promotions Flea Market
-UID:d7724840-d967-4678-ad73-9f614b7657d5@d772.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/technology-nature-pi-library/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:Technology & Nature/ PI Library
-UID:073b2323-4e19-4699-9fb4-c3e56f8c1242@073b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:We Tie It Fly Shop Fly Casting Clinic
-UID:c617a639-6c88-43c0-82c6-8a2f29fe576a@c617.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
-DTEND:20251030T210000Z
-LOCATION:Plum Lake Library 8789 Peterson St.\, Sayner\, WI 54560
-DTSTART:20250830T050000Z
-SUMMARY:Trunk-N-Treat
-UID:ffcc3ed3-50b7-4732-a42d-d33c49119cc0@ffcc.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
-DTEND:20250901T220000Z
-LOCATION:Weber’s\, 2649 Co. Rd C\, Sayner\, WI\, 54560
-DTSTART:20250901T190000Z
-SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
-UID:f24c2537-9a47-4df1-87a8-77a216f817ab@f24c.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:OurStory: Monthly History Series hosted by the Boulder Jct Area Historical Society and Public Library
-UID:bd16ed6c-8ec6-427f-b90a-8d087e6bcad6@bd16.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/heart-and-soul-quilters-group/2025-09-03/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:Heart and Soul Quilters Group
-UID:1ff3fa7e-395e-49bb-ba0f-413854aeb2cf@1ff3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-09-04/
-DTEND:20250904T070000Z
-DTSTART:20250904T050000Z
-SUMMARY:Northwoods Table Tennis Club
-UID:0f10584d-06b2-4ffe-82c5-57e889d646fb@0f10.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
-DTEND:20250929T000000Z
-LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
-DTSTART:20250926T000000Z
-SUMMARY:Colorama Weekend
-UID:e669a0f9-794a-4e34-a561-ec9d874fd080@e669.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/old-fashioneds-up-north/
-DTEND:20251108T080000Z
-DTSTART:20251108T060000Z
-SUMMARY:Old Fashioneds Up North
-UID:a7e6dfa3-3fb7-432f-9877-57a20e03ea95@a7e6.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Northwoods Table Tennis Club
-UID:20ba4252-f441-4233-bf3d-06727ce056ef@20ba.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-08-29/
-DTEND:20250829T070000Z
-DTSTART:20250829T050000Z
-SUMMARY:Farm Fresh Friday Market
-UID:8ac42e54-19b3-4524-ac1c-081d05f376e3@8ac4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
-DTEND:20251130T060000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20250828T050000Z
-SUMMARY:Christmas in Downtown Sayner-Star Lake
-UID:16d4b189-c361-460d-af52-dbbabe45abe4@16d4.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-08-26/
-DTEND:20250826T070000Z
-DTSTART:20250826T050000Z
-SUMMARY:Friends of the Library Weekly Book Sale
-UID:21131819-4918-496c-a21a-efdc078deb4a@2113.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/heart-and-soul-quilters-group/2025-08-27/
-DTEND:20250827T070000Z
-DTSTART:20250827T050000Z
-SUMMARY:Heart and Soul Quilters Group
-UID:773d3298-59bd-4744-80cb-4527d68f0be7@773d.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/happy-hour-at-the-brew-station/2025-09-05/
-DTEND:20250905T070000Z
-DTSTART:20250905T050000Z
-SUMMARY:Happy Hour at The Brew Station
-UID:986ef160-6ad4-4c63-832a-a8a85e83ee72@986e.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club-2/2025-09-01/
-DTEND:20250901T070000Z
-DTSTART:20250901T050000Z
-SUMMARY:Northwoods Table Tennis Club
-UID:12e278cd-5041-4c57-bc4a-6e101f6b2381@12e2.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/
-DTEND:20250901T000000Z
-LOCATION:Stillwaters\, 7914 Co. Rd K\, Star Lake\, WI\, 54561
-DTSTART:20250831T200000Z
-SUMMARY:23rd Annual Stillwaters Star Lake Mayor’s Race
-UID:b7176aae-45d3-41a8-b147-b31f81955198@b717.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
-DTEND:20251020T070000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20251020T050000Z
-SUMMARY:14th Annual Harvest Dinner
-UID:6ad67fa7-ea25-4670-8e19-f433c29f89c6@6ad6.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
-DTEND:20250915T210000Z
-LOCATION:Whitetail Inn 9038 WI-70\, St. Germain\, WI
-DTSTART:20250815T050000Z
-SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
-UID:2d9f99fd-6a91-4baa-89af-0ce9097e55c2@2d9f.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-28/
-DTEND:20250828T070000Z
-DTSTART:20250828T050000Z
-SUMMARY:Summer Day Camp at Old Paths Christian Ministries
-UID:5fc3fc46-6f2c-4c07-bda7-0b174914ede3@5fc3.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
-DTEND:20251020T210000Z
-LOCATION:Sayner Star Lake Chamber Sayner\, WI
-DTSTART:20250820T050000Z
-SUMMARY:14th Annual Harvest Dinner
-UID:1a1bd519-d1df-4d46-9006-493eb9ba760b@1a1b.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/2025-08-30/
-DTEND:20250830T070000Z
-DTSTART:20250830T050000Z
-SUMMARY:Aqualand Ale House Summer Music Series
-UID:ca642591-fc94-4f25-9378-501dbc637dde@ca64.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://presqueisle.com/event/lynx-lake-resort-musky-tournament/
-DTEND:20250903T070000Z
-DTSTART:20250903T050000Z
-SUMMARY:Lynx Lake Resort Musky Tournament
-UID:da7a32b3-7323-476c-be81-a61f5f7647af@da7a.org
-END:VEVENT
-BEGIN:VEVENT
-DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
-DTEND:20250831T070000Z
-DTSTART:20250831T050000Z
-SUMMARY:Labor Day Arts & Crafts Show
-UID:f7381395-61c0-4bd0-a9ec-328d6756da0c@f738.org
+UID:7a518a2a-088c-43f7-9f0a-91760b874c79@7a51.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://presqueisle.com/event/loggers-breakfast-presque-isle-lions-club-3/
@@ -843,20 +22,841 @@ DTEND:20250831T160000Z
 LOCATION:Presque Isle Community Center\, 8306 School Loop Rd\, Presque Isle\, WI\, 54557\, United States
 DTSTART:20250831T130000Z
 SUMMARY:Loggers Breakfast / Presque Isle Lions Club
-UID:03d5e453-0704-485e-87f8-28946dc13fc4@03d5.org
+UID:401a97a3-1594-48c5-93ed-531c9b7625b4@401a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
+DTEND:20250901T070000Z
+LOCATION:Weber's 2649 Co. Rd C\, Sayner\, WI
+DTSTART:20250901T050000Z
+SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
+UID:74fc660c-1ceb-4a2d-89d1-34ac1d88752c@74fc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
+DTEND:20251128T080000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20251128T060000Z
+SUMMARY:Christmas in Downtown Sayner-Star Lake
+UID:e109b805-cbc9-45a2-bd7d-0bf0e9416052@e109.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
+DTEND:20250916T010000Z
+LOCATION:Whitetail Inn\, 9038 WI-70\, St. Germain\, WI\, 54558
+DTSTART:20250915T210000Z
+SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
+UID:46c4be51-2f08-41da-96b0-8b8f85753e30@46c4.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/labor-day-arts-and-crafts-show/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Labor Day Arts & Crafts Show
+UID:edfc5c83-ea44-4f80-9efa-3578e5e7ca90@edfc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/heart-and-soul-quilters-group/2025-09-03/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:Heart and Soul Quilters Group
+UID:d04ee007-8514-4e6e-8508-41ec3d0f7bc4@d04e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/story-time/2025-09-02/
+DTEND:20250902T070000Z
+DTSTART:20250902T050000Z
+SUMMARY:Story Time
+UID:0f97c568-e979-4d07-8a89-744519daf229@0f97.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wiggle-giggle-shake/2025-09-05/
+DTEND:20250905T070000Z
+DTSTART:20250905T050000Z
+SUMMARY:Wiggle Giggle & Shake
+UID:7f0394c8-0914-40d2-bab1-262a2a11f919@7f03.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-08-29/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Farm Fresh Friday Market
+UID:73d04ac8-0e31-4487-8703-f39b7f1448d6@73d0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/open-mic-lab-w-jimmy-meiers-inspiration-bar-warehouse-community-arts-center/2025-09-05/
+DTEND:20250905T070000Z
+DTSTART:20250905T050000Z
+SUMMARY:Open Mic Lab @ Inspiration Bar\, Warehouse Community Arts Center
+UID:4aa01731-f35b-4176-a6aa-31dcad7f51c9@4aa0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wiggle-giggle-shake/2025-08-29/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Wiggle Giggle & Shake
+UID:2ba1b90c-2a87-4dc3-b8b2-60359795075f@2ba1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/bingo-bingo-bingo-winegar-american-legion-post-480/2025-08-31/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:BINGO BINGO BINGO / Winegar American Legion Post 480
+UID:826c5bee-0b97-4bc0-a2ee-f82306d2815b@826c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
+DTEND:20251206T080000Z
+LOCATION:Sayner Community Center 545 WI-155\, Sayner\, WI
+DTSTART:20251206T060000Z
+SUMMARY:Hometown Holiday Celebration
+UID:93fd182d-a08c-498d-ab26-53f49bdf1369@93fd.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
+DTEND:20250915T210000Z
+LOCATION:Whitetail Inn 9038 WI-70\, St. Germain\, WI
+DTSTART:20250815T050000Z
+SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
+UID:e0ae861d-0182-44a0-bdb2-18c0b859d230@e0ae.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-2/2025-09-01/
+DTEND:20250901T070000Z
+DTSTART:20250901T050000Z
+SUMMARY:School Walking Hours at NPHS
+UID:7157eb88-9158-4403-93ef-df3b031e45ee@7157.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Friends of the Library Weekly Book Sale
+UID:4af7e561-fa8a-4014-a322-697803735d39@4af7.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/4-week-clay-classes-beginner-intermediate-at-warehouse-community-art-center/2025-09-03/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:4 Week Pottery Wheel Classes (beginner/intermediate) at Warehouse Community Art Center
+UID:c43a6299-2500-4d5b-8559-36d279110d96@c43a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-29/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:3e059ade-c6d1-4730-9b3a-5100f8da2b55@3e05.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/
+DTEND:20250830T233000Z
+LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
+DTSTART:20250830T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:2914f8f8-a45b-4537-b772-c160184ab981@2914.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/technology-nature-pi-library/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:Technology & Nature/ PI Library
+UID:df7d0816-d8c9-4c9f-b840-cef574fefc25@df7d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
+DTEND:20251130T060000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20250828T050000Z
+SUMMARY:Christmas in Downtown Sayner-Star Lake
+UID:2c5766f5-785f-4c9e-bb11-74ec4b477c4e@2c57.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:b9c97842-7ceb-47fa-95cb-cceb23e8babb@b9c9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/free-mending-day-at-walter-e-olson-memorial-library/2025-09-06/
+DTEND:20250906T070000Z
+DTSTART:20250906T050000Z
+SUMMARY:Free Mending Day at Walter E. Olson Memorial Library
+UID:18e022e4-e1bc-4c0d-9932-23f13327c27d@18e0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
+DTEND:20251115T160000Z
+LOCATION:Plum Lake Community Center 545 WI-155\, St. Germain\, WI
+DTSTART:20250815T050000Z
+SUMMARY:Christmas Fest
+UID:22b97382-2f79-4b57-9c34-b12cd6d61f1d@22b9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Guide on the Side at Northern Highland Sports
+UID:096983f5-7b7b-4405-9f37-7289d6d5cb65@0969.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
+DTEND:20250901T220000Z
+LOCATION:Weber’s\, 2649 Co. Rd C\, Sayner\, WI\, 54560
+DTSTART:20250901T190000Z
+SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
+UID:b5734f14-bc2d-468e-920a-33350a160da4@b573.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-08-28/
+DTEND:20250828T160000Z
+LOCATION:Presque Isle Community Center\, 8306 School Loop Rd\, Presque Isle\, WI\, 54557\, United States
+DTSTART:20250828T133000Z
+SUMMARY:Northwoods Table Tennis Club
+UID:c25820de-1413-470c-90e6-7e47f2564f93@c258.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/sno-eagle-party-and-cash-raffle-drawing/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Sno-Eagle Party and Cash Raffle Drawing
+UID:5512ab3e-f918-47e6-b4ca-66ca1be103df@5512.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/saturday-studio-drop-in-art-at-the-library/2025-09-06/
+DTEND:20250906T070000Z
+DTSTART:20250906T050000Z
+SUMMARY:Saturday Studio: Drop In Art at the Library
+UID:d6ac57bc-f6b1-4eae-b4ec-99c08205a45b@d6ac.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/kalmar-community-center-sheepshead-mahjong/2025-09-04/
+DTEND:20250904T070000Z
+DTSTART:20250904T050000Z
+SUMMARY:Kalmar Community Center: Sheepshead / Mahjongg
+UID:be48cc5c-cea4-4f6d-80f0-e324f14014f6@be48.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/yoga-on-the-beach-3/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Outdoor Yoga Classes at Cedaroma Lodge
+UID:88556d43-bc69-4e78-8b2e-f4b2d6569ddd@8855.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
+DTEND:20251030T230000Z
+LOCATION:Plum Lake Library\, 8789 Peterson St.\, Sayner\, WI 54560
+DTSTART:20251030T210000Z
+SUMMARY:Trunk-N-Treat
+UID:aed7dae9-50fd-483a-9f48-8b6b12dc7052@aed7.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/heart-centered-meditation-with-lia-montgomery/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:HeArt Centered Meditation with Lia Montgomery
+UID:3778e01d-30be-4d16-a692-7f4c78eaf4e9@3778.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/
 DTEND:20250827T070000Z
 DTSTART:20250827T050000Z
 SUMMARY:North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour
-UID:4bcb40c4-1fbc-4919-8c03-ae7dbf6b6aba@4bcb.org
+UID:04cb5b39-314c-49e8-a450-851b8a515ed9@04cb.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
+DTEND:20251206T220000Z
+LOCATION:Sayner Community Center 545 WI-155\, Sayner\, WI
+DTSTART:20250806T050000Z
+SUMMARY:Hometown Holiday Celebration
+UID:aa225212-6a4d-4eeb-80e2-2314abc20353@aa22.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/holiday-flea-market/2025-08-31/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Zurko’s Midwest Promotions Flea Market
+UID:97b55117-eff2-4b9b-8a36-d9646a4aa949@97b5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/lynx-lake-resort-musky-tournament/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:Lynx Lake Resort Musky Tournament
+UID:b3570766-3ef4-4a04-8a8f-4151580e7828@b357.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/aunt-graces-sewing-circle/2025-09-04/
+DTEND:20250904T070000Z
+DTSTART:20250904T050000Z
+SUMMARY:Aunt Grace’s Sewing Circle
+UID:ae8bc52b-4f93-40de-b177-abb4ce1e7e1d@ae8b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs/2025-09-01/
+DTEND:20250901T070000Z
+DTSTART:20250901T050000Z
+SUMMARY:School Walking Hours at NPHS
+UID:6b9e792d-2d0b-44d2-8bc7-20fb2dd4df89@6b9e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/historic-downtown-walking-tours-presented-by-the-eagle-river-historical-society-2/2025-08-29/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Historic Downtown Walking Tours Presented by the Eagle River Historical Society
+UID:e6b37fce-bf1c-4d0a-be01-41fd0530795f@e6b3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/hometown-holiday-celebration/
+DTEND:20251207T010000Z
+LOCATION:Sayner Community Center\, 545 WI-155\, Sayner\, WI\, 54560
+DTSTART:20251206T220000Z
+SUMMARY:Hometown Holiday Celebration
+UID:95375aba-460d-4536-9708-cc1eff12482f@9537.org
 END:VEVENT
 BEGIN:VEVENT
 DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-09-04/
 DTEND:20250904T070000Z
 DTSTART:20250904T050000Z
 SUMMARY:Martha Kelly Catering/ American Legion Post 480
-UID:6fd7b830-79b2-4f7f-a41a-4269cf4bd3c4@6fd7.org
+UID:8b2c03f5-57e8-4d37-ad31-9449288669e3@8b2c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/american-mah-jongg-for-beginners-classes/2025-09-04/
+DTEND:20250904T070000Z
+DTSTART:20250904T050000Z
+SUMMARY:American Mah Jongg For Beginners Classes
+UID:987cdc69-8fb1-4884-8908-cc64f52d8005@987c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/ukulele-practice-jam-session/2025-09-01/
+DTEND:20250901T070000Z
+DTSTART:20250901T050000Z
+SUMMARY:Ukulele Practice/ Jam Session
+UID:90fe6069-e792-4416-aad3-493a5e805c03@90fe.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/cranberry-fest/
+DTEND:20251004T070000Z
+DTSTART:20251004T050000Z
+SUMMARY:Cranberry Fest
+UID:0a518410-1b26-4e21-9b0b-dea1f28a3427@0a51.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/manitowish-waters-lions-club-flea-farmers-market/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Manitowish Waters Lions Club Flea & Farmers Market
+UID:c0a9a3c8-ebf2-4988-abd1-aefd73422441@c0a9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
+DTEND:20250828T013000Z
+LOCATION:Plum Lake\, 3230 State House Point Road\, Sayner\, WI\, 54558\, United States
+DTSTART:20250827T233000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:c3594c85-bd69-475e-983c-fb051a64695d@c359.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/heart-and-soul-quilters-group/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Heart and Soul Quilters Group
+UID:d15c935b-fa04-4b0d-9b4a-8a0b8fd12931@d15c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/labor-day-arts-and-crafts-show/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Labor Day Arts and Crafts Show
+UID:d8039882-00e7-42e1-aea0-f91931a8ceff@d803.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-in-downtown-sayner-star-lake/
+DTEND:20251201T000000Z
+LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
+DTSTART:20251128T000000Z
+SUMMARY:Christmas in Downtown Sayner-Star Lake
+UID:6f90589f-f495-41d1-ba71-49314e91e734@6f90.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/member-appreciation-weekend/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Member Appreciation Weekend
+UID:8c6d611b-3448-4d06-8aff-c80ddeb98f6d@8c6d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/north-lakeland-discovery-center-sunset-sips-pontoon-cruise/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:North Lakeland Discovery Center: Sunset Sips Pontoon Cruise
+UID:e22a88e1-017c-4544-8208-328b86dd775b@e22a.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/bingo-bingo-bingo-winegar-american-legion-post-480/2025-08-31/
+DTEND:20250901T013000Z
+LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
+DTSTART:20250831T230000Z
+SUMMARY:BINGO BINGO BINGO / Winegar American Legion Post 480
+UID:7d0e87b4-bd6a-40a8-90c0-c453bd63c6bb@7d0e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club-2/2025-09-01/
+DTEND:20250901T070000Z
+DTSTART:20250901T050000Z
+SUMMARY:Northwoods Table Tennis Club
+UID:e609febd-e1d4-4327-859a-9c084792612c@e609.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/
+DTEND:20250831T013000Z
+LOCATION:Plum Lake\, 3230 State House Point Road\, Sayner\, WI\, 54558\, United States
+DTSTART:20250830T233000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:db228946-8428-4d7f-9515-0463a92e26d8@db22.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-speedway-tuesday-night-races/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Eagle River Speedway Tuesday Night Races
+UID:53dc87ab-aa9e-40f0-a63d-259df3e8717e@53dc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
+DTEND:20251030T210000Z
+LOCATION:Plum Lake Library 8789 Peterson St.\, Sayner\, WI 54560
+DTSTART:20250830T050000Z
+SUMMARY:Trunk-N-Treat
+UID:d009276c-2150-4449-a010-4ba233989bb6@d009.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/loggers-breakfast-presque-isle-lions-club-3/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Loggers Breakfast / Presque Isle Lions Club
+UID:ad07d00a-20b6-46da-ad77-2bc0fa628efe@ad07.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
+DTEND:20251020T210000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20250820T050000Z
+SUMMARY:14th Annual Harvest Dinner
+UID:52fa5323-2265-4399-a971-2b3dd090d2a3@52fa.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/
+DTEND:20250827T233000Z
+LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
+DTSTART:20250827T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:e75e0e75-abf8-4e35-a561-9897c9ed015d@e75e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/happy-hour-at-the-brew-station/2025-09-05/
+DTEND:20250905T070000Z
+DTSTART:20250905T050000Z
+SUMMARY:Happy Hour at The Brew Station
+UID:e5d1938f-7ac6-48af-ac3b-f79ba34146be@e5d1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Martha Kelly Catering/ American Legion Post 480
+UID:0c3ea06a-c140-4255-ac2f-c157d518c382@0c3e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-3/2025-09-06/
+DTEND:20250906T070000Z
+DTSTART:20250906T050000Z
+SUMMARY:School Walking Hours at NPHS
+UID:d6739b09-2b66-439f-921d-a816c7fb22b1@d673.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Eagle River Farmers Market and Artisans Market
+UID:ddb1a2ba-4f5b-4772-93d8-145281b0380a@ddb1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/septimber-ride/
+DTEND:20250913T070000Z
+DTSTART:20250913T050000Z
+SUMMARY:SepTimber Ride
+UID:d5b63a48-3b89-4097-8ae3-e1f4183d654e@d5b6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/holiday-flea-market/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Zurko’s Midwest Promotions Flea Market
+UID:f4ea89ce-3baa-4292-b014-c70d2992541b@f4ea.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/natures-bounty-learn-how-to-forage-food-from-the-forest/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Nature’s Bounty\, Learn How to Forage Food From the Forest
+UID:3d0764f0-a40d-487d-b25a-ef4ffb2bb290@3d07.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
+DTEND:20251020T070000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20251020T050000Z
+SUMMARY:14th Annual Harvest Dinner
+UID:47061951-5207-4f4a-a183-7857ed5e425d@4706.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/farm-fresh-friday-market-2/2025-09-05/
+DTEND:20250905T070000Z
+DTSTART:20250905T050000Z
+SUMMARY:Farm Fresh Friday Market
+UID:1c555b02-3ebc-4a7d-902e-6e6fcd2c7d2e@1c55.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/plum-ski-ters-water-ski-show/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:67fed38a-de9a-45ce-8089-174f016c38d6@67fe.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/aunt-graces-sewing-circle/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Aunt Grace’s Sewing Circle
+UID:3b8c3d3d-f306-48fc-8da1-7793fdef4d33@3b8c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-lake-ems-annual-pork-loin-benefit-dinner/
+DTEND:20250915T070000Z
+LOCATION:Whitetail Inn 9038 WI-70\, St. Germain\, WI
+DTSTART:20250915T050000Z
+SUMMARY:Plum Lake EMS Annual Pork Loin Benefit Dinner
+UID:ddc217b3-80f4-4cbb-875b-b1bb83aedeb6@ddc2.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Northwoods Table Tennis Club
+UID:4af8f77c-3aae-498f-b3f3-53b61fa317d9@4af8.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/
+DTEND:20250830T070000Z
+LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
+DTSTART:20250830T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:dbd61c01-6837-4ef4-a713-0a6971e3a734@dbd6.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/hallowfest/
+DTEND:20251025T070000Z
+DTSTART:20251025T050000Z
+SUMMARY:Hallowfest
+UID:1ff3a7bd-3b53-4c4d-9fbc-cc9fce489637@1ff3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/
+DTEND:20250901T190000Z
+LOCATION:Weber's 2649 Co. Rd C\, Sayner\, WI
+DTSTART:20250801T050000Z
+SUMMARY:Barnstormers Snowmobile Club Annual Meat Raffle
+UID:ea0fae38-668a-4a47-8c47-31f40c44c739@ea0f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/14th-annual-harvest-dinner/
+DTEND:20251021T000000Z
+LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
+DTSTART:20251020T210000Z
+SUMMARY:14th Annual Harvest Dinner
+UID:1bd3793c-17b5-4b5b-b2dd-497b770d5d42@1bd3.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/story-time/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Story Time
+UID:df6d53cd-60a0-4bef-b01e-2f593a3ab7f0@df6d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/old-fashioneds-up-north/
+DTEND:20251108T080000Z
+DTSTART:20251108T060000Z
+SUMMARY:Old Fashioneds Up North
+UID:9c18371d-2bee-4ccb-b7a0-516d3a826908@9c18.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/eagle-river-sunday-farmers-market-3/2025-08-31/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Eagle River Sunday Farmers Market
+UID:7a115cf2-bc86-4925-a17a-5c61d1e06633@7a11.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-09-03/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:Martha Kelly Catering/ American Legion Post 480
+UID:92a1b20d-fb3a-441d-a797-270b0f692177@92a1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/we-tie-it-fly-shop-fly-casting-clinic/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:We Tie It Fly Shop Fly Casting Clinic
+UID:0470d3a5-643c-48b3-87e4-f3bdb87aeb88@0470.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/holiday-flea-market/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Holiday Flea Market
+UID:408ea4aa-3f02-46dd-912f-ff2132c9445a@408e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/trunk-n-treat/
+DTEND:20251030T070000Z
+LOCATION:Plum Lake Library 8789 Peterson St.\, Sayner\, WI 54560
+DTSTART:20251030T050000Z
+SUMMARY:Trunk-N-Treat
+UID:443fae9a-2f07-4a49-94c6-395367f5de89@443f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/landover-atv-utv-wednesday-night-bingo-2/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Landover ATV-UTV Wednesday Night Bingo
+UID:9d017ef4-51da-4013-bcb1-fc37db360512@9d01.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
+DTEND:20250826T070000Z
+LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
+DTSTART:20250826T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:2ae5daf5-cea7-4a8b-a523-75fd153484f6@2ae5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
+DTEND:20250929T000000Z
+LOCATION:Sayner Star Lake Chamber\, Sayner\, WI\, 54560
+DTSTART:20250926T000000Z
+SUMMARY:Colorama Weekend
+UID:8c10cc69-9292-4511-aab7-66afb9b648d6@8c10.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/
+DTEND:20250831T200000Z
+LOCATION:Stillwaters 7914 Co. Rd K\, Star Lake\, WI
+DTSTART:20250831T050000Z
+SUMMARY:23rd Annual Stillwaters Star Lake Mayor’s Race
+UID:e5320b05-b9a0-4ab2-8e65-6ff70d1fe44c@e532.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/plum-ski-ters-water-ski-show/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:3bf10640-0bfa-40ad-b20c-fd536b1ef3da@3bf1.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/holiday-flea-market/2025-08-31/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Holiday Flea Market
+UID:d0353200-151b-4c4e-984e-e90f9cc212e9@d035.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:b0751b66-16aa-4b1d-a707-62f99b1214df@b075.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Boulder Junction Lions Club Flea Market
+UID:e404d37f-0be1-4e89-8d51-93c746309bef@e404.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Martha Kelly Catering/ American Legion Post 480
+UID:6c4e9639-a273-4240-9064-c876f3bf2982@6c4e.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/school-walking-hours-at-nphs-3/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:School Walking Hours at NPHS
+UID:3511af74-495e-4000-a0bc-0c73810c40fe@3511.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/northwoods-table-tennis-club/2025-09-04/
+DTEND:20250904T070000Z
+DTSTART:20250904T050000Z
+SUMMARY:Northwoods Table Tennis Club
+UID:a608e25e-201b-4dec-9416-dfc93a093f90@a608.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/
+DTEND:20250901T000000Z
+LOCATION:Stillwaters\, 7914 Co. Rd K\, Star Lake\, WI\, 54561
+DTSTART:20250831T200000Z
+SUMMARY:23rd Annual Stillwaters Star Lake Mayor’s Race
+UID:97bc0d33-24ff-45e7-9b59-b632a867f8f5@97bc.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-comedy-night/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Aqualand Ale House Comedy Night
+UID:21fd5a0a-8958-4c10-856d-205a97fe7d0a@21fd.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-artisans-market/2025-08-31/
+DTEND:20250831T070000Z
+DTSTART:20250831T050000Z
+SUMMARY:Eagle River Farmers & Artisans Market
+UID:4782a0f5-fb8f-4c4c-bbf0-b2f46c04f465@4782.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/seated-yoga-at-the-walter-e-memorial-library/2025-09-02/
+DTEND:20250902T070000Z
+DTSTART:20250902T050000Z
+SUMMARY:Seated Yoga at the Walter E. Memorial Library
+UID:d8f03a5d-8ed8-4a00-92d4-f5ecf9d584e0@d8f0.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/presque-isle-farmers-market-2/2025-08-29/
+DTEND:20250829T070000Z
+DTSTART:20250829T050000Z
+SUMMARY:Presque Isle Farmers Market
+UID:c7c53fbe-bde3-4719-baed-194bb1bcaf4a@c7c5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://vilaswi.com/event/chain-skimmers-water-ski-show-2/2025-08-26/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Chain Skimmers Water Ski Show
+UID:b7550395-be43-4558-953b-25d6fa602a3f@b755.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/
+DTEND:20250827T070000Z
+LOCATION:Plum Lake 3230 State House Point Road\, Sayner\, WI\, United States
+DTSTART:20250827T050000Z
+SUMMARY:Plum Ski-ters Water Ski Show
+UID:440f0d03-97fb-492e-a7ef-36fe75bb5822@440f.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
+DTEND:20250928T050000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20250826T050000Z
+SUMMARY:Colorama Weekend
+UID:427c83d6-6525-45bb-9322-fffc8ab09fc6@427c.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:OurStory: Monthly History Series hosted by the Boulder Jct Area Historical Society and Public Library
+UID:2a535777-4ed8-4b68-974f-71fb5c558651@2a53.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
+DTEND:20251115T200000Z
+LOCATION:Plum Lake Community Center\, 545 WI-155\, St. Germain\, WI\, 54558
+DTSTART:20251115T160000Z
+SUMMARY:Christmas Fest
+UID:e628611e-1e45-4f4f-b74c-85b1988e131e@e628.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/eagle-river-farmers-market-and-artisans-market/2025-09-03/
+DTEND:20250903T070000Z
+DTSTART:20250903T050000Z
+SUMMARY:Eagle River Farmers Market and Artisans Market
+UID:ed24eeec-6eb0-4ad5-bbf6-a3d341494a53@ed24.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://boulderjct.org/events/aqualand-ale-house-summer-music-series/2025-08-30/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Aqualand Ale House Summer Music Series
+UID:907d3394-d035-40e0-86bc-3a4bdb11baa4@907d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/historic-downtown-walking-tours-presented-by-the-eagle-river-historical-society/2025-08-28/
+DTEND:20250828T070000Z
+DTSTART:20250828T050000Z
+SUMMARY:Historic Downtown Walking Tours Presented by the Eagle River Historical Society
+UID:3c9d16a4-200b-4d9a-8179-37fec0ce18a6@3c9d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/colorama-weekend/
+DTEND:20250926T070000Z
+LOCATION:Sayner Star Lake Chamber Sayner\, WI
+DTSTART:20250926T050000Z
+SUMMARY:Colorama Weekend
+UID:1ac5c2db-a5e2-493c-9714-8dcd7bc405db@1ac5.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/wood-carved-flower-bouquet-class-at-kalmar-community-center/
+DTEND:20250830T070000Z
+DTSTART:20250830T050000Z
+SUMMARY:Wood Carved Flower Bouquet Class at Kalmar Community Center
+UID:7a61f5d5-4477-428c-a1d0-fb24c5bac048@7a61.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://sayner-starlake-cloverland.org/event/christmas-fest/
+DTEND:20251115T080000Z
+LOCATION:Plum Lake Community Center 545 WI-155\, St. Germain\, WI
+DTSTART:20251115T060000Z
+SUMMARY:Christmas Fest
+UID:dec984fd-1732-4613-85fb-6bf97d1e5c6f@dec9.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/summer-day-camp/2025-08-27/
+DTEND:20250827T070000Z
+DTSTART:20250827T050000Z
+SUMMARY:Summer Day Camp at Old Paths Christian Ministries
+UID:da3b784f-97ca-4ce6-9fd3-f462647d6ac9@da3b.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-18/2025-08-28/
+DTEND:20250829T000000Z
+LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
+DTSTART:20250828T220000Z
+SUMMARY:Martha Kelly Catering/ American Legion Post 480
+UID:18505249-47f6-4684-a322-2fc5ee70c956@1850.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://presqueisle.com/event/martha-kelly-catering-american-legion-post-480-17/2025-08-27/
+DTEND:20250828T000000Z
+LOCATION:American Legion Post 480\, Hwy W\, Presque Isle\, WI\, 54557-\, United States
+DTSTART:20250827T220000Z
+SUMMARY:Martha Kelly Catering/ American Legion Post 480
+UID:2c3d6561-49bd-49b5-aef9-1d7dfa5c61ad@2c3d.org
+END:VEVENT
+BEGIN:VEVENT
+DESCRIPTION:Source: https://eagleriver.org/events/under-the-northern-lights-summer-fundraiser-for-lola/
+DTEND:20250826T070000Z
+DTSTART:20250826T050000Z
+SUMMARY:Under the Northern Lights-Summer Fundraiser for LOLA
+UID:0d24854e-8e98-48b6-8ca8-39a7d4030b18@0d24.org
 END:VEVENT
 END:VCALENDAR

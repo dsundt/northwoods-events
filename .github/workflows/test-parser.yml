@@ -19,10 +19,10 @@ on:
         required: true
         default: "state/snapshots/*.html"
       max_files:
-        description: "Max files to list/test"
-        type: number
+        description: "Max files to list/test (string; will be cast to int)"
+        type: string
         required: true
-        default: 15
+        default: "15"
       run_mode:
         description: "What to do after listing"
         type: choice
@@ -33,10 +33,10 @@ on:
           - single    # parse just one by index
           - matrix    # parse first N as a matrix
       index:
-        description: "1-based index to parse when run_mode=single"
-        type: number
+        description: "1-based index to parse when run_mode=single (string)"
+        type: string
         required: true
-        default: 1
+        default: "1"
 
 jobs:
   gather:
@@ -52,46 +52,51 @@ jobs:
 
       - name: List directory (for debug)
         run: |
-          echo "Repo root:"
-          pwd
+          echo "Repo root: $(pwd)"
           echo
-          echo "Tree (top-level):"
+          echo "Top-level:"
           ls -la
           echo
-          echo "Snapshots dir (if exists):"
-          if [ -d state/snapshots ]; then ls -la state/snapshots | sed -n '1,200p'; else echo "state/snapshots/ (missing)"; fi
+          if [ -d state/snapshots ]; then
+            echo "Snapshots dir:"
+            ls -la state/snapshots | sed -n '1,200p'
+          else
+            echo "state/snapshots/ (missing)"
+          fi
 
       - name: Collect matching files
         id: collect
         shell: bash
+        env:
+          PATTERN: ${{ inputs.snapshot_pattern }}
+          LIMIT: ${{ inputs.max_files }}
         run: |
           set -euo pipefail
-          PATTERN='${{ inputs.snapshot_pattern }}'
-          LIMIT='${{ inputs.max_files }}'
-
           echo "Searching with pattern: ${PATTERN}"
-          # Use python to glob (more reliable than shell for weird chars)
           python - << 'PY'
 import json, glob, os, sys
-pattern = os.environ["PATTERN"]
-limit = int(os.environ["LIMIT"])
+pattern = os.environ.get("PATTERN","state/snapshots/*.html")
+try:
+    limit = int(os.environ.get("LIMIT","15"))
+except:
+    limit = 15
 matches = sorted(glob.glob(pattern))
-# keep only files
 matches = [m for m in matches if os.path.isfile(m)]
 limited = matches[:limit]
-# pretty print numbered list
 print("\n=== Matched files (limited to %d) ===" % limit)
 if not limited:
     print("  (no matches)")
 else:
     for i, p in enumerate(limited, 1):
         print(f"  {i:>3}. {p}")
-# emit outputs
 print("\nFound:", len(limited))
-payload = json.dumps(limited)
-# GitHub outputs
-with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
-    fh.write(f"files_json={payload}\n")
+payload = json.dumps(limited)  # always valid JSON (maybe "[]")
+# Write step outputs safely with heredoc
+out = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
+with open(out, "a") as fh:
+    fh.write("files_json<<JSON\n")
+    fh.write(payload + "\n")
+    fh.write("JSON\n")
     fh.write(f"count={len(limited)}\n")
 PY
 
@@ -99,30 +104,36 @@ PY
         id: pick
         if: ${{ inputs.run_mode == 'single' }}
         shell: bash
+        env:
+          FILES: ${{ steps.collect.outputs.files_json }}
+          INDEX: ${{ inputs.index }}
         run: |
           set -euo pipefail
-          INDEX='${{ inputs.index }}'
-          FILES='${{ steps.collect.outputs.files_json }}'
-
           python - << 'PY'
 import json, os, sys
-files = json.loads(os.environ["FILES"] or "[]")
-idx = int(os.environ["INDEX"])
+files_json = os.environ.get("FILES","[]")
+try:
+    files = json.loads(files_json)
+except Exception as e:
+    print("❌ Could not decode files_json:", e)
+    files = []
+try:
+    idx = int(os.environ.get("INDEX","1"))
+except:
+    idx = 1
+chosen = ""
 if not files:
     print("❌ No files matched the pattern.")
-    # still set an empty chosen_path to avoid undefined
-    with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
-        fh.write(f"chosen_path=\n")
-    sys.exit(1)
-if idx < 1 or idx > len(files):
+elif idx < 1 or idx > len(files):
     print(f"❌ Index {idx} is out of range 1..{len(files)}")
-    with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
-        fh.write(f"chosen_path=\n")
-    sys.exit(1)
-chosen = files[idx-1]
-print(f"Chosen file #{idx}: {chosen}")
-with open(os.environ.get('GITHUB_OUTPUT', '/dev/stdout'), 'a') as fh:
+else:
+    chosen = files[idx-1]
+    print(f"Chosen file #{idx}: {chosen}")
+out = os.environ.get("GITHUB_OUTPUT","/dev/stdout")
+with open(out, "a") as fh:
     fh.write(f"chosen_path={chosen}\n")
+if not chosen:
+    sys.exit(1)
 PY
 
       - name: Stop after listing (when run_mode=list)

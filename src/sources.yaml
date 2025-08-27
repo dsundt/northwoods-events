@@ -18,13 +18,13 @@ sources:
   - name: Oneida County – Festivals & Events (Modern Tribe)
     type: modern_tribe
     url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Eagle River Chamber (Modern Tribe) ---
   - name: Eagle River Chamber (Modern Tribe)
     type: modern_tribe
     url: https://eagleriver.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Rhinelander Chamber (GrowthZone) ---
   - name: Rhinelander Chamber (GrowthZone)
@@ -36,34 +36,34 @@ sources:
   - name: St. Germain Chamber (Modern Tribe)
     type: modern_tribe
     url: https://st-germain.com/events-calendar/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Minocqua Area Chamber (Modern Tribe) ---
   - name: Minocqua Area Chamber (Modern Tribe)
     type: modern_tribe
     url: https://www.minocqua.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Town of Arbor Vitae (Ai1EC) ---
   - name: Town of Arbor Vitae (Municipal Calendar)
     type: ai1ec
     url: https://www.townofarborvitae.org/calendar/
-    wait_selector: ".ai1ec-event-instance, .ai1ec-agenda-event, article.ai1ec_event"
+    wait_selector: ".ai1ec-event-instance, .ai1ec-agenda-event, article.ai1ec_event, .ai1ec-event-summary"
 
   # --- Sayner–Star Lake–Cloverland Chamber (Modern Tribe) ---
   - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
     type: modern_tribe
     url: https://sayner-starlake-cloverland.org/events/
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Manitowish Waters Chamber (Modern Tribe) ---
   - name: Manitowish Waters Chamber (Modern Tribe)
     type: modern_tribe
     url: https://manitowishwaters.org/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"
 
   # --- Presque Isle Chamber (Modern Tribe) ---
   - name: Presque Isle Chamber (Modern Tribe)
     type: modern_tribe
     url: https://presqueisle.com/events/?eventDisplay=list
-    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event"
+    wait_selector: ".tribe-events-calendar-list__event, .tribe-events-calendar-latest__event, .tribe-events-widget-events-list__event-row"

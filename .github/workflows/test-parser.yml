@@ -66,7 +66,8 @@ jobs:
           LIMIT: ${{ inputs.max_files }}
         run: |
           set -euo pipefail
-          PYCODE='import glob, json, os
+          python - <<'PY'
+import glob, json, os
 pattern = os.environ.get("PATTERN","state/snapshots/*.html")
 try:
     limit = int(os.environ.get("LIMIT","15"))
@@ -81,9 +82,9 @@ else:
     print("(no matches)")
 out = os.environ["GITHUB_OUTPUT"]
 with open(out, "a") as fh:
-    fh.write("files_json=" + json.dumps(matches) + "\\n")
-    fh.write("count=%d\\n" % len(matches))'
-          python -c "$PYCODE"
+    fh.write("files_json=" + json.dumps(matches) + "\n")
+    fh.write("count=%d\n" % len(matches))
+PY
 
       - name: Pretty list (always)
         shell: bash
@@ -91,20 +92,21 @@ with open(out, "a") as fh:
           FILES_JSON: ${{ steps.setlist.outputs.files_json }}
         run: |
           set -euo pipefail
-          PYCODE='import json, os
+          python - <<'PY'
+import json, os
 files = []
 try:
     files = json.loads(os.environ.get("FILES_JSON","[]"))
 except Exception as e:
     print("Could not parse files_json:", e)
-print("\\nPretty list:")
+print("\nPretty list:")
 if not files:
     print("  (no files)")
 else:
     for i, p in enumerate(files, 1):
         print("  %2d) %s" % (i, p))
-print()'
-          python -c "$PYCODE"
+print()
+PY
 
       - name: Pick single file (only if run_mode=single)
         id: pick
@@ -115,7 +117,8 @@ print()'
           INDEX: ${{ inputs.index }}
         run: |
           set -euo pipefail
-          PYCODE='import json, os, sys
+          python - <<'PY'
+import json, os, sys
 try:
     files = json.loads(os.environ.get("FILES_JSON","[]"))
 except Exception:
@@ -134,10 +137,10 @@ else:
     print("Index %d out of range 1..%d" % (idx, len(files)))
 out = os.environ["GITHUB_OUTPUT"]
 with open(out, "a") as fh:
-    fh.write("chosen_path=%s\\n" % chosen)
+    fh.write("chosen_path=%s\n" % chosen)
 if not chosen:
-    sys.exit(1)'
-          python -c "$PYCODE"
+    sys.exit(1)
+PY
 
       - name: Stop after listing (when run_mode=list)
         if: ${{ inputs.run_mode == 'list' }}

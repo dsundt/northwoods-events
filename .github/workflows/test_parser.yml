@@ -1,0 +1,39 @@
+name: Test Parser
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: "Path to snapshot file (relative to repo root)"
+        required: true
+        default: "state/snapshots/vilas_county_(modern_tribe).html"
+      parser:
+        description: "Parser type (modern_tribe, ai1ec, growthzone, ics)"
+        required: true
+        default: "modern_tribe"
+
+jobs:
+  run-parser:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install requests beautifulsoup4 lxml ics pyyaml python-dateutil pytz
+
+      - name: Run test_parser
+        run: |
+          echo "Running parser: ${{ github.event.inputs.parser }} on ${{ github.event.inputs.snapshot }}"
+          python test_parser.py "${{ github.event.inputs.snapshot }}" "${{ github.event.inputs.parser }}"

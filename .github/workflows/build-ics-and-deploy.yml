@@ -112,49 +112,39 @@ jobs:
           rm -rf public
           mkdir -p public
 
-          # Write index.html via Python (avoids YAML/heredoc pitfalls)
-          python - <<'PY'
-html = """<!doctype html>
-<meta charset="utf-8">
+          # Write public/index.html via inline Python (no heredocs)
+          python -c "import os; os.makedirs('public', exist_ok=True); open('public/index.html','w',encoding='utf-8').write('''<!doctype html>
+<meta charset=\"utf-8\">
 <title>Northwoods Events - Artifacts</title>
 <h1>Northwoods Events - Artifacts</h1>
 <p>This page lists useful generated files from the repo.</p>
 <ul>
-  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>
-  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>
+  <li><a href=\"state/\">state/ (snapshots, last_run_report.json)</a></li>
+  <li><a href=\"northwoods.ics\">northwoods.ics (if present)</a></li>
 </ul>
 <hr>
 <p>Auto-published by GitHub Pages workflow.</p>
-"""
-import os
-os.makedirs("public", exist_ok=True)
-with open("public/index.html", "w", encoding="utf-8") as f:
-    f.write(html)
-PY
+''')"
 
-          # Copy state/ if present and generate simple directory listings
+          # Copy state/ if present and generate simple directory listings (also no heredocs)
           if [ -d state ]; then
             mkdir -p public/state
             cp -a state/. public/state/
-            python - <<'PY'
-import os, html
-root = "public/state"
+            python -c "import os, html; root='public/state'
 for base, dirs, files in os.walk(root):
-    rel = os.path.relpath(base, root)
-    if rel == ".": rel = ""
-    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
-        f.write("<!doctype html><meta charset='utf-8'>")
-        f.write(f"<title>state/{html.escape(rel)}</title>")
-        f.write(f"<h1>state/{html.escape(rel)}</h1><ul>")
+    rel=os.path.relpath(base, root)
+    rel='' if rel=='.' else rel
+    p=os.path.join(base,'index.html')
+    with open(p,'w',encoding='utf-8') as f:
+        f.write('<!doctype html><meta charset=\"utf-8\">')
+        f.write('<title>state/{}</title>'.format(html.escape(rel)))
+        f.write('<h1>state/{}</h1><ul>'.format(html.escape(rel)))
         for d in sorted(dirs):
-            d_esc = html.escape(d)
-            f.write(f"<li>[dir] <a href='{d_esc}/'>{d_esc}/</a></li>")
+            de=html.escape(d); f.write(f\"<li>[dir] <a href='{de}/'>{de}/</a></li>\")
         for fn in sorted(files):
-            if fn == "index.html": continue
-            fn_esc = html.escape(fn)
-            f.write(f"<li><a href='{fn_esc}'>{fn_esc}</a></li>")
-        f.write("</ul>")
-PY
+            if fn=='index.html': continue
+            fe=html.escape(fn); f.write(f\"<li><a href='{fe}'>{fe}</a></li>\")
+        f.write('</ul>')"
           fi
 
           # Copy ICS to site root if present

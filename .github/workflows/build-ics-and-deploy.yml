@@ -111,9 +111,10 @@ jobs:
           set -euo pipefail
           rm -rf public
           mkdir -p public
-          # Write a tiny HTML index using heredoc (safe inside run: | block)
-          cat > public/index.html <<'HTML'
-<!doctype html>
+
+          # Write index.html via Python (avoids YAML/heredoc pitfalls)
+          python - <<'PY'
+html = """<!doctype html>
 <meta charset="utf-8">
 <title>Northwoods Events - Artifacts</title>
 <h1>Northwoods Events - Artifacts</h1>
@@ -124,7 +125,12 @@ jobs:
 </ul>
 <hr>
 <p>Auto-published by GitHub Pages workflow.</p>
-HTML
+"""
+import os
+os.makedirs("public", exist_ok=True)
+with open("public/index.html", "w", encoding="utf-8") as f:
+    f.write(html)
+PY
 
           # Copy state/ if present and generate simple directory listings
           if [ -d state ]; then
@@ -138,15 +144,15 @@ for base, dirs, files in os.walk(root):
     if rel == ".": rel = ""
     with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
         f.write("<!doctype html><meta charset='utf-8'>")
-        f.write("<title>state/{}</title>".format(html.escape(rel)))
-        f.write("<h1>state/{}</h1><ul>".format(html.escape(rel)))
+        f.write(f"<title>state/{html.escape(rel)}</title>")
+        f.write(f"<h1>state/{html.escape(rel)}</h1><ul>")
         for d in sorted(dirs):
             d_esc = html.escape(d)
-            f.write("<li>[dir] <a href='{0}/'>{0}/</a></li>".format(d_esc))
+            f.write(f"<li>[dir] <a href='{d_esc}/'>{d_esc}/</a></li>")
         for fn in sorted(files):
             if fn == "index.html": continue
             fn_esc = html.escape(fn)
-            f.write("<li><a href='{0}'>{0}</a></li>".format(fn_esc))
+            f.write(f"<li><a href='{fn_esc}'>{fn_esc}</a></li>")
         f.write("</ul>")
 PY
           fi

@@ -2,7 +2,8 @@ name: "Build ICS & Deploy Pages"
 
 on:
   schedule:
-    - cron: "15 9 * * *" # daily 09:15 UTC
+    # Run daily at 09:15 UTC (3:15am CT/CDT). Adjust as needed.
+    - cron: "15 9 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,6 +17,8 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.11"
+  # Set to "true" to fail the job when stdlib 'types' shadowing is detected; otherwise only warn.
+  FAIL_SHADOW: "false"
 
 jobs:
   build:
@@ -26,6 +29,38 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true   # keep GITHUB_TOKEN for push
+
+      # 🔎 Shadowing scan step woven in here
+      - name: Scan for stdlib "types" shadowing
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROBLEM=0
+
+          echo "Checking for shadowing file src/types.py…"
+          if [ -f src/types.py ]; then
+            echo "::${{ env.FAIL_SHADOW == 'true' && 'error' || 'warning' }} title=Shadowing file present::Found src/types.py — this can mask Python's stdlib 'types'. Rename it (e.g., src/models.py)."
+            PROBLEM=1
+          else
+            echo "OK: src/types.py not present."
+          fi
+
+          echo
+          echo "Scanning for 'import types' / 'from types import …' in src/…"
+          MATCHES="$(grep -RIn --exclude-dir=.git --exclude='*.pyc' -E '\bfrom types import\b|\bimport types\b' src || true)"
+          if [ -n "$MATCHES" ]; then
+            echo "::${{ env.FAIL_SHADOW == 'true' && 'error' || 'warning' }} title=Suspicious imports found::These may rely on/encourage a shadowed 'types' module:"
+            echo "$MATCHES"
+            PROBLEM=1
+          else
+            echo "No suspicious 'types' imports found."
+          fi
+
+          if [ "${FAIL_SHADOW}" = "true" ] && [ $PROBLEM -ne 0 ]; then
+            echo "FAIL_SHADOW=true and problems found — failing step."
+            exit 1
+          fi
+          echo "Scan complete."
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,11 +83,16 @@ jobs:
         run: |
           set -euo pipefail
           echo "Looking for sources.{yaml,yml} at repo root and in src/..."
+          FOUND=0
           for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do
             if [ -f "$p" ]; then
               echo " - found: $p"
+              FOUND=1
             fi
           done
+          if [ $FOUND -eq 0 ]; then
+            echo "::warning title=No sources file found::Expected sources.yaml or sources.yml at repo root or in src/."
+          fi
 
       - name: Run builder (src/main.py)
         shell: bash
@@ -63,11 +103,11 @@ jobs:
           echo "Running: python src/main.py"
           python src/main.py
           echo
-          echo "Outputs (if any):"
+          echo "Outputs (if any) at repo root:"
           ls -la || true
           echo
           if [ -d state ]; then
-            echo "State dir tree (top):"
+            echo "State dir tree (top 200 files):"
             find state -maxdepth 2 -type f | sed -n '1,200p'
           else
             echo "No state/ dir produced."
@@ -75,10 +115,10 @@ jobs:
           if [ -f northwoods.ics ]; then
             echo "Found ICS at repo root."
           elif [ -f src/northwoods.ics ]; then
-            echo "Found ICS in src/; copying to root."
+            echo "Found ICS in src/; will copy to root and site later."
             cp src/northwoods.ics ./northwoods.ics
           else
-            echo "No ICS file found."
+            echo "::warning title=No ICS produced::northwoods.ics not found in repo root or src/."
           fi
 
       - name: Commit & push changes (if any)
@@ -100,35 +140,55 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Build public site (no heredocs)
+      - name: Build public site
         shell: bash
         run: |
           set -euo pipefail
           rm -rf public
           mkdir -p public
 
-          # Minimal index.html via printf (avoids heredocs)
-          {
-            printf '%s\n' '<!doctype html>'
-            printf '%s\n' '<meta charset="utf-8">'
-            printf '%s\n' '<title>Northwoods Events - Artifacts</title>'
-            printf '%s\n' '<h1>Northwoods Events - Artifacts</h1>'
-            printf '%s\n' '<p>This page lists useful generated files from the repo.</p>'
-            printf '%s\n' '<ul>'
-            printf '%s\n' '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>'
-            printf '%s\n' '  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>'
-            printf '%s\n' '</ul>'
-            printf '%s\n' '<hr>'
-            printf '%s\n' '<p>Auto-published by GitHub Pages workflow.</p>'
-          } > public/index.html
+          # Basic index
+          cat > public/index.html <<'HTML'
+<!doctype html>
+<meta charset="utf-8">
+<title>Northwoods Events - Artifacts</title>
+<h1>Northwoods Events - Artifacts</h1>
+<p>This page lists useful generated files from the repo.</p>
+<ul>
+  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>
+  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>
+</ul>
+<hr>
+<p>Auto-published by GitHub Pages workflow.</p>
+HTML
 
-          # Copy state/ if present
+          # Expose state/ if it exists
           if [ -d state ]; then
             mkdir -p public/state
             cp -a state/. public/state/
+            python - <<'PY'
+import os, html
+root = "public/state"
+for base, dirs, files in os.walk(root):
+    rel = os.path.relpath(base, root)
+    if rel == ".": rel = ""
+    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
+        f.write("<!doctype html><meta charset='utf-8'>")
+        f.write(f"<title>state/{html.escape(rel)}</title>")
+        f.write(f"<h1>state/{html.escape(rel)}</h1><ul>")
+        for d in sorted(dirs):
+            d_esc = html.escape(d)
+            f.write(f"<li>[dir] <a href='{d_esc}/'>{d_esc}/</a></li>")
+        for fn in sorted(files):
+            if fn == "index.html":
+                continue
+            fn_esc = html.escape(fn)
+            f.write(f"<li><a href='{fn_esc}'>{fn_esc}</a></li>")
+        f.write("</ul>")
+PY
           fi
 
-          # Copy ICS to site root if present
+          # Put ICS at site root if available
           if [ -f northwoods.ics ]; then
             cp northwoods.ics public/
           elif [ -f src/northwoods.ics ]; then

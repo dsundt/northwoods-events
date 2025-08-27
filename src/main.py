@@ -1,659 +1,438 @@
-# -*- coding: utf-8 -*-
-"""
-Northwoods Events – main aggregation runner.
-
-Outputs:
-- docs/northwoods.ics
-- state/events.json
-- state/last_run_report.json
-- state/new_items.json
-- state/daily_digest.txt
-- state/daily_digest.html
-"""
-
+# src/main.py
 from __future__ import annotations
 
 import json
-import traceback
+import os
+import re
+import sys
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urljoin
 
 import requests
-import yaml
 from bs4 import BeautifulSoup
 
-# Local modules
-from normalize import clean_text, parse_datetime_range
-from icsbuild import build_ics
-from dedupe import stable_id
-from tec_rest import fetch_events as tec_rest_fetch
-from parse_ai1ec import parse_ai1ec  # present in repo
+# ---- Local helpers (existing in your repo) ----
+# normalize.py must provide:
+#   - parse_datetime_range(date_text=..., iso_hint=..., iso_end_hint=..., tzname=...)
+#   - clean_text(s)
+from normalize import parse_datetime_range, clean_text
 
-# Optional Travel Wisconsin parser
+# New parsers we added
+from parsers.growthzone import parse_growthzone
+from parsers.simpleview import parse_simpleview
+from parsers.squarespace import parse_squarespace
+
+# Optional: if you have an ai1ec parser file, import it; otherwise we stub it below.
 try:
-    from parse_travelwi import parse_travelwi  # noqa: F401
+    from parsers.parse_ai1ec import parse_ai1ec  # noqa: F401
 except Exception:
-    parse_travelwi = None  # type: ignore
+    def parse_ai1ec(url: str) -> List[Dict]:
+        return []
 
-# Optional Playwright rendering
-PLAYWRIGHT_AVAILABLE = False
-try:
-    from playwright.sync_api import sync_playwright
-    PLAYWRIGHT_AVAILABLE = True
-except Exception:
-    PLAYWRIGHT_AVAILABLE = False
+CENTRAL_TZ = "America/Chicago"
 
-# ---------- Paths ----------
-ROOT = Path(__file__).resolve().parents[1]
-SRC_DIR = ROOT / "src"
-DOCS_DIR = ROOT / "docs"
-STATE_DIR = ROOT / "state"
+UA = "northwoods-events (+https://github.com/dsundt/northwoods-events)"
+REQ_HEADERS = {"User-Agent": UA}
+
+STATE_DIR = Path("state")
 SNAP_DIR = STATE_DIR / "snapshots"
-
-DOCS_DIR.mkdir(parents=True, exist_ok=True)
-STATE_DIR.mkdir(parents=True, exist_ok=True)
 SNAP_DIR.mkdir(parents=True, exist_ok=True)
 
-ICS_OUT = DOCS_DIR / "northwoods.ics"
-EVENTS_STORE_PATH = STATE_DIR / "events.json"
-LAST_RUN_REPORT = STATE_DIR / "last_run_report.json"
-NEW_ITEMS_JSON = STATE_DIR / "new_items.json"
-DIGEST_TXT = STATE_DIR / "daily_digest.txt"
-DIGEST_HTML = STATE_DIR / "daily_digest.html"
 
-SOURCES_YAML = SRC_DIR / "sources.yaml"
+# ------------------- Utilities -------------------
 
-# ---------- Misc ----------
-CHI = timezone(timedelta(hours=-5))  # display tz for digest; UTC storage in store/ICS
-UA = "northwoods-events/1.0 (+github actions; https://github.com/dsundt/northwoods-events)"
-REQ_TIMEOUT = 30
+def _now_iso() -> str:
+    return datetime.now().astimezone().isoformat()
 
+
+def _save_text_snapshot(name_hint: str, text: str, suffix: str = ".html") -> str:
+    """Save a debugging snapshot under state/snapshots and return its path."""
+    safe = re.sub(r"[^a-z0-9_.()\- ]+", "_", name_hint.lower())
+    p = SNAP_DIR / f"{safe}{suffix}"
+    p.write_text(text, encoding="utf-8", errors="ignore")
+    return str(p)
+
+
+def _http_get(url: str, *, allow_redirects: bool = True, session: Optional[requests.Session] = None) -> requests.Response:
+    s = session or requests.Session()
+    r = s.get(url, headers=REQ_HEADERS, timeout=30, allow_redirects=allow_redirects)
+    r.raise_for_status()
+    return r
+
+
+def _rows_to_normalized(rows: List[Dict], default_tz: str = CENTRAL_TZ, default_duration_minutes: int = 120) -> List[Dict]:
+    """
+    Normalize the parser rows into unified dicts with parsed datetimes.
+    Each row should have: title, date_text, iso_hint, iso_end_hint, location, url, source, tzname
+    """
+    out: List[Dict] = []
+    for r in rows:
+        title = clean_text(r.get("title", ""))
+        if not title:
+            continue
+        date_text = r.get("date_text", "") or ""
+        iso_hint = r.get("iso_hint")
+        iso_end_hint = r.get("iso_end_hint")
+        tzname = r.get("tzname") or default_tz
+
+        start_dt, end_dt, all_day = parse_datetime_range(
+            date_text=date_text,
+            iso_hint=iso_hint,
+            iso_end_hint=iso_end_hint,
+            tzname=tzname,
+        )
+
+        out.append({
+            "title": title,
+            "start": start_dt.isoformat(),
+            "end": end_dt.isoformat(),
+            "all_day": bool(all_day),
+            "location": clean_text(r.get("location", "")),
+            "url": r.get("url") or r.get("source") or "",
+            "source": r.get("source") or "",
+        })
+    return out
+
+
+def _dedupe_normalized(rows: List[Dict]) -> Tuple[List[Dict], int]:
+    """
+    De-duplicate across ALL sources by (title_norm, date_start, location_norm).
+    Returns (unique_rows, dup_count)
+    """
+    seen = set()
+    unique: List[Dict] = []
+    dup = 0
+    for r in rows:
+        key = (r["title"].strip().lower(), r["start"], (r.get("location") or "").strip().lower())
+        if key in seen:
+            dup += 1
+            continue
+        seen.add(key)
+        unique.append(r)
+    return unique, dup
+
+
+# ------------------- Parsers (HTML/ICS) -------------------
+
+def parse_modern_tribe_html_list(url: str, session: Optional[requests.Session] = None) -> List[Dict]:
+    """
+    Robust HTML list parser for Modern Tribe / The Events Calendar (works with legacy '.tribe-' and new '.tec-' classes).
+    Avoids the /wp-json/ REST which is often blocked.
+    """
+    s = session or requests.Session()
+    resp = _http_get(url, session=s)
+    html = resp.text
+    _save_text_snapshot("modern_tribe_list", html)
+
+    soup = BeautifulSoup(html, "lxml")
+
+    # New TEC v6+ often uses .tec-events, older uses .tribe-events
+    containers = soup.select(".tec-events, .tribe-events")
+    if not containers:
+        containers = [soup]
+
+    rows: List[Dict] = []
+
+    def _text(el) -> str:
+        return clean_text(el.get_text(" ", strip=True)) if el else ""
+
+    for root in containers:
+        # Common per-event wrappers:
+        #  - article.tribe-events-calendar-list__event
+        #  - .tec-event, .tec-list-event, li.tribe-events-list-event
+        candidates = []
+        candidates += root.select("article.tribe-events-calendar-list__event, li.tribe-events-list-event")
+        candidates += root.select(".tec-event, .tec-list__item, .tec-list-event, .tec-archive__event-row")
+
+        if not candidates:
+            # Fallback: any link under events list region
+            candidates = root.select("a.tribe-events-calendar-list__event-title-link, a.tec-event__title-link, .tribe-events a, .tec-events a")
+
+        for ev in candidates:
+            # Title + link
+            a = None
+            for sel in [
+                "a.tribe-events-calendar-list__event-title-link",
+                "a.tec-event__title-link",
+                "h3 a", "h2 a", "a.tribe-event-title", "a",
+            ]:
+                a = ev.select_one(sel) if hasattr(ev, "select_one") else None
+                if a:
+                    break
+            if not a and hasattr(ev, "find"):
+                a = ev.find("a", href=True)
+            if not a:
+                continue
+
+            title = _text(a) or _text(ev)
+            link = urljoin(url, a.get("href", ""))
+
+            # Date text: look for time/date elements
+            date_text = ""
+            for sel in [
+                "time", ".tribe-event-date-start", ".tribe-events-event-datetime",
+                ".tribe-event-date", ".tec-event__date", ".tec-event__datetime",
+                ".tec-event__schedule", ".tec-list__event-date", ".tec-event-date"
+            ]:
+                el = ev.select_one(sel) if hasattr(ev, "select_one") else None
+                if el:
+                    date_text = _text(el)
+                    if date_text:
+                        break
+
+            if not date_text:
+                # Fallback: shallow search around
+                parent = ev if hasattr(ev, "find_parent") else None
+                near = parent or ev
+                if near and hasattr(near, "find_all"):
+                    for sm in near.find_all(["time", "span", "div", "p"]):
+                        t = _text(sm)
+                        if re.search(r"\b(am|pm|\d{4}|\bJan|\bFeb|\bMar|\bApr|\bMay|\bJun|\bJul|\bAug|\bSep|\bOct|\bNov|\bDec)", t, re.I):
+                            date_text = t
+                            break
+
+            # Location best effort
+            location = ""
+            for sel in [
+                ".tribe-events-venue__name", ".tribe-venue", ".tec-event__venue", ".tec-venue", ".tribe-events-venue-details"
+            ]:
+                el = ev.select_one(sel) if hasattr(ev, "select_one") else None
+                if el:
+                    location = _text(el)
+                    break
+
+            rows.append({
+                "title": title,
+                "date_text": date_text,
+                "iso_hint": None,
+                "iso_end_hint": None,
+                "location": location,
+                "url": link,
+                "source": url,
+                "tzname": CENTRAL_TZ,
+            })
+
+    return rows
+
+
+def ingest_ics(url: str, session: Optional[requests.Session] = None) -> List[Dict]:
+    """
+    Light ICS ingestion with safety checks (a lot of sites serve HTML to bots).
+    Returns rows in the common schema; normalize.py will turn iso into local dt.
+    """
+    s = session or requests.Session()
+    r = _http_get(url, session=s)
+    txt = r.text
+
+    # Quick sanity: ICS should begin with BEGIN:VCALENDAR (allow BOM/whitespace)
+    head = txt.lstrip()[:32].upper()
+    if "BEGIN:VCALENDAR" not in head:
+        # Save the response for debugging and return empty with a flagged message in report.
+        _save_text_snapshot(Path(url).name + "_(ics_response)", txt, suffix=".html")
+        raise ValueError("ICS endpoint returned non-ICS (likely HTML/blocked)")
+
+    # Very lightweight parse to VEVENT blocks
+    rows: List[Dict] = []
+    blocks = re.split(r"(?mi)^BEGIN:VEVENT\s*$", txt)[1:]
+    for b in blocks:
+        # Title
+        msum = re.search(r"(?mi)^SUMMARY:(.*)$", b)
+        title = clean_text(msum.group(1)) if msum else ""
+
+        # DTSTART / DTEND (ISO-ish; we'll pass as iso_hint)
+        mstart = re.search(r"(?mi)^DTSTART(?:;[^:]+)?:([0-9TZ+\-:]+)", b)
+        mend = re.search(r"(?mi)^DTEND(?:;[^:]+)?:([0-9TZ+\-:]+)", b)
+        iso_start = mstart.group(1) if mstart else None
+        iso_end = mend.group(1) if mend else None
+
+        # URL or LOCATION
+        murl = re.search(r"(?mi)^URL:(.*)$", b)
+        mloc = re.search(r"(?mi)^LOCATION:(.*)$", b)
+
+        rows.append({
+            "title": title or "(No Title)",
+            "date_text": f"{iso_start or ''} – {iso_end or ''}".strip(),
+            "iso_hint": iso_start,
+            "iso_end_hint": iso_end,
+            "location": clean_text(mloc.group(1)) if mloc else "",
+            "url": (murl.group(1).strip() if murl else url),
+            "source": url,
+            "tzname": CENTRAL_TZ,
+        })
+
+    return rows
+
+
+# ------------------- Main orchestration -------------------
 
 @dataclass
 class Source:
     name: str
     type: str
     url: str
-    wait_selector: Optional[str] = None
-    ics_family: Optional[str] = None
-    extra: Dict[str, Any] = None
+    enabled: bool = True
+    ics_url: Optional[str] = None
 
 
-def now_utc() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def load_yaml(path: Path) -> dict:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def save_json(path: Path, data: Any) -> None:
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
-
-
-def read_json(path: Path, default: Any) -> Any:
-    if not path.exists():
-        return default
-    try:
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def snapshot_html(name: str, raw_html: str, rendered: bool = False) -> str:
-    safe = (
-        name.lower()
-        .replace(" ", "_").replace("/", "_").replace("&", "and")
-        .replace("–", "-").replace("—", "-")
-    )
-    suffix = ".rendered.html" if rendered else ".html"
-    out = SNAP_DIR / f"{safe}{suffix}"
-    out.write_text(raw_html or "", encoding="utf-8", errors="ignore")
-    return str(out.relative_to(ROOT))
-
-
-# --- Compatibility wrapper for parse_datetime_range ---
-def _call_parse_datetime_range(date_text: str, iso_hint: str, iso_end_hint: str):
-    """
-    Use whatever signature normalize.parse_datetime_range supports.
-    Tries keywords first, then falls back to positional.
-    """
-    try:
-        return parse_datetime_range(date_text=date_text, iso_hint=iso_hint, iso_end_hint=iso_end_hint)
-    except TypeError:
-        return parse_datetime_range(date_text, iso_hint, iso_end_hint)
-
-
-# ---------- Fetchers ----------
-def fetch_static(url: str, referer: Optional[str] = None) -> str:
-    headers = {
-        "User-Agent": UA,
-        "Accept": "text/html,application/xhtml+xml",
-        "Accept-Language": "en-US,en;q=0.9",
-    }
-    if referer:
-        headers["Referer"] = referer
-    r = requests.get(url, headers=headers, timeout=REQ_TIMEOUT)
-    r.raise_for_status()
-    return r.text
-
-
-def fetch_rendered_with_context(context, url: str, wait_selector: Optional[str] = None) -> str:
-    page = context.new_page()
-    page.goto(url, wait_until="domcontentloaded")
-    if wait_selector:
-        try:
-            page.wait_for_selector(wait_selector, state="visible", timeout=15000)
-        except Exception:
-            page.wait_for_timeout(3000)
-    html = page.content()
-    page.close()
-    return html
-
-
-# ---------- Parsers ----------
-def parse_modern_tribe_html(html: str) -> List[Dict]:
-    """
-    Extract events from The Events Calendar (Modern Tribe).
-    Handles classic list/month, "latest events", widget blocks, and FSE block templates.
-    """
-    items: List[Dict] = []
-    soup = BeautifulSoup(html or "", "html.parser")
-
-    nodes = soup.select(
-        ".tribe-events-calendar-list__event, "
-        ".tribe-events-calendar-month__calendar-event, "
-        ".tribe-events-calendar-latest__event, "
-        ".tribe-events-widget-events-list__event-row, "
-        "article.type-tribe_events, "
-        "div[class*='tribe-events']"
-    )
-
-    for n in nodes:
-        # Title + link
-        a = n.select_one(
-            "a.tribe-events-calendar-list__event-title-link, "
-            "a.tribe-event-url, "
-            ".tribe-events-calendar-latest__event-title a, "
-            ".tribe-events-widget-events-list__event-title a, "
-            "h3 a"
-        )
-        title = (a.get_text(strip=True) if a else "").strip()
-        url = (a["href"].strip() if a and a.has_attr("href") else "")
-
-        # Prefer ISO datetime attributes
-        t = n.select_one("time[datetime]")
-        iso_start = t["datetime"].strip() if t and t.has_attr("datetime") else ""
-        date_text = t.get_text(" ", strip=True) if t else ""
-
-        # Venue/location
-        venue = n.select_one(
-            ".tribe-events-venue, "
-            ".tribe-venue, "
-            ".tribe-events-calendar-list__event-venue, "
-            ".tribe-events-venue-details, "
-            ".tribe-events-calendar-latest__event-venue, "
-            ".tribe-events-widget-events-list__event-venue"
-        )
-        venue_text = (venue.get_text(" ", strip=True) if venue else "").strip()
-
-        if title:
-            items.append({
-                "title": title,
-                "url": url,
-                "date_text": date_text,
-                "venue_text": venue_text,
-                "iso_datetime": iso_start,
-                "iso_end": "",
-            })
-
-    return items
-
-
-
-
-
-def parse_growthzone_html(html: str) -> List[Dict]:
-    items: List[Dict] = []
-    soup = BeautifulSoup(html or "", "html.parser")
-    cards = soup.select(
-        ".mn-event, .mn-event-card, .event, .listing .item, .mn-calendar .event"
-    )
-    for n in cards:
-        a = n.select_one("a")
-        title = (a.get_text(strip=True) if a else "").strip()
-        url = (a["href"].strip() if a and a.has_attr("href") else "")
-        dateblock = n.select_one(".date, .mn-event-date, time, .when, .datetime")
-        date_text = (dateblock.get_text(" ", strip=True) if dateblock else "").strip()
-        venueblock = n.select_one(".venue, .location, .where, .mn-event-location")
-        venue_text = (venueblock.get_text(" ", strip=True) if venueblock else "").strip()
-        if title:
-            items.append(
-                {
-                    "title": title,
-                    "url": url,
-                    "date_text": date_text,
-                    "venue_text": venue_text,
-                    "iso_datetime": "",
-                    "iso_end": "",
-                }
-            )
-    return items
-
-
-def parse_by_type(kind: str, html: str) -> List[Dict]:
-    k = (kind or "").lower()
-    if k in ("modern_tribe", "modern-tribe", "tribe"):
-        return parse_modern_tribe_html(html)
-    if k in ("growthzone", "chambermaster"):
-        return parse_growthzone_html(html)
-    if k in ("ai1ec", "all_in_one", "all-in-one"):
-        return parse_ai1ec(html)
-    if k in ("travelwi", "travelwi_widget") and parse_travelwi is not None:
-        return parse_travelwi(html)  # type: ignore
-    return []
-
-
-# ---------- ICS ingest ----------
-def ingest_ics(text: str) -> List[Dict]:
-    """
-    Parse ICS text into normalized event rows.
-    Safe against non-ICS text (returns []).
-    """
-    if not text or not text.lstrip().startswith("BEGIN:VCALENDAR"):
-        return []
-    from ics import Calendar
-    rows: List[Dict] = []
-    cal = Calendar(text)
-    for ev in cal.events:
-        title = clean_text(getattr(ev, "name", "") or "")
-        loc = clean_text(getattr(ev, "location", "") or "")
-        link = ""
-        try:
-            link = getattr(ev, "url", "") or ""
-        except Exception:
-            link = ""
-        start = getattr(ev, "begin", None)
-        end = getattr(ev, "end", None)
-
-        iso_start = ""
-        iso_end = ""
-        try:
-            if start:
-                iso_start = start.datetime.astimezone(timezone.utc).isoformat()
-            if end:
-                iso_end = end.datetime.astimezone(timezone.utc).isoformat()
-        except Exception:
-            pass
-
-        if title and iso_start:
-            rows.append(
-                {
-                    "title": title,
-                    "url": link,
-                    "date_text": "",
-                    "venue_text": loc,
-                    "iso_datetime": iso_start,
-                    "iso_end": iso_end,
-                }
-            )
-    return rows
-
-
-# ---------- Normalization ----------
-def normalize_rows(rows: List[Dict], default_duration_minutes: int) -> List[Dict]:
-    out: List[Dict] = []
-    for r in rows:
-        title = clean_text(r.get("title", ""))
-        url = r.get("url", "") or ""
-        venue_text = clean_text(r.get("venue_text", ""))
-
-        iso_hint = r.get("iso_datetime") or ""
-        iso_end_hint = r.get("iso_end") or ""
-        date_text = r.get("date_text") or ""
-
-        # IMPORTANT: call through wrapper; do NOT pass keyword args directly
-        start_dt, end_dt, all_day = _call_parse_datetime_range(date_text, iso_hint, iso_end_hint)
-        if not start_dt:
+def load_sources(yaml_path: str = "sources.yaml") -> List[Source]:
+    import yaml
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f) or []
+    out: List[Source] = []
+    for item in data:
+        if not item or not isinstance(item, dict):
             continue
-
-        if not end_dt:
-            end_dt = start_dt + timedelta(minutes=default_duration_minutes)
-        if end_dt <= start_dt:
-            end_dt = start_dt + timedelta(minutes=max(default_duration_minutes, 30))
-
-        ev = {
-            "title": title,
-            "start": start_dt,
-            "end": end_dt,
-            "location": venue_text,
-            "url": url,
-            "all_day": bool(all_day),
-        }
-        out.append(ev)
+        if not item.get("enabled", True):
+            continue
+        out.append(Source(
+            name=item["name"],
+            type=item["type"],
+            url=item["url"],
+            enabled=item.get("enabled", True),
+            ics_url=item.get("ics_url"),
+        ))
     return out
 
 
-# ---------- Store / Merge / Digest ----------
-def load_events_store() -> Dict[str, Dict]:
-    return read_json(EVENTS_STORE_PATH, default={})
+def collect_for_source(src: Source) -> Tuple[List[Dict], Dict]:
+    """
+    Returns (normalized_rows, meta_report)
+    meta_report records parsed counts / errors / snapshot paths for last_run_report.json
+    """
+    meta = {
+        "name": src.name,
+        "url": src.url,
+        "fetched": 0,
+        "parsed": 0,
+        "added": 0,
+        "skipped_past": 0,
+        "skipped_nodate": 0,
+        "skipped_dupe": 0,
+        "samples": [],
+    }
 
+    session = requests.Session()
+    session.headers.update(REQ_HEADERS)
 
-def serialize_event_for_store(ev: Dict[str, Any]) -> Dict[str, Any]:
-    j = dict(ev)
-    if isinstance(j.get("start"), datetime):
-        j["start"] = j["start"].astimezone(timezone.utc).isoformat()
-    if isinstance(j.get("end"), datetime):
-        j["end"] = j["end"].astimezone(timezone.utc).isoformat()
-    return j
+    rows: List[Dict] = []
+    html_snapshot_path = None
+    err = None
+    rest_error = None
 
-
-def merge_events(
-    store: Dict[str, Dict], new_events: List[Dict], source_name: str
-) -> Tuple[Dict[str, Dict], List[Dict]]:
-    added: List[Dict] = []
-    for e in new_events:
-        sid = stable_id(
-            e["title"],
-            e["start"].astimezone(timezone.utc).isoformat(),
-            e.get("location", ""),
-            e.get("url", ""),
-        )
-        if sid in store:
-            continue
-        ev = dict(e)
-        ev["source"] = source_name
-        store[sid] = serialize_event_for_store(ev)
-        added.append(ev)
-    return store, added
-
-
-def build_daily_digest(new_items: List[Dict]) -> None:
-    if not new_items:
-        for p in (NEW_ITEMS_JSON, DIGEST_TXT, DIGEST_HTML):
-            if p.exists():
-                try:
-                    p.unlink()
-                except Exception:
-                    pass
-        return
-
-    safe_items = []
-    for e in new_items:
-        safe_items.append(
-            {
-                "title": e["title"],
-                "start": e["start"].astimezone(timezone.utc).isoformat(),
-                "end": e["end"].astimezone(timezone.utc).isoformat(),
-                "location": e.get("location", ""),
-                "url": e.get("url", ""),
-                "source": e.get("source", ""),
-                "all_day": e.get("all_day", False),
-            }
-        )
-    save_json(NEW_ITEMS_JSON, safe_items)
-
-    today = datetime.now(CHI).strftime("%Y-%m-%d")
-    lines = ["New Northwoods Events added today:\n", f"{today}"]
-    for e in new_items:
-        s_local = e["start"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
-        e_local = e["end"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
-        lines.append(f"  Source: {e.get('source','')}")
-        lines.append(f"    • {e['title']} @ {e.get('location','')}".rstrip())
-        lines.append(f"      {s_local} – {e_local}")
-        if e.get("url"):
-            lines.append(f"      {e['url']}")
-        lines.append("")
-    DIGEST_TXT.write_text("\n".join(lines).strip() + "\n", encoding="utf-8")
-
-    html_parts = [f"<h2>New Northwoods Events added today</h2><h3>{today}</h3><ul>"]
-    for e in new_items:
-        s_local = e["start"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
-        e_local = e["end"].astimezone(CHI).strftime("%Y-%m-%d %I:%M %p %Z")
-        html_parts.append("<li>")
-        html_parts.append(f"<div><strong>Source:</strong> {e.get('source','')}</div>")
-        html_parts.append(f"<div><strong>{e['title']}</strong> @ {e.get('location','')}</div>")
-        html_parts.append(f"<div>{s_local} – {e_local}</div>")
-        if e.get("url"):
-            html_parts.append(f'<div><a href="{e["url"]}">{e["url"]}</a></div>')
-        html_parts.append("</li>")
-    html_parts.append("</ul>")
-    DIGEST_HTML.write_text("\n".join(html_parts), encoding="utf-8")
-
-
-# ---------- Runner ----------
-def main() -> None:
-    cfg = load_yaml(SOURCES_YAML)
-    tzname = cfg.get("timezone", "America/Chicago")
-    default_duration = int(cfg.get("default_duration_minutes", 60))
-    sources_raw = cfg.get("sources", [])
-
-    sources: List[Source] = []
-    for s in sources_raw:
-        sources.append(
-            Source(
-                name=s.get("name"),
-                type=s.get("type"),
-                url=s.get("url"),
-                wait_selector=s.get("wait_selector"),
-                ics_family=s.get("ics_family"),
-                extra={k: v for k, v in s.items() if k not in {"name", "type", "url", "wait_selector", "ics_family"}},
+    try:
+        if src.type == "modern_tribe":
+            resp = _http_get(src.url, session=session)
+            html_snapshot_path = _save_text_snapshot(
+                re.sub(r"[^a-z0-9_.()\- ]+", "_", src.name.lower()) + "_.html",
+                resp.text,
             )
-        )
+            meta["fetched"] = 1
+            rows = parse_modern_tribe_html_list(src.url, session=session)
 
-    events_store: Dict[str, Dict] = load_events_store()
-    total_new_items: List[Dict] = []
+        elif src.type in ("growthzone", "micronet", "micronet_growthzone"):
+            rows = parse_growthzone(src.url, session=session)
+            meta["fetched"] = 1
 
-    report: Dict[str, Any] = {
-        "when": datetime.now(CHI).isoformat(),
-        "timezone": tzname,
+        elif src.type == "simpleview":
+            rows = parse_simpleview(src.url, session=session)
+            meta["fetched"] = 1
+
+        elif src.type in ("squarespace", "sqs"):
+            rows = parse_squarespace(src.url, session=session)
+            meta["fetched"] = 1
+
+        elif src.type == "ai1ec":
+            rows = parse_ai1ec(src.url)
+            meta["fetched"] = 1
+
+        elif src.type == "ics":
+            rows = ingest_ics(src.url, session=session)
+            meta["fetched"] = 1
+
+        else:
+            err = f"Unknown source type: {src.type}"
+
+    except requests.HTTPError as e:
+        rest_error = f"HTTPError({e})"
+    except ValueError as e:
+        # e.g., ICS endpoint returned HTML
+        err = str(e)
+    except Exception as e:
+        err = f"{e.__class__.__name__}('{e}')"
+
+    # Normalize & dedupe (per-source)
+    normalized: List[Dict] = []
+    if rows:
+        try:
+            normalized = _rows_to_normalized(rows, default_tz=CENTRAL_TZ)
+        except Exception as e:
+            err = f"NormalizeError: {e.__class__.__name__}('{e}')"
+
+    meta["parsed"] = len(rows)
+    if html_snapshot_path:
+        meta["snapshot"] = html_snapshot_path
+
+    if rest_error:
+        meta["rest_error"] = rest_error
+    if err:
+        meta["error"] = err
+
+    # Show a few samples for debugging
+    if normalized:
+        meta["added"] = len(normalized)
+        meta["samples"] = [
+            {
+                "title": r["title"],
+                "start": r["start"],
+                "location": r.get("location", ""),
+                "url": r.get("url", ""),
+            }
+            for r in normalized[:3]
+        ]
+
+    return normalized, meta
+
+
+def main() -> int:
+    os.makedirs(STATE_DIR, exist_ok=True)
+    os.makedirs(SNAP_DIR, exist_ok=True)
+
+    sources = load_sources("sources.yaml")
+
+    all_rows: List[Dict] = []
+    report = {
+        "when": _now_iso(),
+        "timezone": CENTRAL_TZ,
         "sources": [],
     }
 
-    playwright = None
-    browser = None
-    context = None
-    if PLAYWRIGHT_AVAILABLE:
-        try:
-            p = sync_playwright().start()
-            playwright = p
-            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
-            context = browser.new_context(user_agent=UA, java_script_enabled=True)
-            context.set_default_timeout(30000)
-        except Exception:
-            playwright = None
-            browser = None
-            context = None
+    # Collect per source
+    for src in sources:
+        rows, meta = collect_for_source(src)
+        report["sources"].append(meta)
+        all_rows.extend(rows)
 
-    try:
-        for s in sources:
-            src_report = {
-                "name": s.name,
-                "url": s.url,
-                "fetched": 0,
-                "parsed": 0,
-                "added": 0,
-                "skipped_past": 0,
-                "skipped_nodate": 0,
-                "skipped_dupe": 0,
-                "samples": [],
-            }
-            rows: List[Dict] = []
-            static_html = ""
-            rendered_html = ""
-            snap_rel = ""
-            snap_rendered_rel = ""
+    # Cross-source de-duplication
+    unique, dup = _dedupe_normalized(all_rows)
 
-            try:
-                stype = (s.type or "").lower()
+    # Write last_run_report.json
+    (STATE_DIR / "last_run_report.json").write_text(
+        json.dumps(report, indent=2),
+        encoding="utf-8"
+    )
 
-                if stype == "ics":
-                    headers = {"User-Agent": UA, "Accept": "text/calendar, text/plain, */*"}
-                    r = requests.get(s.url, headers=headers, timeout=REQ_TIMEOUT)
-                    r.raise_for_status()
-                    txt = r.text or ""
+    # Persist merged normalized events as a JSON for your later steps (ICS/email builders)
+    (STATE_DIR / "normalized_events.json").write_text(
+        json.dumps({"count": len(unique), "deduped": dup, "items": unique}, indent=2),
+        encoding="utf-8"
+    )
 
-                    ct = (r.headers.get("Content-Type") or "").lower()
-                    looks_like_ics = txt.lstrip().startswith("BEGIN:VCALENDAR") or "text/calendar" in ct
-                    if not looks_like_ics:
-                        src_report["error"] = "ICS endpoint returned non-ICS (likely HTML/blocked)"
-                        src_report["http_status"] = getattr(r, "status_code", None)
-                        snap_rel = snapshot_html(s.name + " (ics_response)", txt, rendered=False)
-                        rows = []
-                    else:
-                        rows = ingest_ics(txt)
-
-                    src_report["fetched"] = 1
-                    src_report["parsed"] = len(rows)
-
-                else:
-                    # HTML path
-                    static_html = fetch_static(s.url)
-                    snap_rel = snapshot_html(s.name, static_html, rendered=False)
-
-                    # Try static parse
-                    rows = parse_by_type(stype, static_html)
-
-                    # Try rendered if needed
-                    if len(rows) == 0 and context is not None:
-                        try:
-                            rendered_html = fetch_rendered_with_context(context, s.url, s.wait_selector)
-                        except Exception:
-                            rendered_html = ""
-                        if rendered_html:
-                            snap_rendered_rel = snapshot_html(s.name, rendered_html, rendered=True)
-                            rows = parse_by_type(stype, rendered_html)
-
-                    # TEC REST fallback if still empty
-                    if stype in ("modern_tribe", "modern-tribe", "tribe") and len(rows) == 0:
-                        try:
-                            api_rows = tec_rest_fetch(s.url, months_ahead=12)
-                            rows.extend(api_rows)
-                            src_report["rest_fallback"] = True
-                        except requests.HTTPError as he:
-                            status = getattr(he.response, "status_code", None)
-                            if status == 404:
-                                src_report["rest_fallback_unavailable"] = True
-                            else:
-                                src_report["rest_error"] = f"HTTPError({he})"
-                        except Exception as e:
-                            src_report["rest_error"] = repr(e)
-
-                    src_report["fetched"] = 1
-                    src_report["parsed"] = len(rows)
-
-                # Normalize
-                normalized = normalize_rows(rows, default_duration_minutes=default_duration)
-
-                # Keep future events (with 1-day grace)
-                cutoff = now_utc() - timedelta(days=1)
-                future_only = [
-                    e for e in normalized if e["end"].astimezone(timezone.utc) >= cutoff
-                ]
-
-                # Merge into store (cross-source de-dupe via stable_id)
-                seen_run = set()
-                new_from_source: List[Dict] = []
-                for e in future_only:
-                    sid = stable_id(
-                        e["title"],
-                        e["start"].astimezone(timezone.utc).isoformat(),
-                        e.get("location", ""),
-                        e.get("url", ""),
-                    )
-                    if sid in seen_run:
-                        src_report["skipped_dupe"] += 1
-                        continue
-                    seen_run.add(sid)
-
-                    events_store, added_list = merge_events(events_store, [e], s.name)
-                    if added_list:
-                        new_from_source.extend(added_list)
-
-                src_report["added"] = len(new_from_source)
-
-                # Samples (either new or first 3 normalized)
-                for e in (new_from_source[:3] if new_from_source else normalized[:3]):
-                    src_report["samples"].append(
-                        {
-                            "title": e["title"],
-                            "start": e["start"].astimezone(timezone.utc).isoformat(),
-                            "location": e.get("location", ""),
-                            "url": e.get("url", ""),
-                        }
-                    )
-
-                # Aggregate newly added for digest
-                total_new_items.extend(new_from_source)
-
-            except requests.HTTPError as he:
-                src_report["error"] = f"HTTPError({he})"
-            except Exception as ex:
-                src_report["error"] = repr(ex)
-                src_report["traceback"] = traceback.format_exc()
-
-            if snap_rel:
-                src_report["snapshot"] = snap_rel
-            if snap_rendered_rel:
-                src_report["snapshot_rendered"] = snap_rendered_rel
-
-            report["sources"].append(src_report)
-
-        # Save store
-        save_json(EVENTS_STORE_PATH, events_store)
-
-        # Build ICS from store (future events only)
-        future_events: List[Dict] = []
-        for sid, ev in events_store.items():
-            try:
-                st = datetime.fromisoformat(ev["start"]).astimezone(timezone.utc)
-                en = datetime.fromisoformat(ev["end"]).astimezone(timezone.utc)
-                if en >= (now_utc() - timedelta(days=1)):
-                    future_events.append(
-                        {
-                            "title": ev["title"],
-                            "start": st,
-                            "end": en,
-                            "location": ev.get("location", ""),
-                            "url": ev.get("url", ""),
-                            "all_day": ev.get("all_day", False),
-                            "source": ev.get("source", ""),
-                        }
-                    )
-            except Exception:
-                continue
-
-        build_ics(future_events, ICS_OUT)
-
-        # Build digest for newly added items
-        build_daily_digest(total_new_items)
-
-    finally:
-        # Close Playwright if opened
-        try:
-            if 'context' in locals() and context is not None:
-                context.close()
-        except Exception:
-            pass
-        try:
-            if 'browser' in locals() and browser is not None:
-                browser.close()
-        except Exception:
-            pass
-        try:
-            if 'playwright' in locals() and playwright is not None:
-                playwright.stop()
-        except Exception:
-            pass
-
-    # Write run report
-    save_json(LAST_RUN_REPORT, report)
+    print(f"Collected {len(all_rows)} rows; {len(unique)} after de-dup (removed {dup}).")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

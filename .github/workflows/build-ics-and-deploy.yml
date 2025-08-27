@@ -1,4 +1,4 @@
-name: Build ICS & Deploy Pages
+name: "Build ICS & Deploy Pages"
 
 on:
   schedule:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    name: Build ICS & prepare site
+    name: "Build ICS & prepare site"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -111,7 +111,6 @@ jobs:
           set -euo pipefail
           rm -rf public
           mkdir -p public
-
           # Write a tiny HTML index using heredoc (safe inside run: | block)
           cat > public/index.html <<'HTML'
 <!doctype html>

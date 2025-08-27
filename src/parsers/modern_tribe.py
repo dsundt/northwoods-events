@@ -1,86 +1,130 @@
-# -*- coding: utf-8 -*-
-from __future__ import annotations
-from typing import List, Dict, Any
-from bs4 import BeautifulSoup
 import re
+from datetime import datetime
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup
 
-from .common_ldjson import extract_events_from_ldjson
+# Expect helpers from your project:
+# - parse_datetime_range(text_or_attrs) -> (dt_start, dt_end or None)
+# - clean_text(text) -> str
+# - Event(title, start, end, url, location, description)
+try:
+    from ..normalize import parse_datetime_range, clean_text
+    from ..types import Event
+except Exception:  # allow running as a script during CI
+    from normalize import parse_datetime_range, clean_text
+    from types import Event  # noqa: F401  (replace with your real Event import)
 
-def parse(html: str) -> List[Dict[str, Any]]:
+
+def _text(el):
+    return clean_text(el.get_text(" ", strip=True)) if el else ""
+
+
+def _parse_iso_time(node):
     """
-    WordPress 'The Events Calendar' (Modern Tribe) – robust:
-    1) Prefer schema.org JSON-LD Events
-    2) Fallback to DOM patterns used by Classic/Blocks list views
-    Returns normalized rows with keys: title, date_text, iso_hint, iso_end_hint, url, location
+    TEC often provides <time datetime="2025-07-04T18:00:00-05:00">.
+    Prefer that; else fall back to visible text via parse_datetime_range.
     """
-    rows: List[Dict[str, Any]] = []
+    if not node:
+        return None, None
 
-    # 1) JSON-LD first (covers most sites)
-    ld = extract_events_from_ldjson(html)
-    for ev in ld:
-        rows.append({
-            "title": ev["title"],
-            "date_text": "",                 # normalize.py will rely on ISO hints when present
-            "iso_hint": ev["start_iso"],
-            "iso_end_hint": ev.get("end_iso"),
-            "url": ev.get("url", ""),
-            "location": ev.get("location", ""),
-        })
-    if rows:
-        return rows
+    dt_attr = node.get("datetime")
+    if dt_attr:
+        # Sometimes TEC provides start + end as two <time> nodes
+        # or one node for start and a sibling span for end. We’ll take what we have.
+        try:
+            start = datetime.fromisoformat(dt_attr.replace("Z", "+00:00"))
+            return start, None
+        except Exception:
+            pass
 
-    # 2) Very forgiving HTML fallback
-    soup = BeautifulSoup(html or "", "lxml")
+    # Fallback to visible text parsing
+    return parse_datetime_range(_text(node))
 
-    # Newer TEC list view
-    cards = soup.select("[class*='tribe-events-calendar-list__event']") or \
-            soup.select("[class*='tribe-common-g-row'] [class*='tribe-events-calendar-list__event']")
-    for c in cards:
-        title_el = c.select_one("h3 a, h2 a, a[class*='tribe-events-calendar-list__event-title-link']")
-        date_el = c.select_one("[class*='tribe-events-calendar-list__event-date'], time, .tribe-event-date-start")
-        where_el = c.select_one("[class*='venue'], [class*='tribe-events-calendar-list__event-venue']")
-        title = (title_el.get_text(strip=True) if title_el else "").strip()
-        url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
-        date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
-        location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
-        if title:
-            rows.append({
-                "title": title,
-                "date_text": date_text,
-                "iso_hint": None,
-                "iso_end_hint": None,
-                "url": url,
-                "location": location,
-            })
 
-    # Older TEC (v5/v6 mix)
-    if not rows:
-        items = soup.select(".tribe-events-calendar-list__event, .type-tribe_events")
-        for c in items:
-            title_el = c.select_one(".tribe-event-title a, .tribe-events-event-title a, h2 a, h3 a")
-            date_el = c.select_one("time, .tribe-event-date-start, .tribe-events-event-datetime")
-            where_el = c.select_one(".tribe-venue, .tribe-events-venue-details, .tribe-venue-location")
-            title = (title_el.get_text(strip=True) if title_el else "").strip()
-            url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
-            date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
-            location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
-            if title:
-                rows.append({
-                    "title": title,
-                    "date_text": date_text,
-                    "iso_hint": None,
-                    "iso_end_hint": None,
-                    "url": url,
-                    "location": location,
-                })
+def parse_modern_tribe(html, base_url):
+    """
+    Handles Modern Tribe / The Events Calendar in 'list' and some theme variants.
+    Returns a list[Event].
+    """
 
-    # De-dup by title+url
-    seen = set()
-    deduped = []
-    for r in rows:
-        k = (r["title"], r.get("url",""))
-        if k in seen:
+    soup = BeautifulSoup(html, "lxml")
+
+    # Hard filter: if the page is actually a Google Calendar embed page
+    # (seen in Arbor Vitae) that only says "Google Calendar", skip.
+    page_title = _text(soup.find("title"))
+    if page_title.strip().lower() == "google calendar":
+        return []
+
+    events = []
+
+    # Preferred List View (TEC v5+): .tribe-events-calendar-list__event
+    list_items = soup.select(".tribe-events-calendar-list__event")
+    if not list_items:
+        # Older class names (pre v5 or theme overrides)
+        list_items = soup.select(
+            ".tribe-events-list .type-tribe_events, "
+            ".tribe-events-loop .type-tribe_events, "
+            "article.tribe-events-calendar-list__event-row"
+        )
+
+    # Absolute last-resort: anything that looks like an event card with a TEC link
+    if not list_items:
+        list_items = soup.select("article, li, div")
+        list_items = [el for el in list_items if el.select_one("a[href*='event']")]
+
+    for li in list_items:
+        # Title + URL
+        a = (
+            li.select_one("h3 a, h2 a, .tribe-events-calendar-list__event-title a")
+            or li.find("a", href=True)
+        )
+        title = _text(a) if a else ""
+        href = urljoin(base_url, a["href"]) if a and a.has_attr("href") else base_url
+
+        # Skip trash titles like “Google Calendar”
+        if title and title.strip().lower() == "google calendar":
             continue
-        seen.add(k)
-        deduped.append(r)
-    return deduped
+
+        # Date/Time: prefer <time datetime=...>
+        # Try common spots:
+        time_node = (
+            li.find("time")
+            or li.select_one(".tribe-events-calendar-list__event-datetime time")
+            or li.select_one(".tribe-event-date-start")
+        )
+        start, end = _parse_iso_time(time_node)
+
+        # If still nothing, try visible text around the time area
+        if not start:
+            dt_block = (
+                li.select_one(".tribe-events-calendar-list__event-datetime")
+                or li.select_one(".tribe-events-event-meta")
+                or li
+            )
+            start, end = parse_datetime_range(_text(dt_block))
+
+        # Location (best-effort)
+        location = _text(
+            li.select_one(".tribe-events-venue__name, .tribe-venue, .tribe-events-venue")
+        )
+        # Description (short)
+        desc = _text(
+            li.select_one(
+                ".tribe-events-calendar-list__event-description, .entry-content, .tribe-events-content"
+            )
+        )
+
+        # Guard: we need at minimum a title and a start
+        if title and start:
+            events.append(
+                Event(
+                    title=title,
+                    start=start,
+                    end=end,
+                    url=href,
+                    location=location or None,
+                    description=desc or None,
+                )
+            )
+
+    return events

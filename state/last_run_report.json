@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T14:46:32.302223",
+  "when": "2025-08-27T14:53:12.264599",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -99,54 +99,6 @@
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
     },
     {
-      "name": "Rhinelander Chamber (GrowthZone)",
-      "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
-    },
-    {
-      "name": "Town of Arbor Vitae (Municipal Calendar)",
-      "url": "https://www.townofarborvitae.org/calendar/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
-    },
-    {
-      "name": "Minocqua Area Chamber (Simpleview)",
-      "url": "https://www.minocqua.org/events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
-    },
-    {
-      "name": "Oneida County \u2013 Festivals & Events (Simpleview)",
-      "url": "https://oneidacountywi.com/festivals-events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "skipped_past": 0,
-      "skipped_nodate": 0,
-      "skipped_dupe": 0,
-      "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county___festivals_&_events_(simpleview).html"
-    },
-    {
       "name": "St. Germain Chamber (Modern Tribe)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "fetched": 1,
@@ -189,6 +141,54 @@
       ],
       "http_status": 200,
       "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html"
+    },
+    {
+      "name": "Rhinelander Chamber (GrowthZone)",
+      "url": "https://business.rhinelanderchamber.com/events/calendar",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "http_status": 200,
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
+    },
+    {
+      "name": "Minocqua Area Chamber (Simpleview)",
+      "url": "https://www.minocqua.org/events/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "http_status": 200,
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
+    },
+    {
+      "name": "Oneida County \u2013 Festivals & Events (Simpleview)",
+      "url": "https://oneidacountywi.com/festivals-events/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "http_status": 200,
+      "snapshot": "state/snapshots/oneida_county___festivals_&_events_(simpleview).html"
+    },
+    {
+      "name": "Town of Arbor Vitae (Municipal Calendar)",
+      "url": "https://www.townofarborvitae.org/calendar/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
+      "skipped_nodate": 0,
+      "skipped_dupe": 0,
+      "http_status": 200,
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
     }
   ]
 }

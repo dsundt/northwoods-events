@@ -1,36 +1,18 @@
 {
-  "when": "2025-08-27T14:53:12.264599",
+  "when": "2025-08-27T15:19:21.544696",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 139,
-      "added": 16,
-      "skipped_past": 121,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 2,
-      "samples": [
-        {
-          "title": "Landover ATV-UTV Wednesday Night Bingo",
-          "url": "https://vilaswi.com/event/landover-atv-utv-wednesday-night-bingo-2/2025-08-27/",
-          "location": "Buckatabon Lodge &amp; Lighthouse Pub, 5630 Rush Rd, Conover, WI, 54519, United States",
-          "start": "2025-08-27T18:00:00-05:00"
-        },
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "url": "https://vilaswi.com/event/plum-ski-ters-water-ski-show/2025-08-27/",
-          "location": "State House Point Boat Landing, 3230 State House Point Road, Sayner, WI, 54560, United States",
-          "start": "2025-08-27T19:00:00-05:00"
-        },
-        {
-          "title": "Manitowish Waters Lions Club Flea &#038; Farmers Market",
-          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-flea-farmers-market/2025-08-28/",
-          "location": "Manitowish Waters Community Center, 5733 Airport Rd, Manitowish Waters, WI, 54545",
-          "start": "2025-08-28T09:00:00-05:00"
-        }
-      ],
+      "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='modern_tribe'\")",
+      "traceback": "ValueError: No parser available for kind='modern_tribe'",
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
     },
@@ -38,31 +20,13 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 76,
-      "added": 8,
-      "skipped_past": 68,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
-      "samples": [
-        {
-          "title": "North Lakeland Discovery Center: Historical and Naturalist Guided Bike Tour",
-          "url": "https://boulderjct.org/events/north-lakeland-discovery-center-historical-and-naturalist-guided-bike-tour/",
-          "location": "North Lakeland Discovery Center, 14006 Discovery Ln, Manitowish Waters, WI, 54545, United States",
-          "start": "2025-08-27T12:00:00-05:00"
-        },
-        {
-          "title": "Guide on the Side at Northern Highland Sports",
-          "url": "https://boulderjct.org/events/guide-on-the-side-at-northern-highland-sports/2025-08-27/",
-          "location": "Northern Highland Sports, 10369 Main St,, Boulder Junction, WI, United States",
-          "start": "2025-08-27T16:00:00-05:00"
-        },
-        {
-          "title": "OurStory: Monthly History Series hosted by the Boulder Jct Area Historical Society and Public Library",
-          "url": "https://boulderjct.org/events/ourstory-monthly-history-series-hosted-by-the-boulder-jct-area-historical-society-and-public-library/2025-08-28/",
-          "location": "Boulder Junction Community Center, 5392 Park Street, Boulder Junction, WI, 54512, United States",
-          "start": "2025-08-28T19:00:00-05:00"
-        }
-      ],
+      "error": "ValueError(\"No parser available for kind='modern_tribe'\")",
+      "traceback": "ValueError: No parser available for kind='modern_tribe'",
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
     },
@@ -70,31 +34,13 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 404,
-      "added": 74,
-      "skipped_past": 315,
+      "parsed": 0,
+      "added": 0,
+      "skipped_past": 0,
       "skipped_nodate": 0,
-      "skipped_dupe": 15,
-      "samples": [
-        {
-          "title": "Labor Day Arts and Crafts Show",
-          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
-          "location": "Downtown Eagle River",
-          "start": "2025-08-31T10:00:00-05:00"
-        },
-        {
-          "title": "SepTimber Ride",
-          "url": "https://eagleriver.org/events/septimber-ride/",
-          "location": "Tribute Brewing Company, 1106 North Bluebird Road, Eagle River, Wisconsin, 54521",
-          "start": "2025-09-13T07:00:00-05:00"
-        },
-        {
-          "title": "Cranberry Fest",
-          "url": "https://eagleriver.org/events/cranberry-fest/",
-          "location": "Eagle River Area Chamber of Commerce and Visitors Center, 201 North Railroad Street, Eagle River, Wisconsin, 54521",
-          "start": "2025-10-04T00:00:00-05:00"
-        }
-      ],
+      "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='modern_tribe'\")",
+      "traceback": "ValueError: No parser available for kind='modern_tribe'",
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
     },
@@ -107,6 +53,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='modern_tribe'\")",
+      "traceback": "ValueError: No parser available for kind='modern_tribe'",
       "http_status": 200,
       "snapshot": "state/snapshots/st__germain_chamber_(modern_tribe).html"
     },
@@ -114,31 +62,13 @@
       "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 11,
-      "added": 11,
+      "parsed": 0,
+      "added": 0,
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
-      "samples": [
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-27/",
-          "location": "Plum Lake, 3230 State House Point Road, Sayner, WI, 54558, United States",
-          "start": "2025-08-27T18:30:00-05:00"
-        },
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
-          "location": "Plum Lake, 3230 State House Point Road, Sayner, WI, 54558, United States",
-          "start": "2025-08-30T18:30:00-05:00"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor\u2019s Race",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
-          "location": "Stillwaters, 7914 Co. Rd K, Star Lake, WI, 54561",
-          "start": "2025-08-31T15:00:00-05:00"
-        }
-      ],
+      "error": "ValueError(\"No parser available for kind='modern_tribe'\")",
+      "traceback": "ValueError: No parser available for kind='modern_tribe'",
       "http_status": 200,
       "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html"
     },
@@ -151,6 +81,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='growthzone'\")",
+      "traceback": "ValueError: No parser available for kind='growthzone'",
       "http_status": 200,
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
     },
@@ -163,6 +95,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='simpleview'\")",
+      "traceback": "ValueError: No parser available for kind='simpleview'",
       "http_status": 200,
       "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
     },
@@ -175,6 +109,8 @@
       "skipped_past": 0,
       "skipped_nodate": 0,
       "skipped_dupe": 0,
+      "error": "ValueError(\"No parser available for kind='simpleview'\")",
+      "traceback": "ValueError: No parser available for kind='simpleview'",
       "http_status": 200,
       "snapshot": "state/snapshots/oneida_county___festivals_&_events_(simpleview).html"
     },

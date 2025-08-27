@@ -25,14 +25,23 @@ def usage():
 
 
 def main():
+   def main():
     if len(sys.argv) < 3:
+        print("❌ Not enough arguments. Usage: python test_parser.py <snapshot-path> <parser-type>")
         usage()
 
     file_path = Path(sys.argv[1])
     kind = sys.argv[2].lower()
 
     if not file_path.exists():
-        print(f"File not found: {file_path}")
+        print(f"❌ File not found: {file_path}")
+        print("Tip: run `ls state/snapshots` in Actions to see exact filenames.")
+        sys.exit(1)
+
+    valid_kinds = {"modern_tribe", "tribe", "growthzone", "chambermaster", "ai1ec", "all_in_one", "all-in-one", "ics"}
+    if kind not in valid_kinds:
+        print(f"❌ Unknown parser kind: {kind}")
+        print("Valid kinds: modern_tribe, ai1ec, growthzone, ics")
         sys.exit(1)
 
     text = file_path.read_text(encoding="utf-8", errors="ignore")

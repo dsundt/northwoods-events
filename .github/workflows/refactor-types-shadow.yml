@@ -1,0 +1,149 @@
+name: Refactor: stop shadowing stdlib "types"
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_changes:
+        description: "Apply changes (true) or just show what would change (false)"
+        type: boolean
+        default: false
+        required: true
+      old_path:
+        description: "Path of the shadowing file"
+        type: string
+        default: "src/types.py"
+        required: true
+      new_path:
+        description: "New filename to use"
+        type: string
+        default: "src/models.py"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    env:
+      APPLY: ${{ inputs.apply_changes }}
+      OLD: ${{ inputs.old_path }}
+      NEW: ${{ inputs.new_path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Show repo & current git status
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Repo root: $(pwd)"
+          git status --porcelain=v1
+          echo
+          echo "Tree (top-level):"
+          ls -la
+
+      - name: Sanity checks
+        id: checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$OLD" ]; then
+            echo "::warning::No file at '$OLD' — nothing to rename. Exiting."
+            echo "nothing_to_do=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -f "$NEW" ]; then
+            echo "::warning::Target '$NEW' already exists. Will not overwrite."
+            echo "new_exists=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "nothing_to_do=false" >> "$GITHUB_OUTPUT"
+
+      - name: Preview offending file (head)
+        if: ${{ steps.checks.outputs.nothing_to_do == 'false' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "----- HEAD of $OLD -----"
+          sed -n '1,80p' "$OLD" || true
+          echo "------------------------"
+
+      - name: (Dry-run) Plan replacements
+        if: ${{ inputs.apply_changes == false && steps.checks.outputs.nothing_to_do == 'false' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Would rename: $OLD  ->  $NEW"
+          echo
+          echo "Would update imports under src/:"
+          # Show files that contain "from types import" or "import types" (likely your own module)
+          rg -n --glob 'src/**' -e '^\s*from\s+types\s+import\s+' -e '^\s*import\s+types(\s|$)' || echo "(none)"
+          echo
+          echo "No changes are applied because apply_changes=false."
+
+      - name: Apply rename + replacements
+        if: ${{ inputs.apply_changes == true && steps.checks.outputs.nothing_to_do == 'false' && steps.checks.outputs.new_exists != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # 1) Rename the file
+          echo "Renaming $OLD -> $NEW"
+          mkdir -p "$(dirname "$NEW")"
+          git mv "$OLD" "$NEW"
+
+          # 2) Replace likely imports in our code (src/**)
+          #    We target two common patterns:
+          #    - from types import Something  -> from models import Something
+          #    - import types                 -> import models
+          #    This is conservative: we only touch files inside src/.
+          files=$(git ls-files 'src/**/*.py' || true)
+          if [ -n "$files" ]; then
+            echo "$files" | while read -r f; do
+              # Skip the new file we just created (no need to mutate it)
+              [ "$f" = "$NEW" ] && continue
+
+              # Show if file contains a candidate pattern
+              if grep -qE '^\s*from\s+types\s+import\s+' "$f" || grep -qE '^\s*import\s+types(\s|$)' "$f"; then
+                echo "Updating imports in $f"
+                # Replace 'from types import' -> 'from models import'
+                perl -0777 -pe 's/^(\s*from\s+)types(\s+import\s+)/${1}models${2}/mg' -i "$f"
+                # Replace 'import types' (standalone) -> 'import models'
+                perl -0777 -pe 's/^(\s*)import\s+types(\s|$)/${1}import models$2/mg' -i "$f"
+              fi
+            done
+          fi
+
+          echo
+          echo "Preview git diff:"
+          git --no-pager diff --staged || true
+          git --no-pager diff || true
+
+      - name: Commit & push (if apply_changes=true and there are changes)
+        if: ${{ inputs.apply_changes == true }}
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Refactor: rename src/types.py to src/models.py and update imports (avoid stdlib shadowing)"
+          git push
+
+      - name: Final status
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "------- git status -------"
+          git status --porcelain=v1
+          echo
+          echo "------- tree: src -------"
+          ls -la src || true

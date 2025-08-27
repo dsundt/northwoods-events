@@ -59,7 +59,7 @@ jobs:
           ls -la
           echo
           if [ -d state/snapshots ]; then
-            echo "Snapshots dir (first 200 lines):"
+            echo "Snapshots dir (first 200 entries):"
             ls -la state/snapshots | sed -n '1,200p'
           else
             echo "Directory state/snapshots does not exist."
@@ -175,7 +175,7 @@ PY
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
-          else
+          else:
             pip install requests beautifulsoup4 lxml ics python-dateutil pytz
           fi
 

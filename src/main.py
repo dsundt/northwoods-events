@@ -158,47 +158,48 @@ def fetch_rendered_with_context(context, url: str, wait_selector: Optional[str] 
 
 # ---------- Parsers ----------
 def parse_modern_tribe_html(html: str) -> List[Dict]:
+    """
+    Extract events from Modern Tribe / The Events Calendar markup.
+    Uses <time datetime="..."> ISO attributes when available so dates are accurate.
+    """
     items: List[Dict] = []
     soup = BeautifulSoup(html or "", "html.parser")
 
     nodes = soup.select(
-        ".tribe-events-calendar-list__event, .tribe-events-calendar-month__calendar-event"
+        ".tribe-events-calendar-list__event, "
+        ".tribe-events-calendar-month__calendar-event, "
+        "article.type-tribe_events"
     )
-    if not nodes:
-        nodes = soup.select(".tribe-event, .type-tribe_events")
-
     for n in nodes:
-        a = n.select_one(
-            "a.tribe-events-calendar-list__event-title-link, "
-            "a.tribe-event-url, "
-            ".tribe-events-calendar-event__link, "
-            "h3 a, a"
-        )
+        # Title + link
+        a = n.select_one("a.tribe-events-calendar-list__event-title-link, a.tribe-event-url, h3 a")
         title = (a.get_text(strip=True) if a else "").strip()
         url = (a["href"].strip() if a and a.has_attr("href") else "")
 
-        dt = n.select_one(
-            "time, .tribe-events-calendar-list__event-date, .tribe-event-date-start"
-        )
-        date_text = (dt.get_text(" ", strip=True) if dt else "").strip()
+        # Time: prefer ISO attribute
+        t = n.select_one("time[datetime]")
+        iso_start = t["datetime"].strip() if t and t.has_attr("datetime") else ""
+        date_text = t.get_text(" ", strip=True) if t else ""
 
+        # Venue
         venue = n.select_one(
-            ".tribe-events-venue, .tribe-venue, .tribe-events-calendar-list__event-venue, .tribe-events-venue-details"
+            ".tribe-events-venue, .tribe-venue, "
+            ".tribe-events-calendar-list__event-venue, "
+            ".tribe-events-venue-details"
         )
         venue_text = (venue.get_text(" ", strip=True) if venue else "").strip()
 
         if title:
-            items.append(
-                {
-                    "title": title,
-                    "url": url,
-                    "date_text": date_text,
-                    "venue_text": venue_text,
-                    "iso_datetime": "",
-                    "iso_end": "",
-                }
-            )
+            items.append({
+                "title": title,
+                "url": url,
+                "date_text": date_text,
+                "venue_text": venue_text,
+                "iso_datetime": iso_start,
+                "iso_end": "",
+            })
     return items
+
 
 
 def parse_growthzone_html(html: str) -> List[Dict]:

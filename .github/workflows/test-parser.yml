@@ -29,9 +29,9 @@ on:
         required: true
         default: list
         options:
-          - list      # only list files (no parsing)
-          - single    # parse just one by index
-          - matrix    # parse first N as a matrix
+          - list     # only list files (no parsing)
+          - single   # parse just one by index
+          - matrix   # parse the first N as a matrix
       index:
         description: "1-based index to parse when run_mode=single (string)"
         type: string
@@ -39,18 +39,19 @@ on:
         default: "1"
 
 jobs:
-  gather:
+  prep:
     name: Gather snapshot files
     runs-on: ubuntu-latest
     outputs:
-      files_json: ${{ steps.collect.outputs.files_json }}
-      count: ${{ steps.collect.outputs.count }}
+      files_json: ${{ steps.setlist.outputs.files_json }}
+      count: ${{ steps.setlist.outputs.count }}
       chosen_path: ${{ steps.pick.outputs.chosen_path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: List directory (for debug)
+      - name: Show repo root and snapshots dir
+        shell: bash
         run: |
           echo "Repo root: $(pwd)"
           echo
@@ -58,64 +59,76 @@ jobs:
           ls -la
           echo
           if [ -d state/snapshots ]; then
-            echo "Snapshots dir:"
+            echo "Snapshots dir (first 200 lines):"
             ls -la state/snapshots | sed -n '1,200p'
           else
-            echo "state/snapshots/ (missing)"
+            echo "Directory state/snapshots does not exist."
           fi
 
       - name: Collect matching files
-        id: collect
+        id: setlist
         shell: bash
         env:
           PATTERN: ${{ inputs.snapshot_pattern }}
           LIMIT: ${{ inputs.max_files }}
         run: |
           set -euo pipefail
-          echo "Searching with pattern: ${PATTERN}"
-          python - << 'PY'
-import json, glob, os, sys
+          python - <<'PY'
+import glob, json, os
 pattern = os.environ.get("PATTERN","state/snapshots/*.html")
 try:
     limit = int(os.environ.get("LIMIT","15"))
 except:
     limit = 15
-matches = sorted(glob.glob(pattern))
-matches = [m for m in matches if os.path.isfile(m)]
-limited = matches[:limit]
-print("\n=== Matched files (limited to %d) ===" % limit)
-if not limited:
-    print("  (no matches)")
+matches = sorted([p for p in glob.glob(pattern) if os.path.isfile(p)])[:limit]
+print("=== Matched files (limited to %d) ===" % limit)
+if matches:
+    for i, p in enumerate(matches, 1):
+        print("%3d. %s" % (i, p))
 else:
-    for i, p in enumerate(limited, 1):
-        print(f"  {i:>3}. {p}")
-print("\nFound:", len(limited))
-payload = json.dumps(limited)  # always valid JSON (maybe "[]")
-# Write step outputs safely with heredoc
-out = os.environ.get("GITHUB_OUTPUT", "/dev/stdout")
+    print("(no matches)")
+out = os.environ["GITHUB_OUTPUT"]
 with open(out, "a") as fh:
-    fh.write("files_json<<JSON\n")
-    fh.write(payload + "\n")
-    fh.write("JSON\n")
-    fh.write(f"count={len(limited)}\n")
+    fh.write("files_json=" + json.dumps(matches) + "\n")
+    fh.write("count=%d\n" % len(matches))
 PY
 
-      - name: Pick single file (when run_mode=single)
+      - name: Pretty list (always)
+        shell: bash
+        env:
+          FILES_JSON: ${{ steps.setlist.outputs.files_json }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+import json, os
+files = []
+try:
+    files = json.loads(os.environ.get("FILES_JSON","[]"))
+except Exception as e:
+    print("Could not parse files_json:", e)
+print("\nPretty list:")
+if not files:
+    print("  (no files)")
+else:
+    for i, p in enumerate(files, 1):
+        print("  %2d) %s" % (i, p))
+print()
+PY
+
+      - name: Pick single file (only if run_mode=single)
         id: pick
         if: ${{ inputs.run_mode == 'single' }}
         shell: bash
         env:
-          FILES: ${{ steps.collect.outputs.files_json }}
+          FILES_JSON: ${{ steps.setlist.outputs.files_json }}
           INDEX: ${{ inputs.index }}
         run: |
           set -euo pipefail
-          python - << 'PY'
+          python - <<'PY'
 import json, os, sys
-files_json = os.environ.get("FILES","[]")
 try:
-    files = json.loads(files_json)
-except Exception as e:
-    print("❌ Could not decode files_json:", e)
+    files = json.loads(os.environ.get("FILES_JSON","[]"))
+except:
     files = []
 try:
     idx = int(os.environ.get("INDEX","1"))
@@ -123,15 +136,15 @@ except:
     idx = 1
 chosen = ""
 if not files:
-    print("❌ No files matched the pattern.")
-elif idx < 1 or idx > len(files):
-    print(f"❌ Index {idx} is out of range 1..{len(files)}")
-else:
+    print("No files to choose from.")
+elif 1 <= idx <= len(files):
     chosen = files[idx-1]
-    print(f"Chosen file #{idx}: {chosen}")
-out = os.environ.get("GITHUB_OUTPUT","/dev/stdout")
+    print("Chosen #%d: %s" % (idx, chosen))
+else:
+    print("Index %d out of range 1..%d" % (idx, len(files)))
+out = os.environ["GITHUB_OUTPUT"]
 with open(out, "a") as fh:
-    fh.write(f"chosen_path={chosen}\n")
+    fh.write("chosen_path=%s\n" % chosen)
 if not chosen:
     sys.exit(1)
 PY
@@ -139,14 +152,14 @@ PY
       - name: Stop after listing (when run_mode=list)
         if: ${{ inputs.run_mode == 'list' }}
         run: |
-          echo "Run mode is 'list' — not parsing anything. Re-run with run_mode=single or matrix."
+          echo "Run mode is 'list' — not parsing anything."
           exit 0
 
-  run-single:
+  single:
     name: Parse one snapshot
     runs-on: ubuntu-latest
-    needs: gather
-    if: ${{ inputs.run_mode == 'single' && needs.gather.outputs.chosen_path != '' }}
+    needs: prep
+    if: ${{ inputs.run_mode == 'single' && needs.prep.outputs.chosen_path != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -157,6 +170,7 @@ PY
           python-version: "3.11"
 
       - name: Install deps
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
@@ -166,21 +180,24 @@ PY
           fi
 
       - name: Show chosen file
-        run: echo "Parsing: ${{ needs.gather.outputs.chosen_path }} with parser ${{ inputs.parser_kind }}"
+        shell: bash
+        run: |
+          echo "Parsing: ${{ needs.prep.outputs.chosen_path }} with parser ${{ inputs.parser_kind }}"
 
       - name: Run parser
+        shell: bash
         run: |
-          python src/test_parser.py "${{ needs.gather.outputs.chosen_path }}" "${{ inputs.parser_kind }}"
+          python src/test_parser.py "${{ needs.prep.outputs.chosen_path }}" "${{ inputs.parser_kind }}"
 
-  run-matrix:
+  matrix:
     name: Parse N snapshots (matrix)
     runs-on: ubuntu-latest
-    needs: gather
-    if: ${{ inputs.run_mode == 'matrix' && needs.gather.outputs.count != '0' }}
+    needs: prep
+    if: ${{ inputs.run_mode == 'matrix' && needs.prep.outputs.count != '0' }}
     strategy:
       fail-fast: false
       matrix:
-        file: ${{ fromJSON(needs.gather.outputs.files_json) }}
+        file: ${{ fromJSON(needs.prep.outputs.files_json) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -191,6 +208,7 @@ PY
           python-version: "3.11"
 
       - name: Install deps
+        shell: bash
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
@@ -200,8 +218,11 @@ PY
           fi
 
       - name: Show file
-        run: echo "Parsing: ${{ matrix.file }} with parser ${{ inputs.parser_kind }}"
+        shell: bash
+        run: |
+          echo "Parsing: ${{ matrix.file }} with parser ${{ inputs.parser_kind }}"
 
       - name: Run parser
+        shell: bash
         run: |
           python src/test_parser.py "${{ matrix.file }}" "${{ inputs.parser_kind }}"

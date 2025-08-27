@@ -1,60 +1,77 @@
-# -*- coding: utf-8 -*-
-from __future__ import annotations
-from typing import List, Dict, Any
-from bs4 import BeautifulSoup
 import re
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup
+from datetime import datetime
 
-from .common_ldjson import extract_events_from_ldjson
+try:
+    from ..normalize import parse_datetime_range, clean_text
+    from ..types import Event
+except Exception:
+    from normalize import parse_datetime_range, clean_text
+    from types import Event  # noqa: F401
 
-def parse(html: str) -> List[Dict[str, Any]]:
+
+def _text(el):
+    return clean_text(el.get_text(" ", strip=True)) if el else ""
+
+
+def parse_simpleview(html, base_url):
     """
-    Simpleview CVB pages:
-    1) Prefer JSON-LD Events (commonly present)
-    2) Fallback to common Simpleview card selectors
+    Simpleview CMS has a few skins. We support:
+    - List articles/cards with <time datetime=...> or date text blocks
+    - Detail links usually under <a> with /event or /events/ in href
     """
-    rows: List[Dict[str, Any]] = []
+    soup = BeautifulSoup(html, "lxml")
+    events = []
 
-    ld = extract_events_from_ldjson(html)
-    for ev in ld:
-        rows.append({
-            "title": ev["title"],
-            "date_text": "",
-            "iso_hint": ev["start_iso"],
-            "iso_end_hint": ev.get("end_iso"),
-            "url": ev.get("url", ""),
-            "location": ev.get("location", ""),
-        })
-    if rows:
-        return rows
+    # Try common card/list containers
+    cards = soup.select(
+        "article, .card, .event, .listing, .sv-event, .grid-item, li"
+    )
+    # Keep only ones that look like events (link to /event or /events/)
+    def looks_like_event(el):
+        a = el.find("a", href=True)
+        return a and ("/event" in a["href"] or "/events" in a["href"])
 
-    soup = BeautifulSoup(html or "", "lxml")
-    # Typical Simpleview list cards (varies by theme)
-    cards = soup.select(".event-card, .sv-event, .m-event, .c-card--event, .card--event, li.event, div.event")
+    cards = [c for c in cards if looks_like_event(c)]
+    if not cards:
+        # fallback: any link rows in the main content area
+        cards = soup.select("main a[href*='/event'], main a[href*='/events/']")
+
     for c in cards:
-        title_el = c.select_one("a[href], .card__title a, h3 a, h2 a")
-        date_el  = c.select_one(".date, .event-date, time, .card__date")
-        where_el = c.select_one(".location, .event-location, .card__meta, .venue")
-        title = (title_el.get_text(" ", strip=True) if title_el else "").strip()
-        url = (title_el.get("href").strip() if title_el and title_el.has_attr("href") else "")
-        date_text = (date_el.get_text(" ", strip=True) if date_el else "").strip()
-        location = (where_el.get_text(" ", strip=True) if where_el else "").strip()
-        if title:
-            rows.append({
-                "title": title,
-                "date_text": date_text,
-                "iso_hint": None,
-                "iso_end_hint": None,
-                "url": url,
-                "location": location,
-            })
+        a = c.find("a", href=True) if c else None
+        title = _text(a) if a else _text(c.find("h3") or c.find("h2"))
+        href = urljoin(base_url, a["href"]) if a else base_url
 
-    # Dedup
-    seen = set()
-    out = []
-    for r in rows:
-        k = (r["title"], r.get("url",""))
-        if k in seen:
-            continue
-        seen.add(k)
-        out.append(r)
-    return out
+        # Time
+        tnode = c.find("time")
+        start, end = (None, None)
+        if tnode and tnode.get("datetime"):
+            try:
+                start = datetime.fromisoformat(tnode["datetime"].replace("Z", "+00:00"))
+            except Exception:
+                start, end = parse_datetime_range(_text(tnode))
+        else:
+            # look near headings/date spans
+            dt_block = c.select_one(".date, .dates, .event-date, .sv-date") or c
+            start, end = parse_datetime_range(_text(dt_block))
+
+        # Location / desc (best-effort)
+        location = _text(
+            c.select_one(".location, .venue, .sv-venue, .event-venue, .address")
+        )
+        desc = _text(c.select_one(".summary, .description, .teaser, .copy"))
+
+        if title and start:
+            events.append(
+                Event(
+                    title=title,
+                    start=start,
+                    end=end,
+                    url=href,
+                    location=location or None,
+                    description=desc or None,
+                )
+            )
+
+    return events

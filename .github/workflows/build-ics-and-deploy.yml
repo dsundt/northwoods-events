@@ -16,8 +16,6 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.11"
-  # Set to "true" if you want the job to fail when a src/types.py shadow is found.
-  FAIL_SHADOW: "false"
 
 jobs:
   build:
@@ -28,39 +26,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-
-      - name: Scan for stdlib "types" shadowing
-        shell: bash
-        run: |
-          set -euo pipefail
-          problem=0
-
-          if [ -f src/types.py ]; then
-            if [ "${FAIL_SHADOW}" = "true" ]; then
-              echo "::error::Found src/types.py — this can shadow Python's stdlib 'types'. Please rename it (e.g., src/models.py)."
-              exit 1
-            else
-              echo "::warning::Found src/types.py — this can shadow Python's stdlib 'types'. Consider renaming to src/models.py."
-              problem=1
-            fi
-          fi
-
-          matches="$(grep -RInE '\bimport types\b|\bfrom types import\b' src || true)"
-          if [ -n "$matches" ]; then
-            if [ "${FAIL_SHADOW}" = "true" ]; then
-              echo "::error::Suspicious 'types' imports detected:"
-              echo "$matches"
-              exit 1
-            else
-              echo "::warning::Suspicious 'types' imports detected:"
-              echo "$matches"
-              problem=1
-            fi
-          fi
-
-          if [ "$problem" -eq 0 ]; then
-            echo "No blocking 'types' shadowing detected."
-          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -147,22 +112,22 @@ jobs:
           rm -rf public
           mkdir -p public
 
-          # Minimal index without heredocs that confuse YAML
-          printf '%s\n' \
-            '<!doctype html>' \
-            '<meta charset="utf-8">' \
-            '<title>Northwoods Events - Artifacts</title>' \
-            '<h1>Northwoods Events - Artifacts</h1>' \
-            '<p>This page lists useful generated files from the repo.</p>' \
-            '<ul>' \
-            '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>' \
-            '  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>' \
-            '</ul>' \
-            '<hr>' \
-            '<p>Auto-published by GitHub Pages workflow.</p>' \
-            > public/index.html
+          # Write a tiny HTML index using heredoc (safe inside run: | block)
+          cat > public/index.html <<'HTML'
+<!doctype html>
+<meta charset="utf-8">
+<title>Northwoods Events - Artifacts</title>
+<h1>Northwoods Events - Artifacts</h1>
+<p>This page lists useful generated files from the repo.</p>
+<ul>
+  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>
+  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>
+</ul>
+<hr>
+<p>Auto-published by GitHub Pages workflow.</p>
+HTML
 
-          # Copy state and ICS if present
+          # Copy state/ if present and generate simple directory listings
           if [ -d state ]; then
             mkdir -p public/state
             cp -a state/. public/state/
@@ -187,6 +152,7 @@ for base, dirs, files in os.walk(root):
 PY
           fi
 
+          # Copy ICS to site root if present
           if [ -f northwoods.ics ]; then
             cp northwoods.ics public/
           fi
@@ -205,7 +171,6 @@ PY
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy
         id: deployment

@@ -3,7 +3,7 @@ import re
 from datetime import date, datetime
 from typing import Optional, Tuple
 
-# -------- Month helpers --------
+# Month dictionary
 MONTHS = {
     "jan": 1, "january": 1,
     "feb": 2, "february": 2,
@@ -19,7 +19,7 @@ MONTHS = {
     "dec": 12, "december": 12,
 }
 
-# -------- Patterns we support --------
+# Regex patterns
 _M = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*"
 _TIME = r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ampm>am|pm)"
 _DATE1 = re.compile(rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})(?:,\s*(?P<year>\d{{4}}))?", re.I)
@@ -33,7 +33,6 @@ def _infer_year(mon: int, day: int, explicit: Optional[int]) -> int:
         return explicit
     today = date.today()
     candidate = date(today.year, mon, day)
-    # If very far in the past, bump to next year
     if (candidate - today).days < -300:
         return today.year + 1
     return today.year
@@ -102,21 +101,21 @@ def parse_datetime_range(raw: str) -> str:
 
 def combine_date_and_time(date_iso_or_date: str, time_text: str) -> Optional[str]:
     """
-    date_iso_or_date: 'YYYY-MM-DD' or full ISO (we only use the date part).
-    time_text: e.g. '10:00 am - 4:00 pm' or '7:00 am'.
-    Returns 'YYYY-MM-DDTHH:MM:00' or 'YYYY-MM-DDT00:00:00' if time cannot be parsed.
+    Only combines if date_iso_or_date looks like a real date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS...).
+    Otherwise, returns None.
     """
-    if not date_iso_or_date:
+    if not date_iso_or_date or not re.match(r"^\d{4}-\d{2}-\d{2}", date_iso_or_date):
         return None
     date_part = date_iso_or_date.split("T")[0]
-    dt = None
     t = parse_time_string(time_text)
-    if t:
-        h, m = t
-        dt = datetime.fromisoformat(f"{date_part}T00:00:00").replace(hour=h, minute=m)
-    else:
+    try:
         dt = datetime.fromisoformat(f"{date_part}T00:00:00")
-    return dt.isoformat()
+        if t:
+            h, m = t
+            dt = dt.replace(hour=h, minute=m)
+        return dt.isoformat()
+    except Exception:
+        return None
 
 def parse_date_from_url(url: str) -> Optional[str]:
     """Extract YYYY-MM-DD from GrowthZone detail URLs like '-08-01-2025-12345'."""

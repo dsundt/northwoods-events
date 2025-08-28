@@ -3,7 +3,7 @@ import re
 from typing import Any, Dict, List
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from utils.dates import parse_datetime_range
+from utils.dates import combine_date_and_time, parse_datetime_range
 
 __all__ = ["parse_municipal"]
 
@@ -14,40 +14,28 @@ def parse_municipal(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Strategy:
-    # 1) <time datetime="...">
-    for ev in soup.find_all(["article", "li", "div", "tr"]):
-        time_tag = ev.find("time", attrs={"datetime": True})
-        if not time_tag:
-            continue
-        start = (time_tag.get("datetime") or "").strip()
-        if not start:
-            continue
-        a = ev.find("a", href=True)
-        title = _text(ev.find(["h3", "h2"])) or (a.get_text(strip=True) if a else "")
-        title = re.sub(r"\s+", " ", title).strip()
+    # Typical WP calendar markup: entries with <time datetime="YYYY-MM-DD">
+    for e in soup.select("article, li, .event, .tribe-events-calendar-list__event"):
+        a = e.find("a", href=True)
+        title = _text(e.find(["h3","h2"])) or (a.get_text(strip=True) if a else "")
         if not title:
             continue
-        items.append({"title": title, "start": start, "url": urljoin(base_url, a["href"]) if a else base_url, "location": ""})
 
-    if items:
-        return items
+        t = e.find("time", attrs={"datetime": True})
+        start_iso = ""
+        if t:
+            start_iso = combine_date_and_time(t.get("datetime",""), t.get_text(" ", strip=True))
+        if not start_iso:
+            try:
+                start_iso = parse_datetime_range(_text(e))
+            except Exception:
+                start_iso = ""
 
-    # 2) FullCalendar/table-style listings: a row with a date cell & an anchor title
-    rows = soup.select("table tr")
-    for tr in rows:
-        title_a = tr.find("a", href=True)
-        if not title_a:
-            continue
-        title = _text(title_a)
-        row_text = _text(tr)
-        start = None
-        try:
-            start = parse_datetime_range(row_text)
-        except Exception:
-            start = None
-        if not start:
-            continue
-        items.append({"title": title, "start": start, "url": urljoin(base_url, title_a["href"]), "location": ""})
+        items.append({
+            "title": title,
+            "start": start_iso,
+            "url": urljoin(base_url, a["href"]) if a else base_url,
+            "location": _text(e.find(class_=re.compile("location|venue", re.I))) or "",
+        })
 
     return items

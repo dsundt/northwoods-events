@@ -1,14 +1,33 @@
 {
-  "when": "2025-08-27T21:12:01-05:00",
+  "when": "2025-08-27T21:17:39-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 139,
+      "added": 139,
+      "samples": [
+        {
+          "title": "St. Germain Flea Market",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/"
+        },
+        {
+          "title": "Manitowish Waters Lions Club Bingo",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/"
+        },
+        {
+          "title": "Monday Night Bingo",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/"
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
     },
@@ -16,9 +35,28 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 76,
+      "added": 76,
+      "samples": [
+        {
+          "title": "Northwoods Children&#8217;s Museum Nature Education Classes",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/"
+        },
+        {
+          "title": "Mah Jongg at the Boulder Junction Public Library",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/"
+        },
+        {
+          "title": "Boulder Junction Lions Club Flea Market",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/"
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
     },
@@ -26,9 +64,28 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 406,
+      "added": 406,
+      "samples": [
+        {
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
+        },
+        {
+          "title": "SepTimber Ride",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/septimber-ride/"
+        },
+        {
+          "title": "Cranberry Fest",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://eagleriver.org/events/cranberry-fest/"
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
     },
@@ -46,26 +103,26 @@
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 10,
-      "added": 10,
+      "parsed": 20,
+      "added": 20,
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
           "start": "2025-08-27T00:00:00-05:00",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
-          "url": "https://sayner-starlake-cloverland.org/events/"
+          "location": "",
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
         },
         {
           "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
           "start": "2025-08-27T00:00:00-05:00",
-          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI",
-          "url": "https://sayner-starlake-cloverland.org/events/"
+          "location": "",
+          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
         },
         {
           "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
           "start": "2025-08-27T00:00:00-05:00",
-          "location": "Weber's 2649 Co. Rd C, Sayner, WI",
-          "url": "https://sayner-starlake-cloverland.org/events/"
+          "location": "",
+          "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/"
         }
       ],
       "http_status": 200,

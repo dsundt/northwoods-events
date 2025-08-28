@@ -1,9 +1,15 @@
 name: Scrape & Parse Events
-
 on:
+  # Manual run
   workflow_dispatch: {}
+  # Nightly auto-run (UTC)
   schedule:
-    - cron: "22 10 * * *"   # daily at 10:22 UTC; adjust as you like
+    - cron: "22 10 * * *"
+  # Also run automatically AFTER CI completes successfully on main
+  workflow_run:
+    workflows: ["Python CI"]
+    types: [completed]
+    branches: [main]
 
 concurrency:
   group: scrape-events
@@ -11,65 +17,42 @@ concurrency:
 
 jobs:
   scrape:
+    # Only proceed if the upstream CI finished successfully
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+          cache: pip
 
       - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Ensure these are present even if not in requirements.txt
+          pip install -r requirements.txt || true
           pip install playwright beautifulsoup4 requests pyyaml
 
       - name: Install Playwright (Chromium + system deps)
-        run: |
-          python -m playwright install --with-deps chromium
-
-      # OPTIONAL sanity check (handy while you iterate)
-      # - name: Smoke-test Playwright render (prints first 200 chars)
-      #   run: |
-      #     python - << 'PY'
-      #     from utils.fetchers import fetch_rendered
-      #     html = fetch_rendered("https://www.minocqua.org/events/", wait_selector="a", timeout_ms=45000)
-      #     print((html or "")[:200])
-      #     PY
+        run: python -m playwright install --with-deps chromium
 
       - name: Run scraper
         env:
           NW_TZ: America/Chicago
         run: |
-          # If you keep sources.yml in repo, just call main:
+          # If your code reads sources.yml from the repo:
           python src/main.py
 
-          # If you DON'T keep sources.yml, uncomment the heredoc below and
-          # feed sources via stdin instead:
+          # If you prefer passing inline JSON instead, replace the line above with:
           # python src/main.py <<'JSON'
-          # [
-          #   {"name":"Vilas County (Modern Tribe)","url":"https://vilaswi.com/events/?eventDisplay=list","kind":"modern_tribe"},
-          #   {"name":"Boulder Junction (Modern Tribe)","url":"https://boulderjct.org/events/?eventDisplay=list","kind":"modern_tribe"},
-          #   {"name":"Eagle River Chamber (Modern Tribe)","url":"https://eagleriver.org/events/?eventDisplay=list","kind":"modern_tribe"},
-          #   {"name":"St. Germain Chamber (Micronet AJAX)","url":"https://st-germain.com/events-calendar/?eventDisplay=list","kind":"st_germain_ajax"},
-          #   {"name":"Sayner–Star Lake–Cloverland Chamber (Modern Tribe)","url":"https://sayner-starlake-cloverland.org/events/","kind":"modern_tribe"},
-          #   {"name":"Rhinelander Chamber (GrowthZone)","url":"https://business.rhinelanderchamber.com/events/calendar","kind":"growthzone"},
-          #   {"name":"Minocqua Area Chamber (Simpleview)","url":"https://www.minocqua.org/events/","kind":"simpleview"},
-          #   {"name":"Oneida County – Festivals & Events (Simpleview)","url":"https://oneidacountywi.com/festivals-events/","kind":"simpleview"},
-          #   {"name":"Town of Arbor Vitae (Municipal Calendar)","url":"https://www.townofarborvitae.org/calendar/","kind":"municipal"}
-          # ]
+          # [ { "name": "Vilas County (Modern Tribe)", "url": "https://vilaswi.com/events/?eventDisplay=list", "kind": "modern_tribe" } ]
           # JSON
 
-      - name: Upload artifacts (report + snapshots)
-        uses: actions/upload-artifact@v4
+      - name: Upload artifacts
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: scrape-output
           path: |

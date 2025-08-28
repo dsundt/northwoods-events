@@ -1,6 +1,6 @@
 {
-  "when": "2025-08-28T09:30:21.584630-05:00",
-  "timezone": "America/Chicago",
+  "when": "2025-08-28T12:14:43.754497-05:00",
+  "timezone": "CDT",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
@@ -10,26 +10,26 @@
       "added": 124,
       "samples": [
         {
-          "title": "Arbor Vitae Fireman’s Summerfest",
-          "start": "August 2",
+          "title": "Featured Arbor Vitae Fireman’s Summerfest",
+          "start": "2025-08-02",
           "url": "https://vilaswi.com/event/arbor-vitae-firemans-summerfest/",
           "location": ""
         },
         {
           "title": "Community Garage Sale Weekend",
-          "start": "August 2 @ 8:00 am",
+          "start": "08:00",
           "url": "https://vilaswi.com/event/community-garage-sale-weekend-2/",
           "location": ""
         },
         {
           "title": "Presque Isle Lions Rummage Sale",
-          "start": "August 2 @ 9:00 am",
+          "start": "09:00",
           "url": "https://vilaswi.com/event/presque-isle-lions-rummage-sale/",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
+      "snapshot": "state/snapshots/Vilas_County__Modern_Tribe__(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -39,30 +39,30 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 98,
-      "added": 98,
+      "parsed": 142,
+      "added": 142,
       "samples": [
         {
-          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
-          "start": "August 1",
-          "url": "https://boulderjct.org/events/marywood-franciscan-spirituality-center-summer-a-season-of-gathering-retreat/",
+          "title": "Recurring",
+          "start": "10:30",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/",
           "location": ""
         },
         {
-          "title": "Boulder Junction Community Foundation 15th Anniversary Celebration",
-          "start": "August 1 @ 7:00 pm",
-          "url": "https://boulderjct.org/events/boulder-junction-community-foundation-15th-anniversary-celebration/",
+          "title": "Recurring",
+          "start": "13:00",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/",
           "location": ""
         },
         {
-          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
-          "start": "2025-08-01",
-          "url": "https://boulderjct.org/events/marywood-franciscan-spirituality-center-summer-a-season-of-gathering-retreat/",
+          "title": "Recurring",
+          "start": "08:00",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
+      "snapshot": "state/snapshots/Boulder_Junction__Modern_Tribe__(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -77,25 +77,25 @@
       "samples": [
         {
           "title": "Labor Day Arts and Crafts Show",
-          "start": "10:00 am",
+          "start": "2025-08-31",
           "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
           "location": ""
         },
         {
           "title": "SepTimber Ride",
-          "start": "7:00 am",
+          "start": "2025-09-13",
           "url": "https://eagleriver.org/events/septimber-ride/",
           "location": ""
         },
         {
           "title": "Cranberry Fest",
-          "start": "October 4",
+          "start": "2025-10-04",
           "url": "https://eagleriver.org/events/cranberry-fest/",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
+      "snapshot": "state/snapshots/Eagle_River_Chamber__Modern_Tribe__(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -105,30 +105,25 @@
       "name": "St. Germain Chamber (Micronet AJAX)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 3,
-      "added": 3,
-      "samples": [
-        {
-          "title": "Flea Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155",
-          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
-          "url": "https://st-germain.com/events/flea-market-2025-15/",
-          "location": ""
-        },
-        {
-          "title": "Colorama 2025 Saturday, September 20th, 2025 St Germain Community Park",
-          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
-          "url": "https://st-germain.com/events/colorama-2025/",
-          "location": ""
-        },
-        {
-          "title": "Pints in the Park 2025 Saturday, September 20th, 2025 St Germain Community Park",
-          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
-          "url": "https://st-germain.com/events/pints-in-the-park/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax).html",
+      "snapshot": "state/snapshots/St__Germain_Chamber__Micronet_AJAX__(st_germain_ajax).html",
+      "parser_kind": "st_germain_ajax",
+      "notes": {},
+      "error": null,
+      "traceback": null
+    },
+    {
+      "name": "St. Germain Chamber (Micronet AJAX)",
+      "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/St__Germain_Chamber__Micronet_AJAX__(st_germain_ajax).html",
       "parser_kind": "st_germain_ajax",
       "notes": {},
       "error": null,
@@ -143,25 +138,25 @@
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "August 30 @ 6:30 pm",
+          "start": "2025-08-30",
           "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
-          "location": ""
+          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States"
         },
         {
           "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "August 31 @ 3:00 pm",
+          "start": "2025-08-31",
           "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
-          "location": ""
+          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI"
         },
         {
           "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "September 1 @ 2:00 pm",
+          "start": "2025-09-01",
           "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/",
-          "location": ""
+          "location": "Weber's 2649 Co. Rd C, Sayner, WI"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
+      "snapshot": "state/snapshots/Sayner_Star_Lake_Cloverland_Chamber__Modern_Tribe__(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -171,11 +166,30 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 125,
+      "added": 125,
+      "samples": [
+        {
+          "title": "Oneida County Fair",
+          "start": "2025-08-20T00:00:00",
+          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-01-2025-17402",
+          "location": ""
+        },
+        {
+          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
+          "start": "2025-08-20T00:00:00",
+          "url": "https://business.rhinelanderchamber.com/events/details/youth-baseball-softball-clinic-with-the-wi-woodchucks-17592",
+          "location": ""
+        },
+        {
+          "title": "ArtStart Gallery Exhibitions",
+          "start": "2025-08-20T00:00:00",
+          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
+      "snapshot": "state/snapshots/Rhinelander_Chamber__GrowthZone__(growthzone).html",
       "parser_kind": "growthzone",
       "notes": {},
       "error": null,
@@ -185,11 +199,30 @@
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 10,
+      "added": 10,
+      "samples": [
+        {
+          "title": "Events",
+          "start": "",
+          "url": "https://www.minocqua.org/events/",
+          "location": ""
+        },
+        {
+          "title": "Annual Events",
+          "start": "",
+          "url": "https://www.minocqua.org/events/annual-events/",
+          "location": ""
+        },
+        {
+          "title": "Fourth Of July",
+          "start": "",
+          "url": "https://www.minocqua.org/events/annual-events/fourth-of-july/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
+      "snapshot": "state/snapshots/Minocqua_Area_Chamber__Simpleview__(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -199,18 +232,30 @@
       "name": "Oneida County – Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
       "fetched": 1,
-      "parsed": 1,
-      "added": 1,
+      "parsed": 4,
+      "added": 4,
       "samples": [
         {
-          "title": "Festivals & Events",
-          "start": "Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations to arts attractions and scenic rides. Whether you’re visiting northern Wisconsin in spring, summer, fall, or winter, you’re sure to find an event that appeals to you. Learn about some of Oneida County’s top annual events below or use the listings on this page to find upcoming events. Featured events Art Fair on the Courthouse Lawn – Rhinelander See works from more than 150 Midwestern artists at this annual art fair in early June on the lawn of the historic Oneida County Courthouse in downtown Rhinelander. Learn more Snowshoe Baseball – Lake Tomahawk For more than 50 years, local residents and visitors alike have turned out every summer to take in these modified baseball games played with a softball, no gloves, and (you guessed it) snowshoes. Lake Tomahawk hosts games every Monday night in June, July, and August, and food and drinks are available for spectators. Learn more Hodag Country Festival – Rhinelander If you love country music, you need to be in Rhinelander in July for the annual Hodag Country Festival. Join 30,000 country music fans for four days of live shows by some of the biggest names in country music. Learn more about the Hodag Country Festival Oneida County Fair – Rhinelander Since 1896, this family-friendly event has welcomed visitors from across Oneida County, the Northwoods, and the state to take in exhibitions, enjoy rides and midway games, food vendors, entertainment, and more. Learn more about the Oneida County Fair. Project North Festival – Rhinelander This annual event highlights live music, interactive art, and the environment to draw visitors to locations throughout Rhinelander. The two-day festival features a variety of national, state, and regional musicians at venues across the city, as well as multimedia art installations and performances and sustainable education activities. Learn more about the Project North Festival. Beef-A-Rama – Minocqua Beef-a-Rama™ is a celebration of everything beef. Held annually on the last weekend in September, this fun-filled festival includes the Rump Roast Run and a Parade of Beef. There’s also a special “Calf Mile” race for kids. Beef-a-Rama™ features cook-offs, games for all ages, live music and great food. Learn more about Beef-a-Rama™ Community events See more Minocqua Area events here . See more Rhinelander events here . See more Three Lakes events here .",
-          "url": "https://explorerhinelander.com/all-events/art-fair/",
+          "title": "Learn more about Beef-a-Rama™",
+          "start": "",
+          "url": "http://www.minocqua.org/things-to-do/events/annual-events/beef-a-rama/",
+          "location": ""
+        },
+        {
+          "title": "here",
+          "start": "",
+          "url": "https://www.minocqua.org/events/",
+          "location": ""
+        },
+        {
+          "title": "here",
+          "start": "",
+          "url": "https://explorerhinelander.com/events/",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county_-_festivals___events_(simpleview).html",
+      "snapshot": "state/snapshots/Oneida_County___Festivals___Events__Simpleview__(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -220,11 +265,30 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 32,
+      "added": 32,
+      "samples": [
+        {
+          "title": "0",
+          "start": "2025-08-24",
+          "url": "https://www.townofarborvitae.org/cart",
+          "location": ""
+        },
+        {
+          "title": "Minocqua Area Visitors Bureau",
+          "start": "2025-08-24",
+          "url": "https://www.minocqua.org/",
+          "location": ""
+        },
+        {
+          "title": "Brush Site Open",
+          "start": "2025-08-24",
+          "url": "https://www.townofarborvitae.org/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
+      "snapshot": "state/snapshots/Town_of_Arbor_Vitae__Municipal_Calendar__(municipal).html",
       "parser_kind": "municipal",
       "notes": {},
       "error": null,

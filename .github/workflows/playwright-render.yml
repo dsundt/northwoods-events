@@ -1,0 +1,76 @@
+name: Render JS Snapshots (Playwright)
+
+on:
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "tools/render_js_pages.py"
+      - "tools/render.mjs"
+      - ".github/workflows/playwright-render.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Path A: Python Playwright (runs only if your Python tool exists)
+      - name: Setup Python
+        if: ${{ hashFiles('tools/render_js_pages.py') != '' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python Playwright
+        if: ${{ hashFiles('tools/render_js_pages.py') != '' }}
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps
+
+      - name: Run Python renderer
+        if: ${{ hashFiles('tools/render_js_pages.py') != '' }}
+        run: |
+          mkdir -p state/rendered
+          python tools/render_js_pages.py --out state/rendered
+
+      # Path B: Node Playwright (runs only if your Node tool exists)
+      - name: Setup Node
+        if: ${{ hashFiles('tools/render.mjs') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node Playwright
+        if: ${{ hashFiles('tools/render.mjs') != '' }}
+        run: |
+          npm --yes init -y
+          npm i playwright
+          npx playwright install --with-deps
+
+      - name: Run Node renderer
+        if: ${{ hashFiles('tools/render.mjs') != '' }}
+        run: |
+          mkdir -p state/rendered
+          node tools/render.mjs state/rendered
+
+      - name: Upload rendered HTML
+        if: ${{ hashFiles('state/rendered/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered_html
+          path: state/rendered
+          retention-days: 7
+
+      - name: Commit rendered pages (optional)
+        if: ${{ hashFiles('state/rendered/**') != '' }}
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update rendered JS pages"
+          file_pattern: state/rendered/**

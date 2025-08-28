@@ -4,86 +4,89 @@ from datetime import datetime, date
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from utils.dates import parse_datetime_range
 
 __all__ = ["parse_growthzone"]
 
-# strict month token – do NOT match "Mar" inside "Market"
-M_TOKEN = r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
-DATE_NEAR = re.compile(rf"\b{M_TOKEN}\b\s+\d{{1,2}}(?:,\s*\d{{4}})?(?:\s*@\s*\d{{1,2}}:\d{{2}}\s*(?:am|pm))?", re.I)
-MDY_SLASH = re.compile(r"\b\d{1,2}/\d{1,2}/\d{2,4}\b")
-MDY_DASH = re.compile(r"\b\d{1,2}-\d{1,2}-\d{2,4}\b")
+# Strict month word boundary (prevents matching 'Mar' inside 'Market')
+_MWORD = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*"
+_M = rf"\b{_MWORD}\b"
+TIME = r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ampm>am|pm)"
+DT_RE = re.compile(
+    rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})(?:,\s*(?P<year>\d{{4}}))?"
+    rf"(?:\s*(?:@|,)?\s*(?P<stime>{TIME}))?",
+    re.I,
+)
+
+MONTHS = {
+    "jan": 1, "january": 1,
+    "feb": 2, "february": 2,
+    "mar": 3, "march": 3,
+    "apr": 4, "april": 4,
+    "may": 5,
+    "jun": 6, "june": 6,
+    "jul": 7, "july": 7,
+    "aug": 8, "august": 8,
+    "sep": 9, "sept": 9, "september": 9,
+    "oct": 10, "october": 10,
+    "nov": 11, "november": 11,
+    "dec": 12, "december": 12,
+}
 
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
 
-def _first_date_like(s: str) -> Optional[str]:
-    s = s or ""
-    for rx in (DATE_NEAR, MDY_SLASH, MDY_DASH):
-        m = rx.search(s)
-        if m:
-            frag = m.group(0)
-            # Normalize slash/dash forms to Month Day, Year for parser
-            if rx in (MDY_SLASH, MDY_DASH):
-                parts = re.split(r"[/-]", frag)
-                mm, dd, yy = int(parts[0]), int(parts[1]), int(parts[2])
-                if yy < 100:
-                    yy += 2000
-                try:
-                    dt = datetime(yy, mm, dd)
-                    return dt.isoformat()
-                except Exception:
-                    continue
-            # month-word form -> feed to parse_datetime_range
-            try:
-                return parse_datetime_range(frag)
-            except Exception:
-                continue
-    return None
+def _infer_year(mon: int, day: int, explicit: Optional[int]) -> int:
+    if explicit:
+        return explicit
+    today = date.today()
+    cand = date(today.year, mon, day)
+    if (cand - today).days < -300:
+        return today.year + 1
+    return today.year
+
+def _parse_one_datetime(s: str) -> Optional[str]:
+    m = DT_RE.search(s or "")
+    if not m:
+        return None
+    mon = MONTHS[m.group("mon").lower()]
+    day = int(m.group("day"))
+    year = _infer_year(mon, day, int(m.group("year")) if m.group("year") else None)
+    if m.group("stime"):
+        h = int(m.group("h")); mm = int(m.group("m")); ampm = m.group("ampm").lower()
+        h = (h % 12) + (12 if ampm == "pm" else 0)
+        return datetime(year, mon, day, h, mm).isoformat()
+    return datetime(year, mon, day).isoformat()
 
 def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Target event links; cards often anchor to /events/details/...
-    anchors = [a for a in soup.find_all("a", href=True)
-               if "/events/details/" in a["href"] or "/events/details" in a["href"]]
+    # GrowthZone calendars typically render event tiles linking to /events/details/...
+    anchors = [a for a in soup.find_all("a", href=True) if "/events/details/" in a["href"]]
     if not anchors:
-        anchors = soup.select('[data-ga-category="Events"] a, a.mn-event, .mn-event a, .mn-card a')
+        # Some skins use data-ga-category=Events
+        anchors = soup.select('[data-ga-category="Events"] a')
 
-    seen = set()
     for a in anchors:
-        href = a.get("href", "")
-        url = urljoin(base_url, href)
-        if url in seen:
-            continue
-        seen.add(url)
-
-        container = a.find_parent(["article", "li", "div"]) or a
-        title = _text(container.find(["h3", "h2"])) or _text(a)
+        url = urljoin(base_url, a["href"])
+        # Title: prefer immediate heading text inside the anchor or its child heading
+        title = _text(a.find(["h2", "h3"])) or _text(a)
         title = re.sub(r"\s+", " ", title).strip()
         if not title:
             continue
 
-        # nearby text to locate a date (avoid "Market" trap by using strict token regex above)
-        around = " ".join([
-            _text(container),
-            _text(container.find_next_sibling()),
-            _text(container.find_previous_sibling()),
-        ])
-
-        start = _first_date_like(around) or _first_date_like(title)
+        # Look around the tile for a date line
+        container = a.find_parent(["article", "li", "div"]) or a
+        ctxt = " ".join(
+            filter(None, [
+                _text(container),
+                _text(container.find_next_sibling()),
+                _text(container.find_previous_sibling()),
+            ])
+        )
+        start = _parse_one_datetime(ctxt) or _parse_one_datetime(title)
         if not start:
-            # Some calendars put the date in the details URL itself (…-08-23-2025-12345)
-            m = re.search(r"(\d{2})-(\d{2})-(\d{4})", url)
-            if m:
-                mm, dd, yy = map(int, m.groups())
-                try:
-                    start = datetime(yy, mm, dd).isoformat()
-                except Exception:
-                    start = None
-        if not start:
-            # If we still can't find a date, skip (prevents bad records).
+            # If nothing looks like a date, skip this link (likely non-event nav)
             continue
 
         # Optional location
@@ -91,7 +94,8 @@ def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
         for cls in ("mn-event-location", "mn-location", "location"):
             el = container.select_one(f".{cls}")
             if el:
-                loc = _text(el); break
+                loc = _text(el)
+                break
 
         items.append({"title": title, "start": start, "url": url, "location": loc})
 

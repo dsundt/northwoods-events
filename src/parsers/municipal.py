@@ -1,216 +1,153 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Defensive municipal/City CMS events scraper (drop-in).
-Keeps the same hardened HTTP + guarded parsing pattern, but extra-generic selectors.
-"""
 from __future__ import annotations
 
-import dataclasses
-import datetime as dt
-import json
-import logging
-import random
 import re
-import sys
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
-import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
-LOG = logging.getLogger("municipal")
-if not LOG.handlers:
-    h = logging.StreamHandler(sys.stderr)
-    h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [municipal] %(message)s"))
-    LOG.addHandler(h)
-LOG.setLevel(logging.INFO)
+from utils.dates import parse_datetime_range
 
-DEFAULT_TIMEOUT = (6.1, 20.0)
-MAX_RETRIES = 5
-BACKOFF_FACTOR = 0.6
-STATUS_FORCELIST = (429, 500, 502, 503, 504)
+__all__ = ["parse_municipal"]
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
-]
 
-@dataclasses.dataclass
-class Event:
-    title: str
-    start: Optional[dt.datetime]
-    end: Optional[dt.datetime]
-    location: Optional[str]
-    url: Optional[str]
-    description: Optional[str] = None
-    source: str = "municipal"
+# ---------------------------
+# Helpers
+# ---------------------------
 
-    def as_dict(self) -> dict:
-        return {
-            "title": self.title.strip() if self.title else "",
-            "start": self.start.isoformat() if self.start else None,
-            "end": self.end.isoformat() if self.end else None,
-            "location": (self.location or "").strip() or None,
-            "url": (self.url or "").strip() or None,
-            "description": (self.description or "").strip() or None,
-            "source": self.source,
-        }
+def _text(el) -> str:
+    return " ".join(el.stripped_strings) if el else ""
 
-def _build_session() -> requests.Session:
-    sess = requests.Session()
-    retry = Retry(
-        total=MAX_RETRIES,
-        backoff_factor=BACKOFF_FACTOR,
-        status_forcelist=STATUS_FORCELIST,
-        allowed_methods=frozenset(["GET", "HEAD"]),
-        raise_on_status=False,
-    )
-    adapter = HTTPAdapter(max_retries=retry, pool_connections=10, pool_maxsize=10)
-    sess.mount("https://", adapter)
-    sess.mount("http://", adapter)
-    sess.headers.update({
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.7",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-    })
-    return sess
 
-# Date parsing tries several common municipal patterns
-DATE_PATTERNS = [
-    # ISO-ish
-    (re.compile(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}"), "%Y-%m-%d %H:%M"),
-    (re.compile(r"\d{4}-\d{2}-\d{2}"), "%Y-%m-%d"),
-    # e.g., July 4, 2025 7:00 PM
-    (re.compile(r"[A-Za-z]{3,9} \d{1,2}, \d{4} \d{1,2}:\d{2} [AP]M"), "%B %d, %Y %I:%M %p"),
-    (re.compile(r"[A-Za-z]{3,9} \d{1,2}, \d{4}"), "%B %d, %Y"),
-]
+_DEFUSE_HEADERS = {
+    "events", "upcoming events", "calendar", "event calendar", "board meetings"
+}
 
-def _parse_dt(s: Optional[str]) -> Optional[dt.datetime]:
-    if not s:
+# Frequent municipal calendar hints
+_DATE_HINTS = (
+    "time[datetime]",  # semantic <time datetime="...">
+    "time",            # or just <time>
+    ".date",
+    ".event-date",
+    ".ai1ec-event-time",   # All-in-One Event Calendar
+    ".ai1ec-event-time-block",
+    ".tribe-event-date-start",  # if they run TEC
+    ".tribe-event-date",
+)
+
+_TITLE_HINTS = (
+    ".event-title",
+    ".ai1ec-event-title",
+    ".tribe-event-title",
+    "h3", "h2", "h4",
+)
+
+
+def _maybe_parse(s: str) -> Optional[str]:
+    s = (s or "").strip()
+    if not s or s.lower() in _DEFUSE_HEADERS:
         return None
-    s = s.strip()
-    for rx, fmt in DATE_PATTERNS:
-        if rx.search(s):
-            # normalize space between date/time if needed
-            if "T" in s and fmt == "%Y-%m-%d %H:%M":
-                s = s.replace("T", " ")
-            try:
-                return dt.datetime.strptime(s, fmt)
-            except Exception:
-                continue
-    # last resort
     try:
-        return dt.datetime.fromisoformat(s.replace("T", " "))
+        return parse_datetime_range(s)
     except Exception:
         return None
 
-def fetch_events(calendar_url: str, limit: Optional[int] = None) -> Tuple[List[Event], List[str]]:
-    warnings: List[str] = []
-    events: List[Event] = []
 
-    sess = _build_session()
-    try:
-        resp = sess.get(calendar_url, timeout=DEFAULT_TIMEOUT)
-    except requests.RequestException as e:
-        warnings.append(f"Network error: {e.__class__.__name__}")
-        LOG.warning("Network error fetching %s: %s", calendar_url, e)
-        return [], warnings
+# ---------------------------
+# Parser
+# ---------------------------
 
-    if resp.status_code >= 400:
-        warnings.append(f"HTTP {resp.status_code} from server")
-        LOG.warning("HTTP %s for %s", resp.status_code, calendar_url)
-        if not resp.text:
-            return [], warnings
+def parse_municipal(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Defensive municipal calendar parser.
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    Supports common WP calendar plugins (AI1EC, The Events Calendar) and simple
+    list/table layouts. We favor semantic <time> tags when available and otherwise
+    fall back to nearby text that looks like a date/time.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    items: List[Dict[str, Any]] = []
 
-    # Very generic selectors to support common city CMSes (CivicPlus, Granicus, Municode, etc.)
-    cards = soup.select(
-        "[itemtype*='schema.org/Event'], .event, .event-item, .calendar-item, .list-item, "
-        "li[class*='event'], article[class*='event']"
-    )
-    if not cards:
-        warnings.append("No recognizable event elements; using broad list/article fallback.")
-        cards = soup.select("article, li")[:200]
+    # 1) Obvious event containers: list items, articles, rows with links
+    containers = []
+    containers.extend(soup.select("li.event, li.ai1ec-event, article.ai1ec_event, article, .event, .ai1ec-event"))
+    if not containers:
+        # Generic fallback: any container that has a link and some date-ish node
+        for el in soup.find_all(["li", "article", "div", "tr"]):
+            if el.find("a", href=True) and (el.select_one(",".join(_DATE_HINTS)) or el.find("time")):
+                containers.append(el)
 
-    for card in cards:
+    # 2) Calendar table fallback (common on town sites): each cell may contain multiple links
+    if not containers:
+        for cell in soup.select("table.calendar td, table#calendar td, .calendar td"):
+            if cell.find("a", href=True):
+                containers.append(cell)
+
+    # de-dup
+    seen = set()
+    containers = [c for c in containers if id(c) not in seen and not seen.add(id(c))]
+
+    for c in containers:
         # Title
-        try:
-            title_el = card.select_one("[itemprop='name'], .title, .event-title, h3, h2, a")
-            title = title_el.get_text(strip=True) if title_el else ""
-        except Exception:
-            title = ""
-
-        # URL
-        try:
-            url_el = card.select_one("[itemprop='url'], a[href]")
-            url = url_el["href"].strip() if url_el and url_el.has_attr("href") else None
-        except Exception:
-            url = None
-
-        # Dates (machine first)
-        start_s = (card.select_one("[itemprop='startDate']") or {}).get("content") or (
-            card.select_one("time[datetime]") or {}
-        ).get("datetime")
-        end_s = (card.select_one("[itemprop='endDate']") or {}).get("content") or (
-            card.select_one("time[datetime] + time") or {}
-        ).get("datetime")
-
-        # visible fallbacks
-        if not start_s:
-            dt_el = card.select_one(".date, .event-date, .when, time")
-            start_s = (dt_el.get("datetime") or dt_el.get_text(strip=True)) if dt_el else None
-
-        start = _parse_dt(start_s)
-        end = _parse_dt(end_s)
-
-        # Location
-        try:
-            loc_el = card.select_one("[itemprop='location'], .location, .event-location, address")
-            location = loc_el.get_text(" ", strip=True) if loc_el else None
-        except Exception:
-            location = None
-
-        # Description
-        try:
-            desc_el = card.select_one("[itemprop='description'], .description, .summary, .body")
-            description = desc_el.get_text("\n", strip=True) if desc_el else None
-        except Exception:
-            description = None
-
+        title = ""
+        for sel in _TITLE_HINTS:
+            el = c.select_one(sel)
+            if el:
+                title = _text(el)
+                break
         if not title:
-            warnings.append("Skipped one entry without a title (likely non-event container).")
+            a = c.find("a", href=True)
+            title = _text(a) if a else ""
+        title = re.sub(r"\s+", " ", (title or "")).strip()
+        if not title:
             continue
 
-        events.append(Event(title=title, start=start, end=end, location=location, url=url, description=description))
-        if limit and len(events) >= limit:
-            break
+        # URL
+        a = c.find("a", href=True)
+        url = urljoin(base_url, a["href"]) if a else base_url
 
-    return events, warnings
+        # Date/time
+        dt_text = ""
+        # Prefer semantic <time>
+        t = c.find("time")
+        if t:
+            # Use datetime attribute if present; else use visible text
+            dt_text = t.get("datetime") or _text(t)
 
-def _cli(argv: List[str]) -> int:
-    import argparse
-    p = argparse.ArgumentParser(description="Scrape municipal events defensively.")
-    p.add_argument("url", help="City/municipal calendar URL")
-    p.add_argument("--limit", type=int, default=None)
-    p.add_argument("--json", action="store_true")
-    args = p.parse_args(argv)
+        if not dt_text:
+            for sel in _DATE_HINTS:
+                el = c.select_one(sel)
+                if el:
+                    dt_text = _text(el)
+                    if dt_text:
+                        break
 
-    evs, warns = fetch_events(args.url, limit=args.limit)
-    for w in warns:
-        LOG.warning("WARN: %s", w)
+        # last resort: use container text, but avoid pure headings
+        if not dt_text or dt_text.lower() in _DEFUSE_HEADERS:
+            dt_text = _text(c)
 
-    if args.json:
-        print(json.dumps([e.as_dict() for e in evs], indent=2, ensure_ascii=False))
-    else:
-        for e in evs:
-            print(f"- {e.title} @ {e.start or 'TBD'} -> {e.url or ''}")
-    return 0
+        start_iso = _maybe_parse(dt_text) or _maybe_parse(title)
+        if not start_iso:
+            # skip items that don't reveal a date/time at all
+            continue
 
-if __name__ == "__main__":
-    raise SystemExit(_cli(sys.argv[1:]))
+        # Location (best-effort)
+        location = ""
+        loc_el = (
+            c.select_one(".location")
+            or c.select_one(".event-location")
+            or c.find(class_=re.compile(r"(venue|location)", re.I))
+        )
+        if loc_el:
+            location = _text(loc_el).strip()
+
+        items.append(
+            {
+                "title": title,
+                "start": start_iso,
+                "url": url,
+                "location": location,
+            }
+        )
+
+    return items

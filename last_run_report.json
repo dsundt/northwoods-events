@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T20:23:08-05:00",
+  "when": "2025-08-27T20:29:25-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -11,8 +11,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
@@ -23,8 +23,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -35,8 +35,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -47,8 +47,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
@@ -59,8 +59,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 98, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -71,8 +71,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 101, in _get_parser\n    from parsers.growthzone import parse_growthzone\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 101, in _get_parser\n    from parsers.growthzone import parse_growthzone\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -83,8 +83,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
@@ -95,8 +95,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -107,8 +107,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
-      "error": "ModuleNotFoundError(\"No module named 'parsers._text'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.municipal import parse_municipal\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 5, in <module>\n    from ._text import text as _text  # or inline a small helper to get text\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nModuleNotFoundError: No module named 'parsers._text'\n"
+      "error": "ImportError('attempted relative import beyond top-level package')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.municipal import parse_municipal\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/__init__.py\", line 14, in <module>\n    from .modern_tribe import parse_modern_tribe   # noqa: F401\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 6, in <module>\n    from ..models import Event\nImportError: attempted relative import beyond top-level package\n"
     }
   ],
   "meta": {

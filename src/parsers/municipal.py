@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 from parsers._text import text as _text
 from models import Event
-from utils.dates import try_parse_datetime_range, parse_iso_or_text
+from utils.dates import parse_datetime_range
 
 def parse_municipal(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")

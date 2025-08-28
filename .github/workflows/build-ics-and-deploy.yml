@@ -1,4 +1,4 @@
-name: Build & Deploy Pages
+name: Build and Deploy Pages
 
 on:
   workflow_run:
@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # OPTIONAL: pull artifacts from the triggering run, if your scrape job uploaded any
+      # If the scrape workflow uploaded artifacts, pull them in
       - name: Download artifacts from scrape run (if present)
         if: ${{ github.event_name == 'workflow_run' }}
         uses: dawidd6/action-download-artifact@v3
@@ -31,11 +31,6 @@ jobs:
           run_id: ${{ github.event.workflow_run.id }}
           path: downloaded
           if_no_artifact_found: ignore
-
-      # OPTIONAL: Python only needed if you want to generate an index.html via a tiny script
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
 
       - name: Build static site
         run: |
@@ -51,73 +46,34 @@ jobs:
             echo "Found repo file: state/last_run_report.json"
             cp state/last_run_report.json public/state/last_run_report.json
           else
-            echo "No last_run_report.json found. Proceeding with a minimal site."
+            echo "No last_run_report.json found."
           fi
 
-          # Generate a minimal index.html (so the folder isn't empty)
-          python - <<'PY'
-import json, os, datetime, glob
-os.makedirs("public", exist_ok=True)
-dt = datetime.datetime.utcnow().isoformat()+"Z"
-report_path = "public/state/last_run_report.json"
-meta = {}
-counts = []
-if os.path.isfile(report_path):
-    try:
-        data = json.load(open(report_path, "r", encoding="utf-8"))
-        meta = data.get("meta", {})
-        for s in data.get("sources", []):
-            counts.append({
-                "name": s.get("name",""),
-                "parsed": s.get("parsed", 0),
-                "added": s.get("added", 0),
-                "parser_kind": s.get("parser_kind","")
-            })
-    except Exception as e:
-        meta = {"error": str(e)}
-
-rows = "\n".join(
-    f"<tr><td>{c['name']}</td><td>{c['parser_kind']}</td><td>{c['parsed']}</td><td>{c['added']}</td></tr>"
-    for c in counts[:50]  # show top 50
-)
-
-html = f"""<!doctype html>
+          # Minimal index.html so the site isn't empty
+          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          cat > public/index.html <<'HTML'
+<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Northwoods Events</title>
 <style>
-  body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; }}
-  table {{ border-collapse: collapse; width: 100%; max-width: 100%; }}
-  th, td {{ border: 1px solid #ddd; padding: .5rem; text-align: left; }}
-  th {{ background: #f6f8fa; }}
-  code {{ background: #f6f8fa; padding: .1rem .3rem; border-radius: .25rem; }}
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; }
+  code { background:#f6f8fa; padding:.1rem .3rem; border-radius:.25rem; }
 </style>
 <h1>Northwoods Events</h1>
-<p>Built: <code>{dt}</code></p>
-<h2>Meta</h2>
-<pre>{json.dumps(meta, indent=2)}</pre>
-<h2>Latest sources (sample)</h2>
-<table>
-  <thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead>
-  <tbody>
-    {rows or '<tr><td colspan="4"><em>No report found</em></td></tr>'}
-  </tbody>
-</table>
+<p>This site publishes the latest scrape report, if available.</p>
+<p>Built: <code>__BUILD_TIME__</code></p>
 <p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>
-"""
-open("public/index.html", "w", encoding="utf-8").write(html)
-PY
+HTML
+          # inject build time
+          sed -i "s#__BUILD_TIME__#${BUILD_TIME}#g" public/index.html
 
       - name: Show output tree (debug)
         run: |
-          echo "---- repo root ----"
-          ls -lah
-          echo "---- downloaded (if any) ----"
-          ls -lah downloaded || true
-          echo "---- public ----"
-          ls -lah public || true
-          echo "---- public/state ----"
-          ls -lah public/state || true
+          echo "---- repo root ----"; ls -lah || true
+          echo "---- downloaded (if any) ----"; ls -lah downloaded || true
+          echo "---- public ----"; ls -lah public || true
+          echo "---- public/state ----"; ls -lah public/state || true
 
       - uses: actions/configure-pages@v5
 

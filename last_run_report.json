@@ -1,139 +1,42 @@
 {
-  "when": "2025-08-27T12:03:42.608934-05:00",
+  "when": "2025-08-27T20:10:41-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 190,
-      "added": 190,
-      "samples": [
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/events/?eventDisplay=list"
-        },
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/events/?eventDisplay=list"
-        },
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/events/?eventDisplay=list"
-        }
-      ]
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 72, in parse_modern_tribe\n    start, end = _parse_iso_time(time_node)\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 140,
-      "added": 140,
-      "samples": [
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/?eventDisplay=list"
-        },
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/?eventDisplay=list"
-        },
-        {
-          "title": "(untitled)",
-          "start": "2025-08-27T00:00:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/?eventDisplay=list"
-        }
-      ]
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 72, in parse_modern_tribe\n    start, end = _parse_iso_time(time_node)\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 316,
-      "added": 316,
-      "samples": [
-        {
-          "title": "Labor Day Arts and Crafts Show",
-          "start": "2025-08-31T00:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
-        },
-        {
-          "title": "SepTimber Ride",
-          "start": "2025-09-13T00:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/septimber-ride/"
-        },
-        {
-          "title": "Cranberry Fest",
-          "start": "2025-10-04T00:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/cranberry-fest/"
-        }
-      ]
-    },
-    {
-      "name": "Rhinelander Chamber (GrowthZone)",
-      "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "fetched": 0,
       "parsed": 0,
       "added": 0,
       "samples": [],
-      "error": "HTTPSConnectionPool(host='business.rhinelanderchamber.com', port=443): Read timed out. (read timeout=30)"
-    },
-    {
-      "name": "Town of Arbor Vitae (Municipal Calendar)",
-      "url": "https://www.townofarborvitae.org/calendar/",
-      "fetched": 1,
-      "parsed": 30,
-      "added": 30,
-      "samples": [
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-24T00:00:00-05:00",
-          "location": "",
-          "url": "https://www.townofarborvitae.org/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
-        },
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-23T00:00:00-05:00",
-          "location": "",
-          "url": "https://www.townofarborvitae.org/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna"
-        },
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-22T00:00:00-05:00",
-          "location": "",
-          "url": "https://www.townofarborvitae.org/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp"
-        }
-      ]
-    },
-    {
-      "name": "Minocqua Area Chamber (Simpleview)",
-      "url": "https://www.minocqua.org/events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
-    },
-    {
-      "name": "Oneida County \u2013 Festivals & Events (Simpleview)",
-      "url": "https://oneidacountywi.com/festivals-events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": []
+      "http_status": 200,
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
+      "error": "TypeError(\"Event.__init__() got an unexpected keyword argument 'start'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 93, in parse_modern_tribe\n    Event(\nTypeError: Event.__init__() got an unexpected keyword argument 'start'\n"
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -141,34 +44,75 @@
       "fetched": 1,
       "parsed": 0,
       "added": 0,
-      "samples": []
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 80, in parse_modern_tribe\n    start, end = parse_datetime_range(_text(dt_block))\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
     },
     {
-      "name": "Sayner\u2013Star Lake\u2013Cloverland Chamber (ICS)",
+      "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 11,
-      "added": 11,
-      "samples": [
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-27T18:30:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/events/?ical=1"
-        },
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T18:30:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/events/?ical=1"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor\u2019s Race",
-          "start": "2025-08-31T15:00:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/events/?ical=1"
-        }
-      ]
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
+      "error": "TypeError(\"Event.__init__() got an unexpected keyword argument 'start'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 93, in parse_modern_tribe\n    Event(\nTypeError: Event.__init__() got an unexpected keyword argument 'start'\n"
+    },
+    {
+      "name": "Rhinelander Chamber (GrowthZone)",
+      "url": "https://business.rhinelanderchamber.com/events/calendar",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 44, in parse_growthzone\n    start, end = parse_datetime_range(_text(parent or a))\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
+    },
+    {
+      "name": "Minocqua Area Chamber (Simpleview)",
+      "url": "https://www.minocqua.org/events/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 45, in parse_simpleview\n    start, end = parse_datetime_range(_text(dt_block or c))\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
+    },
+    {
+      "name": "Oneida County – Festivals & Events (Simpleview)",
+      "url": "https://oneidacountywi.com/festivals-events/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html",
+      "error": "ValueError('too many values to unpack (expected 2)')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 162, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 45, in parse_simpleview\n    start, end = parse_datetime_range(_text(dt_block or c))\n    ^^^^^^^^^^\nValueError: too many values to unpack (expected 2)\n"
+    },
+    {
+      "name": "Town of Arbor Vitae (Municipal Calendar)",
+      "url": "https://www.townofarborvitae.org/calendar/",
+      "fetched": 1,
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
+      "http_status": 200,
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
+      "error": "ModuleNotFoundError(\"No module named 'parsers.municipal'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 161, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.municipal import parse_municipal\nModuleNotFoundError: No module named 'parsers.municipal'\n"
     }
-  ]
+  ],
+  "meta": {
+    "status": "ok",
+    "sources_file": "sources.yml"
+  }
 }

@@ -1,105 +1,48 @@
 {
-  "when": "2025-08-28T12:14:43.754497-05:00",
-  "timezone": "CDT",
+  "when": "2025-08-28T12:54:54.708498-05:00",
+  "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 124,
-      "added": 124,
-      "samples": [
-        {
-          "title": "Featured Arbor Vitae Fireman’s Summerfest",
-          "start": "2025-08-02",
-          "url": "https://vilaswi.com/event/arbor-vitae-firemans-summerfest/",
-          "location": ""
-        },
-        {
-          "title": "Community Garage Sale Weekend",
-          "start": "08:00",
-          "url": "https://vilaswi.com/event/community-garage-sale-weekend-2/",
-          "location": ""
-        },
-        {
-          "title": "Presque Isle Lions Rummage Sale",
-          "start": "09:00",
-          "url": "https://vilaswi.com/event/presque-isle-lions-rummage-sale/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/Vilas_County__Modern_Tribe__(modern_tribe).html",
+      "snapshot": "state/snapshots/vilas_county_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": null,
-      "traceback": null
+      "error": "ValueError(\"Invalid isoformat string: '08:00T00:00:00'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '08:00T00:00:00'\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 142,
-      "added": 142,
-      "samples": [
-        {
-          "title": "Recurring",
-          "start": "10:30",
-          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/",
-          "location": ""
-        },
-        {
-          "title": "Recurring",
-          "start": "13:00",
-          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/",
-          "location": ""
-        },
-        {
-          "title": "Recurring",
-          "start": "08:00",
-          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/Boulder_Junction__Modern_Tribe__(modern_tribe).html",
+      "snapshot": "state/snapshots/boulder_junction_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": null,
-      "traceback": null
+      "error": "ValueError(\"Invalid isoformat string: '10:30T00:00:00'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '10:30T00:00:00'\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 207,
-      "added": 207,
-      "samples": [
-        {
-          "title": "Labor Day Arts and Crafts Show",
-          "start": "2025-08-31",
-          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
-          "location": ""
-        },
-        {
-          "title": "SepTimber Ride",
-          "start": "2025-09-13",
-          "url": "https://eagleriver.org/events/septimber-ride/",
-          "location": ""
-        },
-        {
-          "title": "Cranberry Fest",
-          "start": "2025-10-04",
-          "url": "https://eagleriver.org/events/cranberry-fest/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/Eagle_River_Chamber__Modern_Tribe__(modern_tribe).html",
+      "snapshot": "state/snapshots/eagle_river_chamber_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": null,
-      "traceback": null
+      "error": "ValueError(\"Invalid isoformat string: '08:30T00:00:00'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '08:30T00:00:00'\n"
     },
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
@@ -109,21 +52,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/St__Germain_Chamber__Micronet_AJAX__(st_germain_ajax).html",
-      "parser_kind": "st_germain_ajax",
-      "notes": {},
-      "error": null,
-      "traceback": null
-    },
-    {
-      "name": "St. Germain Chamber (Micronet AJAX)",
-      "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
-      "http_status": 200,
-      "snapshot": "state/snapshots/St__Germain_Chamber__Micronet_AJAX__(st_germain_ajax).html",
+      "snapshot": "state/snapshots/st._germain_chamber_micronet_ajax_(st_germain_ajax).html",
       "parser_kind": "st_germain_ajax",
       "notes": {},
       "error": null,
@@ -138,25 +67,25 @@
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30",
+          "start": "2025-08-30T18:30:00",
           "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
           "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States"
         },
         {
           "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31",
+          "start": "2025-08-31T15:00:00",
           "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
           "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI"
         },
         {
           "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "2025-09-01",
+          "start": "2025-09-01T14:00:00",
           "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/",
           "location": "Weber's 2649 Co. Rd C, Sayner, WI"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/Sayner_Star_Lake_Cloverland_Chamber__Modern_Tribe__(modern_tribe).html",
+      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -166,30 +95,30 @@
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 1,
-      "parsed": 125,
-      "added": 125,
+      "parsed": 84,
+      "added": 84,
       "samples": [
         {
           "title": "Oneida County Fair",
-          "start": "2025-08-20T00:00:00",
+          "start": "2025-08-01T00:00:00",
           "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-01-2025-17402",
           "location": ""
         },
         {
-          "title": "Youth Baseball/Softball Clinic with the WI Woodchucks",
-          "start": "2025-08-20T00:00:00",
-          "url": "https://business.rhinelanderchamber.com/events/details/youth-baseball-softball-clinic-with-the-wi-woodchucks-17592",
+          "title": "ArtStart Gallery Exhibitions",
+          "start": "2025-08-01T00:00:00",
+          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027",
           "location": ""
         },
         {
-          "title": "ArtStart Gallery Exhibitions",
-          "start": "2025-08-20T00:00:00",
-          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027",
+          "title": "Oneida County Fair",
+          "start": "2025-08-02T00:00:00",
+          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-02-2025-17403",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/Rhinelander_Chamber__GrowthZone__(growthzone).html",
+      "snapshot": "state/snapshots/rhinelander_chamber_growthzone_(growthzone).html",
       "parser_kind": "growthzone",
       "notes": {},
       "error": null,
@@ -199,30 +128,11 @@
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "fetched": 1,
-      "parsed": 10,
-      "added": 10,
-      "samples": [
-        {
-          "title": "Events",
-          "start": "",
-          "url": "https://www.minocqua.org/events/",
-          "location": ""
-        },
-        {
-          "title": "Annual Events",
-          "start": "",
-          "url": "https://www.minocqua.org/events/annual-events/",
-          "location": ""
-        },
-        {
-          "title": "Fourth Of July",
-          "start": "",
-          "url": "https://www.minocqua.org/events/annual-events/fourth-of-july/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/Minocqua_Area_Chamber__Simpleview__(simpleview).html",
+      "snapshot": "state/snapshots/minocqua_area_chamber_simpleview_(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -232,30 +142,11 @@
       "name": "Oneida County – Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
       "fetched": 1,
-      "parsed": 4,
-      "added": 4,
-      "samples": [
-        {
-          "title": "Learn more about Beef-a-Rama™",
-          "start": "",
-          "url": "http://www.minocqua.org/things-to-do/events/annual-events/beef-a-rama/",
-          "location": ""
-        },
-        {
-          "title": "here",
-          "start": "",
-          "url": "https://www.minocqua.org/events/",
-          "location": ""
-        },
-        {
-          "title": "here",
-          "start": "",
-          "url": "https://explorerhinelander.com/events/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/Oneida_County___Festivals___Events__Simpleview__(simpleview).html",
+      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_simpleview_(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -265,30 +156,30 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 32,
-      "added": 32,
+      "parsed": 39,
+      "added": 39,
       "samples": [
         {
-          "title": "0",
-          "start": "2025-08-24",
-          "url": "https://www.townofarborvitae.org/cart",
-          "location": ""
-        },
-        {
           "title": "Minocqua Area Visitors Bureau",
-          "start": "2025-08-24",
+          "start": "2025-08-24T00:00:00",
           "url": "https://www.minocqua.org/",
           "location": ""
         },
         {
-          "title": "Brush Site Open",
-          "start": "2025-08-24",
-          "url": "https://www.townofarborvitae.org/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg",
+          "title": "Board Meetings",
+          "start": "",
+          "url": "https://www.townofarborvitae.org/calendar?category=Board+Meetings",
+          "location": ""
+        },
+        {
+          "title": "Board of Review",
+          "start": "",
+          "url": "https://www.townofarborvitae.org/calendar?category=Board+of+Review",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/Town_of_Arbor_Vitae__Municipal_Calendar__(municipal).html",
+      "snapshot": "state/snapshots/town_of_arbor_vitae_municipal_calendar_(municipal).html",
       "parser_kind": "municipal",
       "notes": {},
       "error": null,

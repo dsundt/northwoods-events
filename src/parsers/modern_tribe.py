@@ -66,7 +66,7 @@ def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
         if not dt:
             # smaller date block
             dt_block = card.select_one(".tec-event__schedule, .tec-event__date, time")
-            maybe = try_parse_datetime_range(_text(dt_block) if dt_block else "")
+            maybe = parse_datetime_range(_text(dt_block) if dt_block else "")
             if not maybe:
                 continue
             start, end = maybe
@@ -102,7 +102,7 @@ def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
                 ".tribe-events-schedule, "
                 "time"
             )
-            maybe = try_parse_datetime_range(_text(dt_block) if dt_block else "")
+            maybe = parse_datetime_range(_text(dt_block) if dt_block else "")
             if not maybe:
                 continue
             start, end = maybe
@@ -129,7 +129,7 @@ def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
             a = block.select_one("a[href*='/event/'], a[href*='?eventDisplay='], a[href*='/events/']")
             if not a:
                 continue
-            dt = _prefer_times(block) or try_parse_datetime_range(_text(block))
+            dt = _prefer_times(block) or parse_datetime_range(_text(block))
             if not dt:
                 continue
             start, end = dt

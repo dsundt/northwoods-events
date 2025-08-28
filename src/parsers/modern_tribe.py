@@ -4,9 +4,9 @@ from typing import List, Dict, Any
 from bs4 import BeautifulSoup
 
 # ABSOLUTE imports (no leading dots)
-from parsers._text import text as _text
 from models import Event
 from utils.dates import parse_datetime_range
+from parsers._text import text as _text
 
 
 def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:

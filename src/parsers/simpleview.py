@@ -1,70 +1,72 @@
 from __future__ import annotations
 import re
 from typing import Any, Dict, List
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-from utils.dates import parse_datetime_range
+
+from utils.dates import combine_date_and_time
 
 __all__ = ["parse_simpleview"]
 
+# Only pull from structured result containers; ignore overview pages & headers.
+RESULT_CONTAINERS = (
+    "#results, .results, .results-list, .event-results, "
+    ".events-list, .event-list, .sv-results, "
+    ".contentRender_name_plugins_events_layout_list .results"
+)
+
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
+
+def _first_datetime(candidate) -> str | None:
+    t = candidate.find("time", attrs={"datetime": True})
+    if not t:
+        return None
+    date_attr = t.get("datetime", "").split("T")[0]
+    time_text = t.get_text(" ", strip=True)
+    return combine_date_and_time(date_attr, time_text)
 
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Prefer JSON-LD events if present
-    for tag in soup.find_all("script", type="application/ld+json"):
-        try:
-            import json
-            data = json.loads(tag.string or "null")
-        except Exception:
-            continue
-        data = data if isinstance(data, list) else [data]
-        for obj in data:
-            if not isinstance(obj, dict):
-                continue
-            if obj.get("@type") == "Event":
-                title = obj.get("name") or ""
-                start = obj.get("startDate") or obj.get("startTime") or ""
-                url = urljoin(base_url, obj.get("url") or "")
-                if title and start:
-                    items.append({"title": title.strip(), "start": start.strip(), "url": url, "location": _text(None)})
+    containers = soup.select(RESULT_CONTAINERS)
+    if not containers:
+        # Some Simpleview templates mark each “tile” with a data-entity-id
+        containers = soup.select("[data-entity-id]")
+    if not containers:
+        return items  # Don’t scrape headers/hero links
 
-    # If we found events in JSON-LD, return them
-    if items:
-        return items
+    # Events usually appear as list items or “card” divs inside these containers.
+    cards = []
+    for c in containers:
+        cards.extend(c.select("li, .result, .card, .tile, article"))
 
-    # Otherwise, scrape visible “event-like” links:
-    # Many Simpleview DMOs link details under /event/... or /events/slug/ paths
-    anchors = [a for a in soup.find_all("a", href=True)
-               if re.search(r"/event[s]?/", a["href"], re.I)]
-    seen = set()
-    for a in anchors:
-        url = urljoin(base_url, a["href"])
-        if url in seen:
+    for card in cards:
+        a = card.find("a", href=True)
+        if not a:
             continue
-        seen.add(url)
-        title = _text(a).strip()
+        href = a.get("href", "")
+        # Only consider real event detail pages
+        if "/event/" not in href:
+            continue
+
+        start_iso = _first_datetime(card)
+        if not start_iso:
+            # sometimes the <time> lives on a sibling
+            sib = card.find_next_sibling()
+            if sib:
+                start_iso = _first_datetime(sib)
+
+        title = _text(card.find(["h3", "h2"])) or a.get_text(strip=True)
         if not title:
             continue
 
-        # Try to pick a nearby datetime string
-        cont = a.find_parent(["article", "div", "li", "section"]) or a
-        dt_text = _text(cont)
-        start = None
-        try:
-            start = parse_datetime_range(dt_text)
-        except Exception:
-            # leave start None; some DMOs only expose dates on detail pages
-            pass
-
         items.append({
             "title": title,
-            "start": start or "",
-            "url": url,
-            "location": ""
+            "start": start_iso or "",  # Simpleview often omits time/date here; keep empty rather than wrong.
+            "url": urljoin(base_url, href),
+            "location": _text(card.find(class_=re.compile("location|venue", re.I))) or "",
         })
 
     return items

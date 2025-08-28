@@ -1,4 +1,2 @@
-from .modern_tribe import parse_modern_tribe
-from .growthzone import parse_growthzone
-from .simpleview import parse_simpleview
-from .municipal import parse_municipal
+# Keep the package lightweight; import parsers directly where needed.
+__all__ = ["modern_tribe", "growthzone", "simpleview", "municipal", "st_germain_ajax"]

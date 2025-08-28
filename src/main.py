@@ -13,7 +13,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 if THIS_DIR not in sys.path:
     sys.path.insert(0, THIS_DIR)
 
-from __future__ import annotations
+
 
 import argparse
 import json

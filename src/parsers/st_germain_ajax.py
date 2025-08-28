@@ -1,82 +1,56 @@
 from __future__ import annotations
 import re
 from typing import Any, Dict, List
-from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from utils.dates import parse_datetime_range
 
 __all__ = ["parse_st_germain_ajax"]
 
-# Capture dates like "Monday, September 1st, 2025" with optional ordinal
-MONTH = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
-ORD   = r"(?:st|nd|rd|th)"
-DATE_LONG = re.compile(rf"\b(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,\s+({MONTH})\s+(\d{{1,2}})(?:{ORD})?,\s+(\d{{4}})\b", re.I)
-
-MONTHS = {m.lower(): i for i, m in enumerate(
-    ["January","February","March","April","May","June","July","August","September","October","November","December"], 1)}
-
-def _text(n) -> str:
-    return " ".join(n.stripped_strings) if n else ""
-
-def _to_iso(month: int, day: int, year: int) -> str:
-    return f"{year:04d}-{month:02d}-{day:02d}T00:00:00-05:00"
-
-def _parse_date_blob(t: str) -> str | None:
-    m = DATE_LONG.search(t or "")
-    if not m:
-        return None
-    mon = MONTHS[m.group(1).lower()]
-    day = int(m.group(2))
-    year = int(m.group(3))
-    return _to_iso(mon, day, year)
+def _text(el) -> str:
+    return " ".join(el.stripped_strings) if el else ""
 
 def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict[str, Any]]:
     """
-    Their site often loads via admin-ajax; snapshots may contain server-rendered fallback
-    blocks that look like cards with an <a> and nearby text including the long date.
-    We avoid concatenating every sibling’s text; we take tight scopes only.
+    Their site renders three static cards server-side (even though it's called 'AJAX').
+    We only take anchors within the event list/cards and parse a single clean line for the date.
     """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Tight card targets: look for obvious event links inside list/card wrappers
-    # (The previous issue happened by reading a whole container’s text at once.)
-    cards = []
-    cards += soup.select("article, .event, .events-list li, .tribe-events-calendar-list__event, .et_pb_post")
-    if not cards:
-        # fallback to any links in the main content area pointing to /events/
-        for a in soup.select("main a[href*='/events/']"):
-            cards.append(a.find_parent(["li","article","div"]) or a)
-
+    # Find likely event cards: main content links under /events/
+    anchors = [a for a in soup.find_all("a", href=True) if "/events/" in a["href"]]
     seen = set()
-    for c in cards:
-        a = c.find("a", href=True)
-        if not a:
-            continue
+    for a in anchors:
         url = urljoin(base_url, a["href"])
         if url in seen:
             continue
         seen.add(url)
 
-        # Title: just the anchor’s text or a heading — do NOT concatenate entire card text
-        title = _text(a) or _text(c.find(["h3","h2"])).strip()
-        title = re.sub(r"\s+", " ", title).strip()
+        # Title: just the anchor text (no concatenation of siblings)
+        title = _text(a).strip()
         if not title:
             continue
 
-        # Date: search in small radius (link’s parent and immediate siblings)
-        local_blobs = [
-            _text(a.parent),
-            _text(c.find(class_=re.compile("date|when|time", re.I))),
-            _text(c.find_next_sibling()),
-            _text(c.find_previous_sibling()),
-        ]
+        # Look near the link for a line like "Monday, September 20th, 2025" etc.
+        container = a.find_parent(["article", "div", "li"]) or a
+        blob = _text(container)
+        # Grab the first date-looking fragment (month word + day + optional year)
+        m = re.search(r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:,\s*\d{4})?", blob, flags=re.I)
         start = None
-        for blob in local_blobs:
-            start = start or _parse_date_blob(blob)
-        # As a last resort, scan the card’s text (bounded) for a long date
-        start = start or _parse_date_blob(_text(c))
+        if m:
+            # remove ordinal suffixes like "20th"
+            frag = re.sub(r"(\d)(st|nd|rd|th)", r"\1", m.group(0))
+            try:
+                start = parse_datetime_range(frag)
+            except Exception:
+                start = None
         if not start:
-            continue
+            # as a fallback try the title itself
+            try:
+                start = parse_datetime_range(title)
+            except Exception:
+                continue  # skip if we can't get a date
 
         items.append({"title": title, "start": start, "url": url, "location": ""})
 

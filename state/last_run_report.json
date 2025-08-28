@@ -1,48 +1,105 @@
 {
-  "when": "2025-08-28T12:54:54.708498-05:00",
+  "when": "2025-08-28T13:10:31.301670-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 190,
+      "added": 190,
+      "samples": [
+        {
+          "title": "St. Germain Flea Market",
+          "start": "2025-07-28T08:00:00",
+          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/",
+          "location": ""
+        },
+        {
+          "title": "Manitowish Waters Lions Club Bingo",
+          "start": "2025-07-28T18:00:00",
+          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/",
+          "location": ""
+        },
+        {
+          "title": "Monday Night Bingo",
+          "start": "2025-07-28T18:15:00",
+          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Invalid isoformat string: '08:00T00:00:00'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '08:00T00:00:00'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 142,
+      "added": 142,
+      "samples": [
+        {
+          "title": "Northwoods Children’s Museum Nature Education Classes",
+          "start": "2025-07-28T10:30:00",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/",
+          "location": ""
+        },
+        {
+          "title": "Mah Jongg at the Boulder Junction Public Library",
+          "start": "2025-07-28T13:00:00",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/",
+          "location": ""
+        },
+        {
+          "title": "Friends of the Library Weekly Book Sale",
+          "start": "2025-07-29T08:00:00",
+          "url": "https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-07-29/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Invalid isoformat string: '10:30T00:00:00'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '10:30T00:00:00'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 208,
+      "added": 208,
+      "samples": [
+        {
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "2025-08-31T10:00:00",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
+          "location": ""
+        },
+        {
+          "title": "SepTimber Ride",
+          "start": "2025-09-13T07:00:00",
+          "url": "https://eagleriver.org/events/septimber-ride/",
+          "location": ""
+        },
+        {
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T00:00:00",
+          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_modern_tribe_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Invalid isoformat string: '08:30T00:00:00'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in main\n    items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 89, in parse_modern_tribe\n    start_iso = _pick_date_time(c)\n                ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 58, in _pick_date_time\n    return combine_date_and_time(date_attr, time_text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 116, in combine_date_and_time\n    dt = datetime.fromisoformat(f\"{date_part}T00:00:00\").replace(hour=h, minute=m)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Invalid isoformat string: '08:30T00:00:00'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
@@ -141,16 +198,16 @@
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
-      "fetched": 1,
+      "fetched": 0,
       "parsed": 0,
       "added": 0,
       "samples": [],
-      "http_status": 200,
+      "http_status": null,
       "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_simpleview_(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
-      "error": null,
-      "traceback": null
+      "error": "ReadTimeout(ReadTimeoutError(\"HTTPSConnectionPool(host='oneidacountywi.com', port=443): Read timed out. (read timeout=30)\"))",
+      "traceback": "Traceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connectionpool.py\", line 534, in _make_request\n    response = conn.getresponse()\n               ^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connection.py\", line 565, in getresponse\n    httplib_response = super().getresponse()\n                       ^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/http/client.py\", line 1395, in getresponse\n    response.begin()\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/http/client.py\", line 325, in begin\n    version, status, reason = self._read_status()\n                              ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/http/client.py\", line 286, in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/socket.py\", line 718, in readinto\n    return self._sock.recv_into(b)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/ssl.py\", line 1314, in recv_into\n    return self.read(nbytes, buffer)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/ssl.py\", line 1166, in read\n    return self._sslobj.read(len, buffer)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: The read operation timed out\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/adapters.py\", line 667, in send\n    resp = conn.urlopen(\n           ^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connectionpool.py\", line 841, in urlopen\n    retries = retries.increment(\n              ^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/util/retry.py\", line 474, in increment\n    raise reraise(type(error), error, _stacktrace)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/util/util.py\", line 39, in reraise\n    raise value\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connectionpool.py\", line 787, in urlopen\n    response = self._make_request(\n               ^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connectionpool.py\", line 536, in _make_request\n    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/urllib3/connectionpool.py\", line 367, in _raise_timeout\n    raise ReadTimeoutError(\nurllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='oneidacountywi.com', port=443): Read timed out. (read timeout=30)\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 94, in main\n    status, html = _fetch(s.url)\n                   ^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 68, in _fetch\n    r = requests.get(url, headers=headers, timeout=30)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/api.py\", line 73, in get\n    return request(\"get\", url, params=params, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/api.py\", line 59, in request\n    return session.request(method=method, url=url, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/sessions.py\", line 589, in request\n    resp = self.send(prep, **send_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/sessions.py\", line 703, in send\n    r = adapter.send(request, **kwargs)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/requests/adapters.py\", line 713, in send\n    raise ReadTimeout(e, request=request)\nrequests.exceptions.ReadTimeout: HTTPSConnectionPool(host='oneidacountywi.com', port=443): Read timed out. (read timeout=30)\n"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",

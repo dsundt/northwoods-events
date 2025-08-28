@@ -7,47 +7,47 @@ from utils.dates import parse_datetime_range
 
 __all__ = ["parse_municipal"]
 
-CAL_HINT = re.compile(r"(calendar|event)", re.I)
-
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
 
 def parse_municipal(html: str, base_url: str) -> List[Dict[str, Any]]:
-    """
-    Conservative municipal parser:
-    - Only parse inside obvious calendar containers.
-    - Require a parseable date near the title to avoid picking random links.
-    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    containers = soup.find_all(True, class_=CAL_HINT) or soup.select("#calendar, .events, .ai1ec-calendar")
-    if not containers:
-        return []
-
-    anchors = []
-    for c in containers:
-        anchors.extend(c.find_all("a", href=True))
-
-    for a in anchors:
-        title = _text(a)
-        if not title or len(title) < 3:
+    # Strategy:
+    # 1) <time datetime="...">
+    for ev in soup.find_all(["article", "li", "div", "tr"]):
+        time_tag = ev.find("time", attrs={"datetime": True})
+        if not time_tag:
             continue
+        start = (time_tag.get("datetime") or "").strip()
+        if not start:
+            continue
+        a = ev.find("a", href=True)
+        title = _text(ev.find(["h3", "h2"])) or (a.get_text(strip=True) if a else "")
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
+            continue
+        items.append({"title": title, "start": start, "url": urljoin(base_url, a["href"]) if a else base_url, "location": ""})
 
-        # Look around this row/card for a date line
-        row = a.find_parent(["tr", "li", "article", "div"]) or a
-        neighborhood = " ".join(filter(None, [_text(row), _text(row.find_next_sibling())]))[:500]
-        start = ""
+    if items:
+        return items
+
+    # 2) FullCalendar/table-style listings: a row with a date cell & an anchor title
+    rows = soup.select("table tr")
+    for tr in rows:
+        title_a = tr.find("a", href=True)
+        if not title_a:
+            continue
+        title = _text(title_a)
+        row_text = _text(tr)
+        start = None
         try:
-            start = parse_datetime_range(neighborhood)
+            start = parse_datetime_range(row_text)
         except Exception:
-            continue  # if no credible date, skip this link
-
-        items.append({
-            "title": title.strip(),
-            "start": start,
-            "url": urljoin(base_url, a["href"]),
-            "location": "",
-        })
+            start = None
+        if not start:
+            continue
+        items.append({"title": title, "start": start, "url": urljoin(base_url, title_a["href"]), "location": ""})
 
     return items

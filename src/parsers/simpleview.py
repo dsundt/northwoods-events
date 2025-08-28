@@ -1,150 +1,67 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from utils.dates import parse_datetime_range
-
 __all__ = ["parse_simpleview"]
 
+MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
 
-# ---------------------------
-# Helpers
-# ---------------------------
 
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
 
 
-_DEFUSE_HEADERS = {"events", "upcoming events", "featured events", "festivals & events"}
-
-# Common places Simpleview sites put date/time
-_DATE_HINTS = (
-    ".event-date",
-    ".event__date",
-    ".eventDate",
-    ".event_item_date",
-    ".listing__date",
-    ".card-date",
-    "time",
-)
-
-# Common event card containers on Simpleview builds
-_CARD_SELECTORS = (
-    "article.event",
-    "article.listing",
-    "li.listing",
-    "li.event",
-    "div.event",
-    "div.card--event",
-    "div.listing__item",
-    "div.sv-event",
-    "li.grid__item",
-)
-
-
-def _maybe_parse(s: str) -> Optional[str]:
-    s = (s or "").strip()
-    if not s or s.lower() in _DEFUSE_HEADERS:
-        return None
-    try:
-        return parse_datetime_range(s)
-    except Exception:
-        return None
-
-
-# ---------------------------
-# Parser
-# ---------------------------
-
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
     """
-    Tolerant Simpleview parser.
-
-    Handles a variety of card/list layouts found on DMO sites using Simpleview.
-    We try focused selectors first; if nothing is found, fall back to any node with a link
-    that *looks* like an event and contains a date-ish snippet nearby.
+    Simpleview sites vary a lot; parse card/list patterns and pull title/date/url.
+    We pass through the date text (normalize upstream if needed).
     """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # 1) Try known card containers
-    cards = []
-    for sel in _CARD_SELECTORS:
-        cards.extend(soup.select(sel))
-    # De-dup while preserving order
-    seen = set()
-    cards = [c for c in cards if id(c) not in seen and not seen.add(id(c))]
-
-    # 2) Fallback: any container with a link whose href hints "event"
-    if not cards:
-        maybe = []
-        for a in soup.find_all("a", href=True):
-            href = a["href"].lower()
-            if any(x in href for x in ("/event", "/events", "event=")):
-                maybe.append(a.find_parent(["article", "li", "div"]) or a)
-        cards = maybe
+    # Common card/list selectors across Simpleview builds
+    cards = soup.select(
+        ".event, .event-card, .event-list-item, .card, .listing, article, li"
+    )
 
     for c in cards:
         a = c.find("a", href=True)
-        title = _text(c.find(["h3", "h2"])) or (a and _text(a)) or ""
-        title = re.sub(r"\s+", " ", title).strip()
-        if not title:
-            # Some builds use figcaption or .listing__title
-            title = _text(c.select_one("figcaption, .listing__title, .card-title"))
-            title = re.sub(r"\s+", " ", title or "").strip()
-        if not title:
+        if not a:
             continue
 
-        # Find date/time text: prefer explicit elements
-        dt_text = ""
-        for hint in _DATE_HINTS:
-            el = c.select_one(hint)
+        # Title
+        title = _text(c.find(["h3", "h2"])) or _text(a)
+        title = re.sub(r"\s+", " ", (title or "")).strip()
+        if not title or title.lower() in {"events", "calendar"}:
+            continue
+
+        # Date text
+        dt = ""
+        for sel in ["time", ".date", ".event-date", ".dates", ".event__date"]:
+            el = c.select_one(sel)
             if el:
-                # Some sites put date parts in separate spans; grab them all
-                dt_text = _text(el)
-                if dt_text:
-                    break
-        if not dt_text:
-            # Heuristic: look for small/metadata lines
-            dt_text = _text(c.select_one(".meta, .listing__meta, .card-meta"))
+                if el.name == "time" and el.has_attr("datetime"):
+                    dt = el["datetime"]
+                else:
+                    dt = _text(el)
+                break
+        if not dt:
+            dt = _text(c)
 
-        # Final fallback: the whole card text (but filter out obvious headings)
-        if not dt_text or dt_text.lower() in _DEFUSE_HEADERS:
-            dt_text = _text(c)
-
-        start_iso = (
-            _maybe_parse(dt_text)
-            or _maybe_parse(title)  # titles sometimes include "Oct 4–5"
-            or None
-        )
-        if not start_iso:
-            # Skip containers that don't actually represent events
+        if not re.search(MONTH_TOKEN, dt, re.I) and not (c.find("time") and c.find("time").has_attr("datetime")):
+            # likely a non-event listing card; skip
             continue
 
-        url = urljoin(base_url, a["href"]) if a else base_url
-
-        # Location: try common selectors
+        url = urljoin(base_url, a["href"])
         location = ""
-        loc_el = (
-            c.select_one(".event-location")
-            or c.select_one(".location")
-            or c.select_one(".listing__location")
-            or c.select_one(".card-location")
-        )
+        loc_el = c.find(class_=re.compile("location|venue|where", re.I))
         if loc_el:
-            location = _text(loc_el).strip()
+            location = _text(loc_el)
 
-        items.append(
-            {
-                "title": title,
-                "start": start_iso,
-                "url": url,
-                "location": location,
-            }
-        )
+        items.append({"title": title, "start": dt.strip(), "url": url, "location": location})
 
     return items

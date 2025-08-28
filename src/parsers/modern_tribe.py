@@ -6,97 +6,86 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from utils.dates import parse_datetime_range
-
 __all__ = ["parse_modern_tribe"]
 
+_BADGE_WORDS = {"recurring", "featured", "event", "events"}
+MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
 
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
 
+def _clean_title(t: str) -> str:
+    t = re.sub(r"\s+", " ", (t or "")).strip()
+    # Strip leading “Recurring”, “Featured”, etc.
+    t = re.sub(rf"^({'|'.join(w.capitalize() for w in _BADGE_WORDS)})\b[:\-–]?\s*", "", t).strip()
+    t = re.sub(rf"^({'|'.join(_BADGE_WORDS)})\b[:\-–]?\s*", "", t, flags=re.I).strip()
+    return t
 
-# Avoid feeding obvious headings into the date parser
-_DEFUSE_HEADERS = {"events", "upcoming events", "featured events"}
+def _find_title_anchor(card) -> Optional[str]:
+    # Prefer Modern Tribe title anchors
+    for sel in [
+        "a.tribe-events-calendar-list__event-title-link",
+        '[data-js="tribe-events-event-title"] a',
+        "h3 a", "h2 a",
+        "a.tribe-event-url",
+    ]:
+        a = card.select_one(sel)
+        if a and a.get("href"):
+            title = _clean_title(_text(a))
+            if title:
+                return title
+    # fallback
+    a = card.find("a", href=True)
+    return _clean_title(_text(a)) if a else None
 
-# Common places where the date/time is stored
-_TIME_CLASS_HINTS = (
-    "time",
-    "tribe-event-date-start",
-    "tribe-event-date",
-    "tribe-events-calendar-list__event-datetime",
-    "tribe-events-event-datetime",
-)
+def _find_url(card, base_url: str) -> str:
+    for sel in [
+        "a.tribe-events-calendar-list__event-title-link",
+        '[data-js="tribe-events-event-title"] a',
+        "h3 a", "h2 a",
+        "a.tribe-event-url",
+        "a",
+    ]:
+        a = card.select_one(sel)
+        if a and a.get("href"):
+            return urljoin(base_url, a["href"])
+    return base_url
 
-
-def _maybe_parse(s: str) -> Optional[str]:
-    s = (s or "").strip()
-    if not s or s.lower() in _DEFUSE_HEADERS:
-        return None
-    try:
-        return parse_datetime_range(s)
-    except Exception:
-        return None
-
+def _find_date_text(card) -> str:
+    # Prefer explicit date/time nodes
+    for sel in [".tribe-event-date-start", ".tribe-event-date", "time", ".tribe-events-c-small-cta__date"]:
+        el = card.select_one(sel)
+        if el:
+            if el.name == "time" and el.has_attr("datetime"):
+                return el["datetime"]
+            return _text(el)
+    # fallback: any line in card that looks date-like
+    txt = _text(card)
+    # keep only substrings that look like dates/months
+    m = re.search(rf"{MONTH_TOKEN}[^|,\n]{{0,80}}", txt, re.I)
+    return m.group(0).strip() if m else txt
 
 def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
-    """
-    Tolerant Modern Tribe / The Events Calendar parser.
-    Handles cases like:
-      - "Events" headings
-      - "August 30 @ 6:30 pm - 8:30 pm"
-      - "October 4 - October 5"
-    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Modern Tribe often uses article cards; also fall back to common list layouts.
     cards = soup.select(
-        "article, .tribe-events-calendar-list__event, .tribe-events-event-card, li.tribe-events-list-event"
+        "article.tribe-events-calendar-list__event, "
+        ".tribe-events-calendar-list__event, "
+        ".tribe-events-event-card, "
+        "article, li.tribe-events-list-event"
     )
     if not cards:
-        # last-chance: any element that has a link and some date-ish badge
-        cards = [el for el in soup.find_all(True) if el.find("a", href=True)]
+        cards = soup.select(".tribe-common-g-row, li")
 
     for c in cards:
-        a = c.find("a", href=True)
-        title = _text(c.find(["h3", "h2"])) or _text(a)
-        title = re.sub(r"\s+", " ", title).strip()
-        if not title:
+        title = _find_title_anchor(c)
+        if not title or title.lower() in {"events", "calendar"}:
             continue
-
-        # prefer explicit datetime blocks, otherwise use the card's text
-        dt_text = ""
-        for cls in _TIME_CLASS_HINTS:
-            el = c.select_one(f".{cls}")
-            if el:
-                dt_text = _text(el)
-                break
-        if not dt_text:
-            dt_text = _text(c)
-
-        start_iso = (
-            _maybe_parse(dt_text)
-            or _maybe_parse(title)  # titles sometimes contain "Oct 4 - 5"
-            or None
-        )
-        if not start_iso:
-            # skip non-event containers (pure headings etc.)
+        url = _find_url(c, base_url)
+        dt = _find_date_text(c)
+        if not dt or title.lower() in _BADGE_WORDS:
             continue
-
-        url = urljoin(base_url, a["href"]) if a else base_url
-
-        location = ""
-        loc_el = c.find(class_=re.compile(r"(location|venue)", re.I))
-        if loc_el:
-            location = _text(loc_el)
-
-        items.append(
-            {
-                "title": title,
-                "start": start_iso,
-                "url": url,
-                "location": location,
-            }
-        )
+        items.append({"title": title, "start": dt, "url": url, "location": ""})
 
     return items

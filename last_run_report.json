@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T21:21:52-05:00",
+  "when": "2025-08-27T22:00:36.864512-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -11,25 +11,27 @@
       "samples": [
         {
           "title": "St. Germain Flea Market",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-28T08:00:00-05:00",
           "location": "",
           "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/"
         },
         {
           "title": "Manitowish Waters Lions Club Bingo",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-28T18:00:00-05:00",
           "location": "",
           "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/"
         },
         {
           "title": "Monday Night Bingo",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-28T18:15:00-05:00",
           "location": "",
           "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
+      "parser_kind": "modern_tribe",
+      "notes": {}
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
@@ -40,25 +42,27 @@
       "samples": [
         {
           "title": "Northwoods Children&#8217;s Museum Nature Education Classes",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-28T10:30:00-05:00",
           "location": "",
           "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/"
         },
         {
           "title": "Mah Jongg at the Boulder Junction Public Library",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-28T13:00:00-05:00",
           "location": "",
           "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/"
         },
         {
           "title": "Boulder Junction Lions Club Flea Market",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-07-29T08:00:00-05:00",
           "location": "",
           "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
+      "parser_kind": "modern_tribe",
+      "notes": {}
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -69,35 +73,65 @@
       "samples": [
         {
           "title": "Labor Day Arts and Crafts Show",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-31T10:00:00-05:00",
           "location": "",
           "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
         },
         {
           "title": "SepTimber Ride",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-09-13T07:00:00-05:00",
           "location": "",
           "url": "https://eagleriver.org/events/septimber-ride/"
         },
         {
           "title": "Cranberry Fest",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-10-04T00:00:00-05:00",
           "location": "",
           "url": "https://eagleriver.org/events/cranberry-fest/"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
+      "parser_kind": "modern_tribe",
+      "notes": {}
     },
     {
-      "name": "St. Germain Chamber (Modern Tribe)",
+      "name": "St. Germain Chamber (Micronet AJAX)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 6,
+      "added": 6,
+      "samples": [
+        {
+          "title": "Flea Market 2025",
+          "start": "2025-09-01T00:00:00-05:00",
+          "location": "St. Germain Community Park 545 Hwy 155",
+          "url": "https://st-germain.com/events/flea-market-2025-15/"
+        },
+        {
+          "title": "Colorama 2025",
+          "start": "2025-09-20T00:00:00-05:00",
+          "location": "St Germain Community Park",
+          "url": "https://st-germain.com/events/colorama-2025/"
+        },
+        {
+          "title": "Pints in the Park 2025",
+          "start": "2025-09-20T00:00:00-05:00",
+          "location": "St Germain Community Park",
+          "url": "https://st-germain.com/events/pints-in-the-park/"
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html"
+      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax).html",
+      "parser_kind": "st_germain_ajax",
+      "notes": {
+        "attempt": "ajax",
+        "ajaxurl": "https://st-germain.com/wp-admin/admin-ajax.php",
+        "nonce_found": "False",
+        "pages": "1",
+        "posts_total": "6",
+        "success_pages": "1"
+      }
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
@@ -108,25 +142,27 @@
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-30T18:30:00-05:00",
           "location": "",
           "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
         },
         {
           "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-31T15:00:00-05:00",
           "location": "",
           "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
         },
         {
           "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-09-01T14:00:00-05:00",
           "location": "",
           "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html"
+      "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html",
+      "parser_kind": "modern_tribe",
+      "notes": {}
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -136,7 +172,9 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
+      "parser_kind": "growthzone",
+      "notes": {}
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -146,7 +184,9 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
+      "parser_kind": "simpleview",
+      "notes": {}
     },
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
@@ -156,7 +196,9 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html"
+      "snapshot": "state/snapshots/oneida_county___festivals___events_(simpleview).html",
+      "parser_kind": "simpleview",
+      "notes": {}
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -167,25 +209,27 @@
       "samples": [
         {
           "title": "Minocqua Area Visitors Bureau",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-24T00:00:00-05:00",
           "location": "",
           "url": "https://www.minocqua.org/"
         },
         {
           "title": "Untitled",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-24T00:00:00-05:00",
           "location": "",
           "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
         },
         {
           "title": "Untitled",
-          "start": "2025-08-27T00:00:00-05:00",
+          "start": "2025-08-24T00:00:00-05:00",
           "location": "",
           "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
+      "parser_kind": "municipal",
+      "notes": {}
     }
   ],
   "meta": {

@@ -1,7 +1,8 @@
-# src/parsers/simpleview.py
+from __future__ import annotations
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import re
+import json
 from datetime import datetime
 
 __all__ = ["parse_simpleview"]
@@ -26,7 +27,39 @@ def parse_simpleview(html, base_url):
     soup = BeautifulSoup(html, "html.parser")
     events = []
 
-    # Try to find the real event blocks: these are often li or div with event info, not nav or annual/recurring headers.
+    # 1. Try to extract events from embedded JSON-LD (Google/SEO data)
+    for script in soup.find_all("script", type="application/ld+json"):
+        try:
+            # Can be a dict or list
+            data = json.loads(script.string)
+            if isinstance(data, dict):
+                graph = data.get("@graph")
+                if graph:
+                    data = graph
+                else:
+                    data = [data]
+            for ev in data if isinstance(data, list) else []:
+                if ev.get("@type") == "Event":
+                    title = ev.get("name", "").strip()
+                    start = ev.get("startDate", "").strip()
+                    url = urljoin(base_url, ev.get("url", "") or base_url)
+                    loc = ""
+                    locdata = ev.get("location")
+                    if isinstance(locdata, dict):
+                        loc = locdata.get("name", "") or locdata.get("address", "")
+                    if title and start:
+                        events.append({
+                            "title": title,
+                            "start": start,
+                            "url": url,
+                            "location": loc.strip(),
+                        })
+        except Exception:
+            continue
+    if events:
+        return events
+
+    # 2. Fall back to HTML scraping for classic event blocks
     event_blocks = soup.find_all(lambda tag: tag.name in ("li", "div") and (tag.find("a") and (tag.find("h3") or tag.find("h2") or tag.find("h4"))))
     for block in event_blocks:
         title = ""

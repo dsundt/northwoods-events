@@ -3,7 +3,7 @@ name: Scrape, Build & Deploy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"  # every 3 hours at :07
+    - cron: "7 */3 * * *"
 
 permissions:
   contents: read
@@ -25,24 +25,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python deps (+ Playwright browser)
+      - name: Install Python deps and Playwright
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      # OPTIONAL: if you have an ics build script, it can run after scraping; kept conditional
-      # - name: Build ICS files (if script exists)
-      #   run: |
-      #     if [ -f src/build_ics.py ]; then python src/build_ics.py; fi
-
-      - name: Scrape & parse events
-        env:
-          USE_PLAYWRIGHT: "1"  # let your parser know to use Playwright where needed
+      - name: Scrape and parse
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          # IMPORTANT: your main.py reads sources from stdin
           python src/main.py < sources.yml
           test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
 
@@ -50,7 +42,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          # Copy last_run_report.json (required)
           if [ -f state/last_run_report.json ]; then
             cp state/last_run_report.json public/state/last_run_report.json
           elif [ -f last_run_report.json ]; then
@@ -58,59 +49,28 @@ jobs:
           else
             echo '{}' > public/state/last_run_report.json
           fi
-          # Copy any ICS files if present
           for f in northwoods.ics northwoods-events.ics; do
-            [ -f "$f" ] && cp "$f" public/ics/ || true
+            if [ -f "$f" ]; then cp "$f" public/ics/; fi
           done
-          # Generate a tiny index.html via Python (robust to YAML quoting issues)
-          python - <<'PY'
-import json, os, datetime
-os.makedirs("public", exist_ok=True)
-report_path = "public/state/last_run_report.json"
-dt = datetime.datetime.utcnow().isoformat()+"Z"
-try:
-    data = json.load(open(report_path, "r", encoding="utf-8"))
-except Exception as e:
-    data = {"error": str(e)}
-sources = (data.get("sources") or [])[:50]
-rows = "\n".join(
-    f"<tr><td>{s.get('name','')}</td><td>{s.get('parser_kind','')}</td><td>{s.get('parsed',0)}</td><td>{s.get('added',0)}</td></tr>"
-    for s in sources
-)
-html = f"""<!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Northwoods Events</title>
-<style>
-  body {{ font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:2rem; }}
-  table {{ border-collapse: collapse; width: 100%; }}
-  th, td {{ border: 1px solid #ddd; padding: .5rem; text-align:left; }}
-  th {{ background: #f6f8fa; }}
-  code {{ background:#f6f8fa; padding:.1rem .3rem; border-radius:.25rem; }}
-</style>
-<h1>Northwoods Events</h1>
-<p>Built: <code>{dt}</code></p>
-<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>
-<p><a href="./ics/">ICS files</a> (if present)</p>
-<h2>Latest sources (sample)</h2>
-<table>
-  <thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead>
-  <tbody>{rows or '<tr><td colspan="4"><em>No data</em></td></tr>'}</tbody>
-</table>
-"""
-open("public/index.html", "w", encoding="utf-8").write(html)
-PY
-
-      - name: Show output tree (debug)
-        run: |
-          echo "---- public ----"; ls -lah public || true
-          echo "---- public/state ----"; ls -lah public/state || true
-          echo "---- public/ics ----"; ls -lah public/ics || true
+          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          {
+            echo '<!doctype html>'
+            echo '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '<title>Northwoods Events</title>'
+            echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>'
+            echo "<h1>Northwoods Events</h1>"
+            echo "<p>Built: <code>${BUILD_TIME}</code></p>"
+            echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>'
+            echo '<p><a href="./ics/">ICS files</a> (if present)</p>'
+            echo '<div id="summary"></div>'
+            echo '<script type="module">'
+            echo 'async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();'
+            echo '</script>'
+          } > public/index.html
 
       - uses: actions/configure-pages@v5
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
-
       - id: deployment
         uses: actions/deploy-pages@v4

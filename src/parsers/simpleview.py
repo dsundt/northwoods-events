@@ -1,195 +1,150 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Defensive Simpleview events scraper (drop-in).
-Shared pattern with retries, timeouts, guarded parsing, and stable schema.
-"""
 from __future__ import annotations
 
-import dataclasses
-import datetime as dt
-import json
-import logging
-import random
 import re
-import sys
-import time
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+from urllib.parse import urljoin
 
-import requests
 from bs4 import BeautifulSoup
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
-LOG = logging.getLogger("simpleview")
-if not LOG.handlers:
-    h = logging.StreamHandler(sys.stderr)
-    h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [simpleview] %(message)s"))
-    LOG.addHandler(h)
-LOG.setLevel(logging.INFO)
+from utils.dates import parse_datetime_range
 
-DEFAULT_TIMEOUT = (6.1, 20.0)
-MAX_RETRIES = 5
-BACKOFF_FACTOR = 0.6
-STATUS_FORCELIST = (429, 500, 502, 503, 504)
-ALLOWED_DOMAINS = ("visitsimpleview", "simpleviewinc", "visittheusa", "visit", "events")
+__all__ = ["parse_simpleview"]
 
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
-]
 
-@dataclasses.dataclass
-class Event:
-    title: str
-    start: Optional[dt.datetime]
-    end: Optional[dt.datetime]
-    location: Optional[str]
-    url: Optional[str]
-    description: Optional[str] = None
-    source: str = "simpleview"
+# ---------------------------
+# Helpers
+# ---------------------------
 
-    def as_dict(self) -> dict:
-        return {
-            "title": self.title.strip() if self.title else "",
-            "start": self.start.isoformat() if self.start else None,
-            "end": self.end.isoformat() if self.end else None,
-            "location": (self.location or "").strip() or None,
-            "url": (self.url or "").strip() or None,
-            "description": (self.description or "").strip() or None,
-            "source": self.source,
-        }
+def _text(el) -> str:
+    return " ".join(el.stripped_strings) if el else ""
 
-def _build_session() -> requests.Session:
-    sess = requests.Session()
-    retry = Retry(
-        total=MAX_RETRIES,
-        backoff_factor=BACKOFF_FACTOR,
-        status_forcelist=STATUS_FORCELIST,
-        allowed_methods=frozenset(["GET", "HEAD"]),
-        raise_on_status=False,
-    )
-    adapter = HTTPAdapter(max_retries=retry, pool_connections=10, pool_maxsize=10)
-    sess.mount("https://", adapter)
-    sess.mount("http://", adapter)
-    sess.headers.update({
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.7",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache",
-    })
-    return sess
 
-_ISO = re.compile(r"\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2})?")
+_DEFUSE_HEADERS = {"events", "upcoming events", "featured events", "festivals & events"}
 
-def _parse_dt(s: Optional[str]) -> Optional[dt.datetime]:
-    if not s:
+# Common places Simpleview sites put date/time
+_DATE_HINTS = (
+    ".event-date",
+    ".event__date",
+    ".eventDate",
+    ".event_item_date",
+    ".listing__date",
+    ".card-date",
+    "time",
+)
+
+# Common event card containers on Simpleview builds
+_CARD_SELECTORS = (
+    "article.event",
+    "article.listing",
+    "li.listing",
+    "li.event",
+    "div.event",
+    "div.card--event",
+    "div.listing__item",
+    "div.sv-event",
+    "li.grid__item",
+)
+
+
+def _maybe_parse(s: str) -> Optional[str]:
+    s = (s or "").strip()
+    if not s or s.lower() in _DEFUSE_HEADERS:
         return None
-    s = s.strip()
     try:
-        if _ISO.match(s):
-            return dt.datetime.fromisoformat(s.replace(" ", "T"))
-        # common Simpleview markup: <meta itemprop="startDate" content="2025-07-04T19:00">
-        return dt.datetime.fromisoformat(s)
+        return parse_datetime_range(s)
     except Exception:
         return None
 
-def fetch_events(calendar_url: str, limit: Optional[int] = None) -> Tuple[List[Event], List[str]]:
-    warnings: List[str] = []
-    events: List[Event] = []
 
-    sess = _build_session()
-    try:
-        resp = sess.get(calendar_url, timeout=DEFAULT_TIMEOUT)
-    except requests.RequestException as e:
-        warnings.append(f"Network error: {e.__class__.__name__}")
-        LOG.warning("Network error fetching %s: %s", calendar_url, e)
-        return [], warnings
+# ---------------------------
+# Parser
+# ---------------------------
 
-    if resp.status_code >= 400:
-        warnings.append(f"HTTP {resp.status_code} from server")
-        LOG.warning("HTTP %s for %s", resp.status_code, calendar_url)
-        if not resp.text:
-            return [], warnings
+def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Tolerant Simpleview parser.
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    Handles a variety of card/list layouts found on DMO sites using Simpleview.
+    We try focused selectors first; if nothing is found, fall back to any node with a link
+    that *looks* like an event and contains a date-ish snippet nearby.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    items: List[Dict[str, Any]] = []
 
-    # Simpleview often uses schema.org Event cards and list/grid items
-    cards = soup.select("[itemtype*='schema.org/Event'], article.event, .event-card, .sv-event")
+    # 1) Try known card containers
+    cards = []
+    for sel in _CARD_SELECTORS:
+        cards.extend(soup.select(sel))
+    # De-dup while preserving order
+    seen = set()
+    cards = [c for c in cards if id(c) not in seen and not seen.add(id(c))]
+
+    # 2) Fallback: any container with a link whose href hints "event"
     if not cards:
-        warnings.append("No event cards found; using generic article/li fallback.")
-        cards = soup.select("article, li.event, .event")[:200]
+        maybe = []
+        for a in soup.find_all("a", href=True):
+            href = a["href"].lower()
+            if any(x in href for x in ("/event", "/events", "event=")):
+                maybe.append(a.find_parent(["article", "li", "div"]) or a)
+        cards = maybe
 
-    for card in cards:
-        # Title
-        try:
-            title_el = card.select_one("[itemprop='name'], .event-title, h3, h2, a")
-            title = title_el.get_text(strip=True) if title_el else ""
-        except Exception:
-            title = ""
-
-        # URL
-        try:
-            url_el = card.select_one("[itemprop='url'], a[href*='event']")
-            url = url_el["href"].strip() if url_el and url_el.has_attr("href") else None
-        except Exception:
-            url = None
-
-        # Dates (prefer machine-readable)
-        start_s = (card.select_one("[itemprop='startDate']") or {}).get("content") or (
-            card.select_one("time[datetime]") or {}
-        ).get("datetime")
-        end_s = (card.select_one("[itemprop='endDate']") or {}).get("content") or (
-            card.select_one("time[datetime] + time") or {}
-        ).get("datetime")
-
-        start = _parse_dt(start_s)
-        end = _parse_dt(end_s)
-
-        # Location
-        try:
-            loc_el = card.select_one("[itemprop='location'], .event-location, .sv-location")
-            location = loc_el.get_text(" ", strip=True) if loc_el else None
-        except Exception:
-            location = None
-
-        # Description
-        try:
-            desc_el = card.select_one("[itemprop='description'], .event-description, .sv-description")
-            description = desc_el.get_text("\n", strip=True) if desc_el else None
-        except Exception:
-            description = None
-
+    for c in cards:
+        a = c.find("a", href=True)
+        title = _text(c.find(["h3", "h2"])) or (a and _text(a)) or ""
+        title = re.sub(r"\s+", " ", title).strip()
         if not title:
-            warnings.append("Skipped one card without a title (template drift?)")
+            # Some builds use figcaption or .listing__title
+            title = _text(c.select_one("figcaption, .listing__title, .card-title"))
+            title = re.sub(r"\s+", " ", title or "").strip()
+        if not title:
             continue
 
-        events.append(Event(title=title, start=start, end=end, location=location, url=url, description=description))
-        if limit and len(events) >= limit:
-            break
+        # Find date/time text: prefer explicit elements
+        dt_text = ""
+        for hint in _DATE_HINTS:
+            el = c.select_one(hint)
+            if el:
+                # Some sites put date parts in separate spans; grab them all
+                dt_text = _text(el)
+                if dt_text:
+                    break
+        if not dt_text:
+            # Heuristic: look for small/metadata lines
+            dt_text = _text(c.select_one(".meta, .listing__meta, .card-meta"))
 
-    return events, warnings
+        # Final fallback: the whole card text (but filter out obvious headings)
+        if not dt_text or dt_text.lower() in _DEFUSE_HEADERS:
+            dt_text = _text(c)
 
-def _cli(argv: List[str]) -> int:
-    import argparse
-    p = argparse.ArgumentParser(description="Scrape Simpleview events defensively.")
-    p.add_argument("url", help="Calendar URL (Simpleview-powered)")
-    p.add_argument("--limit", type=int, default=None)
-    p.add_argument("--json", action="store_true")
-    args = p.parse_args(argv)
+        start_iso = (
+            _maybe_parse(dt_text)
+            or _maybe_parse(title)  # titles sometimes include "Oct 4–5"
+            or None
+        )
+        if not start_iso:
+            # Skip containers that don't actually represent events
+            continue
 
-    evs, warns = fetch_events(args.url, limit=args.limit)
-    for w in warns:
-        LOG.warning("WARN: %s", w)
+        url = urljoin(base_url, a["href"]) if a else base_url
 
-    if args.json:
-        print(json.dumps([e.as_dict() for e in evs], indent=2, ensure_ascii=False))
-    else:
-        for e in evs:
-            print(f"- {e.title} @ {e.start or 'TBD'} -> {e.url or ''}")
-    return 0
+        # Location: try common selectors
+        location = ""
+        loc_el = (
+            c.select_one(".event-location")
+            or c.select_one(".location")
+            or c.select_one(".listing__location")
+            or c.select_one(".card-location")
+        )
+        if loc_el:
+            location = _text(loc_el).strip()
 
-if __name__ == "__main__":
-    raise SystemExit(_cli(sys.argv[1:]))
+        items.append(
+            {
+                "title": title,
+                "start": start_iso,
+                "url": url,
+                "location": location,
+            }
+        )
+
+    return items

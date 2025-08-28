@@ -1,3 +1,6 @@
-# Keep this package lightweight; don't import submodules here.
-# Main code should import specific parser functions.
-__all__ = ["modern_tribe", "growthzone"]
+# src/parsers/__init__.py
+from .modern_tribe import parse_modern_tribe
+from .growthzone import parse_growthzone
+from .simpleview import parse_simpleview
+from .municipal import parse_municipal
+from .st_germain_ajax import parse_st_germain_ajax

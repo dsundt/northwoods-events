@@ -1,34 +1,59 @@
-# src/parsers/modern_tribe.py
 from __future__ import annotations
-from bs4 import BeautifulSoup
+
 from typing import List, Dict, Any
-from ._text import text as _text  # or inline a small helper to get text
-from ..models import Event
-from ..utils.dates import parse_datetime_range
+from bs4 import BeautifulSoup
+
+# ABSOLUTE imports (no leading dots)
+from parsers._text import text as _text
+from models import Event
+from utils.dates import parse_datetime_range
+
 
 def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Parse Modern Tribe / The Events Calendar list views.
+    Returns a list of dicts (Event.__dict__).
+    """
     soup = BeautifulSoup(html, "html.parser")
     out: List[Dict[str, Any]] = []
 
-    for card in soup.select("[data-event], .tribe-events-calendar-list__event"):
-        title_node = card.select_one("h3, .tribe-events-calendar-list__event-title")
-        url_node = card.select_one("a[href]")
-        dt_block = card.select_one("time, .tribe-events-calendar-list__event-datetime, .tribe-event-date-start")
-        where = card.select_one(".tribe-events-calendar-list__event-venue, .tribe-venue, .venue, .location")
-        desc = card.select_one(".tribe-events-calendar-list__event-description, .description, .tribe-events-list-event-description")
+    # Cover classic + modern list selectors
+    cards = soup.select(
+        "[data-event], .tribe-events-calendar-list__event, .tribe-events-list-event"
+    )
 
-        title = _text(title_node) if title_node else "Untitled"
-        url = url_node["href"] if url_node and url_node.has_attr("href") else base_url
-        dt_text = _text(dt_block) if dt_block else ""
-        start, end = parse_datetime_range(dt_text)  # always two values now
+    for card in cards:
+        title_node = card.select_one("h3 a, .tribe-events-calendar-list__event-title a, h3, .tribe-events-list-event-title a")
+        url = title_node["href"] if title_node and title_node.has_attr("href") else base_url
+        title = _text(title_node) or "Untitled"
 
-        event = Event(
-            title=title.strip(),
-            start=start,
-            end=end,
-            url=url,
-            location=_text(where).strip() if where else None,
-            description=_text(desc).strip() if desc else None,
+        # Common datetime containers
+        dt_block = (
+            card.select_one(
+                "time, .tribe-events-calendar-list__event-datetime, "
+                ".tribe-event-date-start, .tribe-events-schedule"
+            )
+            or card
         )
-        out.append(event.__dict__)
+        start, end = parse_datetime_range(_text(dt_block))
+
+        venue = card.select_one(
+            ".tribe-events-calendar-list__event-venue, .tribe-venue, .venue, .location"
+        )
+        desc = card.select_one(
+            ".tribe-events-calendar-list__event-description, "
+            ".tribe-events-list-event-description, .description, .summary"
+        )
+
+        out.append(
+            Event(
+                title=title.strip(),
+                start=start,
+                end=end,
+                url=url,
+                location=_text(venue) or None,
+                description=_text(desc) or None,
+            ).__dict__
+        )
+
     return out

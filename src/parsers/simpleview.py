@@ -1,137 +1,218 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Iterable, Tuple, Set
 from datetime import datetime
-import json, re
+import json
+import re
 from urllib.parse import urljoin
-from bs4 import BeautifulSoup
+
+from bs4 import BeautifulSoup, Tag
 from dateutil import parser as dtp
 
-from parsers._text import text as _text  # shared helper
+from parsers._text import text as _text
+from utils.dates import parse_datetime_range  # (start, end|None)
+
+MONTH_PAT = re.compile(
+    r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(,\s*\d{4})?",
+    re.IGNORECASE,
+)
 
 def _iso(dt: datetime) -> str:
     return dt.isoformat()
 
-def _norm(title: str, start: datetime, end: Optional[datetime], location: str, url: str) -> Dict[str, Any]:
-    return {
-        "title": title.strip(),
-        "start": _iso(start),
-        "end": _iso(end or start),
-        "location": (location or "").strip(),
-        "url": url,
-    }
+def _clean(s: str) -> str:
+    return re.sub(r"\s+", " ", s).strip()
 
-def _parse_jsonld(soup: BeautifulSoup, base_url: str) -> List[Dict[str, Any]]:
-    out: List[Dict[str, Any]] = []
-    for tag in soup.find_all("script", {"type": "application/ld+json"}):
+def _add(items: List[Dict[str, Any]], seen: Set[Tuple[str, str, str]], node: Dict[str, Any]) -> None:
+    key = (node.get("title", ""), node.get("start", ""), node.get("url", ""))
+    if all(key) and key not in seen:
+        items.append(node)
+        seen.add(key)
+
+def _parse_jsonld(soup: BeautifulSoup, base_url: str) -> Iterable[Dict[str, Any]]:
+    for script in soup.find_all("script", attrs={"type": "application/ld+json"}):
+        txt = script.string or script.get_text("", strip=True)
+        if not txt:
+            continue
         try:
-            data = json.loads(tag.string or "")
+            data = json.loads(txt)
         except Exception:
             continue
-        objs = data if isinstance(data, list) else [data]
-        for obj in objs:
-            if not isinstance(obj, dict):
-                continue
-            if "@graph" in obj and isinstance(obj["@graph"], list):
-                objs.extend([g for g in obj["@graph"] if isinstance(g, dict)])
-                continue
-            if (obj.get("@type") or "").lower() != "event":
-                continue
-            name = obj.get("name") or obj.get("headline") or ""
-            if not name:
-                continue
-            start_raw = obj.get("startDate")
-            end_raw = obj.get("endDate")
+
+        nodes = []
+        if isinstance(data, list):
+            nodes = data
+        elif isinstance(data, dict):
+            nodes = data.get("@graph") or [data]
+
+        for n in nodes:
             try:
-                start = dtp.parse(str(start_raw))
+                t = (n.get("@type") or n.get("type") or "")
+                if isinstance(t, list):
+                    is_event = any(str(x).lower() == "event" for x in t)
+                else:
+                    is_event = str(t).lower() == "event"
+                if not is_event:
+                    continue
+
+                title = _clean(n.get("name") or "")
+                start_raw = n.get("startDate") or n.get("startTime") or ""
+                end_raw = n.get("endDate") or n.get("endTime") or ""
+                url = urljoin(base_url, n.get("url") or "")
+                loc = ""
+                location = n.get("location")
+                if isinstance(location, dict):
+                    loc = _clean(location.get("name") or location.get("address", "") or "")
+                elif isinstance(location, str):
+                    loc = _clean(location)
+
+                if not (title and start_raw and url):
+                    continue
+
+                start_dt = dtp.parse(start_raw)
+                end_dt = None
+                if end_raw:
+                    try:
+                        end_dt = dtp.parse(end_raw)
+                    except Exception:
+                        end_dt = None
+
+                node: Dict[str, Any] = {
+                    "title": title,
+                    "start": _iso(start_dt),
+                    "url": url,
+                }
+                if end_dt:
+                    node["end"] = _iso(end_dt)
+                if loc:
+                    node["location"] = loc
+                yield node
             except Exception:
                 continue
-            end = None
-            if end_raw:
+
+def _date_from_card(card: Tag) -> Tuple[Optional[datetime], Optional[datetime]]:
+    # Common Simpleview listing bits: classes like event-date, event-card__date, listing_date
+    for cls in [
+        "event-date", "event_date", "event-card__date", "listing_date", "date", "event-listing__date"
+    ]:
+        n = card.find(class_=re.compile(rf"\b{cls}\b", re.I))
+        if n:
+            date_txt = _clean(_text(n))
+            if date_txt:
+                # ranges like "Sep 4, 2025 - Sep 6, 2025" or single dates
                 try:
-                    end = dtp.parse(str(end_raw))
+                    s, e = parse_datetime_range(date_txt)
+                    return s, e
                 except Exception:
-                    end = None
-            loc = ""
-            loc_obj = obj.get("location")
-            if isinstance(loc_obj, dict):
-                loc = loc_obj.get("name") or ""
-                addr = loc_obj.get("address")
-                if isinstance(addr, dict):
-                    parts = [addr.get("streetAddress") or "", addr.get("addressLocality") or "", addr.get("addressRegion") or ""]
-                    parts = [p for p in parts if p]
-                    if parts:
-                        loc = (loc + ", " + ", ".join(parts)).strip(", ")
-            elif isinstance(loc_obj, str):
-                loc = loc_obj
-            url = urljoin(base_url, obj.get("url") or "")
-            out.append(_norm(name, start, end, loc, url or base_url))
-    return out
+                    try:
+                        s = dtp.parse(date_txt, fuzzy=True)
+                        return s, None
+                    except Exception:
+                        pass
 
-def _parse_dom(soup: BeautifulSoup, base_url: str) -> List[Dict[str, Any]]:
+    # scan nearby text for month names
+    s = _text(card)
+    m = MONTH_PAT.search(s)
+    if m:
+        try:
+            d = dtp.parse(m.group(0), fuzzy=True)
+            return d, None
+        except Exception:
+            pass
+    return None, None
+
+def _parse_dom(soup: BeautifulSoup, base_url: str) -> Iterable[Dict[str, Any]]:
     """
-    Simpleview fallback parser:
-    - Looks for common event card wrappers and date attributes/text
+    Minocqua & Oneida often use Simpleview list cards:
+      - anchor to '/event/' or '/events/' with title
+      - date in sibling span/div
     """
-    out: List[Dict[str, Any]] = []
-    cards = soup.select(".event, .events-item, .sv-event, .sv-listing, article, li")
-    for c in cards:
-        a = c.find("a", href=True)
-        title = _text(a) if a else _text(c.find(class_=re.compile("title|name|heading", re.I)))
-        title = (title or "").strip()
+    # Try a narrow selector first for performance
+    cards = []
+    # Common containers
+    for sel in [
+        ("div", {"class": re.compile(r"(event\-card|event\-listing|listing)", re.I)}),
+        ("li", {"class": re.compile(r"(event|listing)", re.I)}),
+        ("article", {"class": re.compile(r"(event|listing)", re.I)}),
+        # final fallback: scan anchors directly
+    ]:
+        cards.extend(soup.find_all(*sel))
+
+    yielded: Set[str] = set()
+
+    def emit_from_anchor(a: Tag, container: Tag) -> Optional[Dict[str, Any]]:
+        href = a.get("href") or ""
+        if not re.search(r"/event[s]?/", href, re.I):
+            return None
+        title = _clean(_text(a))
         if not title:
-            continue
+            # Some themes put title in a heading inside anchor
+            h = a.find(["h2", "h3", "h4"])
+            title = _clean(_text(h)) if h else ""
+        if not title:
+            return None
 
-        # Datetime candidates
-        dt_node = c.find("time")
-        dt_txt = ""
-        if dt_node:
-            dt_txt = dt_node.get("datetime") or _text(dt_node) or ""
-        if not dt_txt:
-            # attributes many sites use
-            for attr in ("data-start", "data-startdate", "data-start-time", "data-date"):
-                if c.has_attr(attr):
-                    dt_txt = c.get(attr) or ""
-                    break
-        if not dt_txt:
-            # scan small text for Month names or numeric dates
-            for probe in c.find_all(["span", "div", "p", "small"]):
-                t = _text(probe)
-                if re.search(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d{1,2}/\d{1,2}/\d{2,4})\b", t, re.I):
-                    dt_txt = t
-                    break
+        url = urljoin(base_url, href)
+        if url in yielded:
+            return None
 
-        start_dt = None
-        if dt_txt:
-            try:
-                start_dt = dtp.parse(dt_txt, fuzzy=True)
-            except Exception:
-                start_dt = None
+        start_dt, end_dt = _date_from_card(container or a)
         if not start_dt:
-            continue
+            # look one level up or down for a date block
+            parent = container.parent if container else None
+            if parent:
+                start_dt, end_dt = _date_from_card(parent)
+        if not start_dt:
+            return None
 
-        loc_node = c.find(class_=re.compile("venue|location|address", re.I))
-        loc = _text(loc_node) if loc_node else ""
-        href = urljoin(base_url, a["href"]) if a else base_url
-        out.append(_norm(title, start_dt, None, loc, href))
-    return out
+        loc = ""
+        for cls in ["event-location", "location", "event-card__location", "listing_location"]:
+            n = (container or a).find(class_=re.compile(rf"\b{cls}\b", re.I))
+            if n:
+                loc = _clean(_text(n))
+                break
+
+        node: Dict[str, Any] = {
+            "title": title,
+            "start": _iso(start_dt),
+            "url": url,
+        }
+        if end_dt:
+            node["end"] = _iso(end_dt)
+        if loc:
+            node["location"] = loc
+
+        yielded.add(url)
+        return node
+
+    # Pass 1: cards
+    for card in cards:
+        for a in card.find_all("a", href=True):
+            node = emit_from_anchor(a, card)
+            if node:
+                yield node
+
+    # Pass 2: raw anchors (fallback if no card structure matched)
+    if not yielded:
+        for a in soup.find_all("a", href=True):
+            node = emit_from_anchor(a, a.parent or a)
+            if node:
+                yield node
 
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Parse Simpleview list pages (e.g., Minocqua & Oneida).
+    Strategy:
+      1) JSON-LD Event nodes (rare on list pages but cheap to check)
+      2) DOM list cards with '/event/' anchors + date siblings
+    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
+    seen: Set[Tuple[str, str, str]] = set()
 
-    # 1) JSON-LD (often present on Simpleview sites)
-    for n in _parse_jsonld(soup, base_url):
-        key = (n["title"], n["start"], n["url"])
-        if key not in seen:
-            items.append(n); seen.add(key)
-
-    # 2) DOM fallback
-    if not items:
-        for n in _parse_dom(soup, base_url):
-            key = (n["title"], n["start"], n["url"])
-            if key not in seen:
-                items.append(n); seen.add(key)
+    for node in _parse_jsonld(soup, base_url):
+        _add(items, seen, node)
+    for node in _parse_dom(soup, base_url):
+        _add(items, seen, node)
 
     return items

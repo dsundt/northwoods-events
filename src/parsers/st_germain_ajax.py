@@ -1,141 +1,117 @@
 from __future__ import annotations
-from typing import List, Dict, Any, Optional
-import logging
+import os, re, json
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
-import requests
+from bs4 import BeautifulSoup
 
-from utils.fetchers import try_wp_tec_json, fetch_rendered, site_root
+__all__ = ["parse_st_germain_ajax"]
 
-def _coalesce(*vals):
-    for v in vals:
-        if v:
-            return v
-    return None
+ORDINAL = re.compile(r"(\d+)(st|nd|rd|th)", re.I)
 
-def _norm_title(ev: dict) -> str:
-    # TEC JSON typically returns 'title' and 'title_plain'; also some variants use 'name'
-    return _coalesce(ev.get("title_plain"), ev.get("title"), ev.get("name")) or ""
+MONTHS = {
+    "january":1,"february":2,"march":3,"april":4,"may":5,"june":6,
+    "july":7,"august":8,"september":9,"october":10,"november":11,"december":12
+}
 
-def _norm_url(ev: dict) -> str:
-    return _coalesce(ev.get("url"), ev.get("link"), "")
+DATE_LINE = re.compile(
+    r"(?P<weekday>Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+"
+    r"(?P<month>January|February|March|April|May|June|July|August|September|October|November|December)\s+"
+    r"(?P<day>\d{1,2}(?:st|nd|rd|th)?)"
+    r"(?:,?\s*(?P<year>\d{4}))?",
+    re.I
+)
 
-def _norm_start(ev: dict) -> str:
-    # TEC JSON commonly uses 'start_date'; some variants use 'start' or 'date'
-    return _coalesce(ev.get("start_date"), ev.get("start"), ev.get("date")) or ""
+TIME_RE = re.compile(r"\b(\d{1,2}):(\d{2})\s*(am|pm)\b", re.I)
 
-def _norm_venue(ev: dict) -> str:
-    venue = ev.get("venue") or {}
-    if isinstance(venue, dict):
-        name = venue.get("venue") or venue.get("name") or ""
-        addr = ", ".join(filter(None, [
-            venue.get("address"), venue.get("city"), venue.get("state"), venue.get("country")
-        ]))
-        return (name + (" " + addr if addr else "")).strip()
-    return ""
+def _text(n) -> str:
+    return " ".join(n.stripped_strings) if n else ""
 
-def _parse_from_tec_json(data: dict) -> List[Dict[str, Any]]:
-    # TEC v1 returns {"events": [ ... ]} or sometimes nested under "data"
-    events = data.get("events")
-    if events is None and isinstance(data.get("data"), dict):
-        events = data["data"].get("events")
+def _strip_ord(x: str) -> str:
+    return ORDINAL.sub(lambda m: m.group(1), x)
 
-    items: List[Dict[str, Any]] = []
-    if not isinstance(events, list):
-        return items
+def _parse_datetime(line: str) -> Optional[str]:
+    # Examples:
+    # "Monday, September 1st, 2025"
+    # "Saturday, September 20th, 2025 10:00 am"
+    m = DATE_LINE.search(line or "")
+    if not m:
+        return None
+    month = MONTHS[m.group("month").lower()]
+    day = int(_strip_ord(m.group("day")))
+    year = int(m.group("year") or "0") or _infer_year(month, day)
+    # time optional
+    t = TIME_RE.search(line)
+    if t:
+        h = int(t.group(1)) % 12
+        mnt = int(t.group(2))
+        if t.group(3).lower() == "pm": h += 12
+        return f"{year:04d}-{month:02d}-{day:02d}T{h:02d}:{mnt:02d}:00"
+    return f"{year:04d}-{month:02d}-{day:02d}T00:00:00"
 
-    for ev in events:
-        title = _norm_title(ev).strip()
-        url = _norm_url(ev).strip()
-        start = _norm_start(ev).strip()
-        if not (title and url and start):
-            continue
-        items.append({
-            "title": title,
-            "start": start,
-            "url": url,
-            "location": _norm_venue(ev),
-        })
-    return items
+def _infer_year(m: int, d: int) -> int:
+    from datetime import date
+    today = date.today()
+    y = today.year
+    # crude rollover: if month/day already far in past, push to next year
+    try:
+        from datetime import date as dte
+        if (dte(y, m, d) - today).days < -300:
+            return y + 1
+    except Exception:
+        pass
+    return y
 
-def _ajax_candidates(base_url: str) -> list[dict]:
-    """
-    Potential AJAX endpoints (best-effort). We try TEC first via try_wp_tec_json.
-    You can add custom endpoints here if St. Germain uses Micronet/GrowthZone embeds.
-    """
-    root = site_root(base_url)
-    # Example placeholder for a custom Micronet endpoint if known:
-    return [
-        {"method": "GET", "url": urljoin(root, "/wp-admin/admin-ajax.php"), "params": {"action": "tribe_events_list"}}
-    ]
+def _render_with_playwright(url: str, timeout_ms: int = 20000) -> Optional[str]:
+    if os.getenv("USE_PLAYWRIGHT", "0") not in ("1", "true", "yes"):
+        return None
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:
+        return None
+    html = None
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        ctx = browser.new_context()
+        page = ctx.new_page()
+        page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+        # Wait for any Micronet/ChamberMaster event container
+        sel = "article, .cm-events, .cm-event, .event, .events-list, [data-testid*=event]"
+        page.wait_for_selector(sel, timeout=timeout_ms)
+        html = page.content()
+        browser.close()
+    return html
 
 def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict[str, Any]]:
-    """
-    Strategy:
-      1) Try WordPress TEC JSON (if the site uses The Events Calendar).
-      2) Try any additional AJAX endpoints you configure.
-      3) Fallback: render the calendar list page and scrape anchors (Playwright).
-    """
-    # (1) TEC JSON
-    data = try_wp_tec_json(base_url)
-    if data:
-        items = _parse_from_tec_json(data)
-        if items:
-            return items
+    # If static HTML shows no events (Micronet loads via JS), try rendering
+    soup = BeautifulSoup(html, "html.parser")
+    has_dynamic = not soup.select("article, .cm-event, .cm-events, .events-list")
+    if has_dynamic:
+        rendered = _render_with_playwright(base_url)
+        if rendered:
+            soup = BeautifulSoup(rendered, "html.parser")
 
-    # (2) Other AJAX candidates (best-effort GET)
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; NorthwoodsEventsBot/1.0)"}
-    for cand in _ajax_candidates(base_url):
-        try:
-            r = requests.request(cand["method"], cand["url"], params=cand.get("params"), headers=headers, timeout=20)
-            if r.status_code == 200 and "text/html" in r.headers.get("content-type", ""):
-                # If it returns an HTML fragment of event cards, we can try scraping like Modern Tribe.
-                from bs4 import BeautifulSoup
-                from urllib.parse import urljoin as _u
-                soup = BeautifulSoup(r.text, "html.parser")
-                items: List[Dict[str, Any]] = []
-                for a in soup.select("a[href]"):
-                    href = a.get("href", "")
-                    title = " ".join(a.stripped_strings)
-                    if not title or not href:
-                        continue
-                    # extremely permissive, to at least return something. You can tighten to '.tribe-events-*' if needed.
-                    items.append({
-                        "title": title.strip(),
-                        "start": "",  # unknown in generic fragment
-                        "url": _u(base_url, href),
-                        "location": "",
-                    })
-                if items:
-                    return items
-        except Exception as e:
-            logging.info("AJAX candidate failed: %s", e)
-
-    # (3) Render the list page (JS) and scrape anchor cards as a last resort
-    rendered = fetch_rendered(base_url, wait_selector="a")
-    if not rendered:
-        logging.warning("St. Germain AJAX: fell back to static; no events.")
-        return []
-
-    # Use very generic scraping (titles + links). If you know the exact classes, tighten selectors here.
-    from bs4 import BeautifulSoup
-    from urllib.parse import urljoin as _u
-    soup = BeautifulSoup(rendered, "html.parser")
     items: List[Dict[str, Any]] = []
-    seen = set()
-    for a in soup.select("a[href]"):
-        title = " ".join(a.stripped_strings).strip()
-        href = a.get("href", "")
-        if not title or not href:
+    # Try a few common patterns after JS render
+    cards = (
+        soup.select(".cm-event, .cm-events .event, .events-list article")
+        or soup.select("article")
+    )
+    for c in cards:
+        a = c.find("a", href=True)
+        url = urljoin(base_url, a["href"]) if a else base_url
+        title = _text(c.find(["h3","h2"])) or _text(a)
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title:
             continue
-        key = (title, href)
-        if key in seen:
+        # Look for a date line near the title
+        context = _text(c)
+        start = _parse_datetime(context) or _parse_datetime(title)
+        if not start:
+            # skip empty shells
             continue
-        seen.add(key)
-        items.append({
-            "title": title,
-            "start": "",  # No reliable time in rendered fallback without exact selectors
-            "url": _u(base_url, href),
-            "location": "",
-        })
-
+        loc = ""
+        loc_el = c.find(class_=re.compile("location|venue", re.I))
+        if loc_el:
+            loc = _text(loc_el)
+        items.append({"title": title, "start": start, "url": url, "location": loc})
     return items

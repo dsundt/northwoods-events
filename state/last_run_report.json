@@ -1,10 +1,11 @@
 {
-  "when": "2025-08-28T13:24:29.099696-05:00",
-  "timezone": "America/Chicago",
+  "when": "",
+  "timezone": "",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
+      "parser_kind": "modern_tribe",
       "fetched": 1,
       "parsed": 190,
       "added": 190,
@@ -29,8 +30,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_modern_tribe_(modern_tribe).html",
-      "parser_kind": "modern_tribe",
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe)__modern_tribe.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -38,6 +38,7 @@
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
+      "parser_kind": "modern_tribe",
       "fetched": 1,
       "parsed": 142,
       "added": 142,
@@ -55,15 +56,14 @@
           "location": ""
         },
         {
-          "title": "Friends of the Library Weekly Book Sale",
+          "title": "Boulder Junction Lions Club Flea Market",
           "start": "2025-07-29T08:00:00",
-          "url": "https://boulderjct.org/events/friends-of-the-library-weekly-book-sale-2/2025-07-29/",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/",
           "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_modern_tribe_(modern_tribe).html",
-      "parser_kind": "modern_tribe",
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe)__modern_tribe.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -71,6 +71,7 @@
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
+      "parser_kind": "modern_tribe",
       "fetched": 1,
       "parsed": 316,
       "added": 316,
@@ -95,8 +96,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_modern_tribe_(modern_tribe).html",
-      "parser_kind": "modern_tribe",
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe)__modern_tribe.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -104,20 +104,21 @@
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
+      "parser_kind": "st_germain_ajax",
       "fetched": 1,
       "parsed": 0,
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_micronet_ajax_(st_germain_ajax).html",
-      "parser_kind": "st_germain_ajax",
+      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax)__st_germain_ajax.html",
       "notes": {},
-      "error": null,
+      "error": "Error(\"BrowserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium-1134/chrome-linux/chrome\\n╔════════════════════════════════════════════════════════════╗\\n║ Looks like Playwright was just installed or updated.       ║\\n║ Please run the following command to download new browsers: ║\\n║                                                            ║\\n║     playwright install                                     ║\\n║                                                            ║\\n║ <3 Playwright Team                                         ║\\n╚════════════════════════════════════════════════════════════╝\")",
       "traceback": null
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
+      "parser_kind": "modern_tribe",
       "fetched": 1,
       "parsed": 10,
       "added": 10,
@@ -142,8 +143,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_modern_tribe_(modern_tribe).html",
-      "parser_kind": "modern_tribe",
+      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe)__modern_tribe.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -151,6 +151,7 @@
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
+      "parser_kind": "growthzone",
       "fetched": 1,
       "parsed": 84,
       "added": 84,
@@ -175,8 +176,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_growthzone_(growthzone).html",
-      "parser_kind": "growthzone",
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone)__growthzone.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -184,13 +184,20 @@
     {
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
-      "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_simpleview_(simpleview).html",
       "parser_kind": "simpleview",
+      "fetched": 1,
+      "parsed": 1,
+      "added": 1,
+      "samples": [
+        {
+          "title": "Events |",
+          "start": "",
+          "url": "https://www.minocqua.org/events/",
+          "location": ""
+        }
+      ],
+      "http_status": 200,
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview)__simpleview.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -198,13 +205,32 @@
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
-      "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_simpleview_(simpleview).html",
       "parser_kind": "simpleview",
+      "fetched": 1,
+      "parsed": 3,
+      "added": 3,
+      "samples": [
+        {
+          "title": "here",
+          "start": "",
+          "url": "https://www.minocqua.org/events/",
+          "location": ""
+        },
+        {
+          "title": "here",
+          "start": "",
+          "url": "https://explorerhinelander.com/events/",
+          "location": ""
+        },
+        {
+          "title": "here",
+          "start": "",
+          "url": "https://www.threelakes.com/events/",
+          "location": ""
+        }
+      ],
+      "http_status": 200,
+      "snapshot": "state/snapshots/oneida_county_-_festivals_&_events_(simpleview)__simpleview.html",
       "notes": {},
       "error": null,
       "traceback": null
@@ -212,6 +238,7 @@
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
+      "parser_kind": "municipal",
       "fetched": 1,
       "parsed": 39,
       "added": 39,
@@ -236,8 +263,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_municipal_calendar_(municipal).html",
-      "parser_kind": "municipal",
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar)__municipal.html",
       "notes": {},
       "error": null,
       "traceback": null

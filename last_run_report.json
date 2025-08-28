@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T21:05:48-05:00",
+  "when": "2025-08-27T21:12:01-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -46,13 +46,30 @@
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 10,
+      "added": 10,
+      "samples": [
+        {
+          "title": "Plum Ski-ters Water Ski Show",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States",
+          "url": "https://sayner-starlake-cloverland.org/events/"
+        },
+        {
+          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI",
+          "url": "https://sayner-starlake-cloverland.org/events/"
+        },
+        {
+          "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "Weber's 2649 Co. Rd C, Sayner, WI",
+          "url": "https://sayner-starlake-cloverland.org/events/"
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
-      "error": "ParserError('String does not contain a date: %s', 'Oc')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 38, in parse_modern_tribe\n    start, end = parse_datetime_range(_text(dt_block))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 42, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Oc\n"
+      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -62,9 +79,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
-      "error": "ParserError('String does not contain a date: %s', 'Oneida County Fair')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 21, in parse_growthzone\n    start, end = parse_datetime_range(_text(parent))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 37, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Oneida County Fair\n"
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -84,21 +99,36 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html",
-      "error": "ParserError('String does not contain a date: %s', 'Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 21, in parse_simpleview\n    start, end = parse_datetime_range(_text(dt_block))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 42, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations\n"
+      "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 92,
+      "added": 92,
+      "samples": [
+        {
+          "title": "Minocqua Area Visitors Bureau",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "https://www.minocqua.org/"
+        },
+        {
+          "title": "Untitled",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
+        },
+        {
+          "title": "Untitled",
+          "start": "2025-08-27T00:00:00-05:00",
+          "location": "",
+          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
-      "error": "ParserError('String does not contain a date: %s', 'Board Meetings')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 25, in parse_municipal\n    start, end = parse_datetime_range(_text(dt_node))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 37, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Board Meetings\n"
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html"
     }
   ],
   "meta": {

@@ -15,10 +15,10 @@ sources:
   - name: Eagle River Chamber (Modern Tribe)
     url: https://eagleriver.org/events/?eventDisplay=list
     kind: modern_tribe
-
-  - name: St. Germain Chamber (Modern Tribe)
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    kind: modern_tribe
+    
+ - name: St. Germain Chamber (Micronet AJAX)
+   url: https://st-germain.com/events-calendar/?eventDisplay=list
+   parser: st_germain_ajax
 
   - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
     url: https://sayner-starlake-cloverland.org/events/

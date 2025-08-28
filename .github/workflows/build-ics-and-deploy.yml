@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write   # commit/push changes (state/, northwoods.ics)
+  pages: write      # deploy to Pages
+  id-token: write   # required by deploy-pages
 
 concurrency:
   group: pages
@@ -76,28 +76,19 @@ jobs:
         run: |
           set -euo pipefail
           echo "Running: python src/main.py"
-          python src/main.py
-
-      # 👇 NEW: quick check to print the reports (both locations)
-      - name: Show reports
-        shell: bash
-        run: |
-          set -euo pipefail
-          printed=0
+          python src/main.py || exit_code=$?
+          # Always try to dump a report if main wrote it
           for p in last_run_report.json state/last_run_report.json; do
             if [ -f "$p" ]; then
               echo "== $p =="
-              # Print first 120 lines to keep logs readable
-              sed -n '1,120p' "$p" || head -n 120 "$p" || true
-              echo
-              printed=1
+              sed -n '1,120p' "$p" || true
             fi
           done
-          if [ $printed -eq 0 ]; then
-            echo "::error::No last_run_report.json found. That means src/main.py likely exited before writing it. Check the previous step’s error."
+          # Re-throw prior failure (if any)
+          if [ -n "${exit_code:-}" ]; then
+            exit "$exit_code"
           fi
 
-      # Helpful diagnostics so you can see what was produced
       - name: List outputs & state tree
         shell: bash
         run: |
@@ -107,22 +98,22 @@ jobs:
           echo
           echo "----- If state/ exists, show top of tree -----"
           if [ -d state ]; then
-            find state -maxdepth 2 -type f -printf "%p\n" | sed -n '1,200p'
+            find state -maxdepth 2 -type f | sed -n '1,200p'
           else
             echo "(no state/ dir)"
           fi
           echo
           echo "----- If snapshots exist, list first 40 -----"
           if [ -d state/snapshots ]; then
-            find state/snapshots -maxdepth 1 -type f -printf "%p\n" | sed -n '1,40p'
+            find state/snapshots -maxdepth 1 -type f | sed -n '1,40p'
           else
             echo "(no state/snapshots dir)"
           fi
           echo
           if [ -f northwoods.ics ]; then
-            echo "ICS at repo root: northwoods.ics (size bytes): $(wc -c < northwoods.ics)"
+            echo "ICS at repo root: northwoods.ics (bytes): $(wc -c < northwoods.ics)"
           elif [ -f src/northwoods.ics ]; then
-            echo "ICS in src/: src/northwoods.ics (size bytes): $(wc -c < src/northwoods.ics)"
+            echo "ICS in src/: src/northwoods.ics (bytes): $(wc -c < src/northwoods.ics)"
             cp src/northwoods.ics ./northwoods.ics
           else
             echo "::warning::No ICS file produced."
@@ -147,13 +138,12 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Build public site
+      - name: Build public site (no heredocs)
         shell: bash
         run: |
           set -euo pipefail
           rm -rf public
           mkdir -p public
-          # Minimal index (avoid YAML-heredoc gotchas)
           printf '%s\n' \
             '<!doctype html>' \
             '<meta charset="utf-8">' \

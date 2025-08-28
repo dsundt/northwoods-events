@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T20:51:46-05:00",
+  "when": "2025-08-27T21:00:21-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -11,8 +11,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
@@ -23,8 +23,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -35,8 +35,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -47,8 +47,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
@@ -59,8 +59,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -71,8 +71,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.growthzone import parse_growthzone\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.growthzone import parse_growthzone\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -83,8 +83,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
@@ -95,8 +95,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -107,8 +107,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 113, in _get_parser\n    from parsers.municipal import parse_municipal\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils'\n"
+      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 113, in _get_parser\n    from parsers.municipal import parse_municipal\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
     }
   ],
   "meta": {

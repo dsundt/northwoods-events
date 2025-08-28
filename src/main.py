@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
 Northwoods Events builder (drop-in).
 Adds special handling for St. Germain, which loads events via AJAX.
@@ -11,7 +10,7 @@ Adds special handling for St. Germain, which loads events via AJAX.
 from __future__ import annotations
 
 # --- sys.path & stdlib ---
-import os, sys, json, time, traceback, re
+import os, sys, json, traceback, re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple, Optional
 from urllib.parse import urlparse, urljoin
@@ -27,7 +26,7 @@ if THIS_DIR not in sys.path:
     sys.path.insert(0, THIS_DIR)
 
 # --- third-party ---
-import requests  # requests is standard in GH runners; if not, add to requirements
+import requests
 from bs4 import BeautifulSoup
 
 # --- project imports (your existing modules) ---
@@ -36,11 +35,13 @@ from parsers.growthzone import parse_growthzone
 from parsers.simpleview import parse_simpleview
 from parsers.municipal import parse_municipal
 
-# If you have a models.Event dataclass, feel free to import it.
-# We’ll remain in dict-normalization space to avoid import assumptions.
 
-TZ = timezone(timedelta(hours=-5))  # America/Chicago at runtime; adjust if needed
+# Timezone handling
 USER_TZ_NAME = "America/Chicago"
+# This is a simple fixed offset used for serialization; your actual date parsing
+# should already be timezone-aware. Adjust if you keep persistent tz logic elsewhere.
+TZ = timezone(timedelta(hours=-5))
+
 
 # -------------------------------------------------------------------
 # Helpers
@@ -83,8 +84,9 @@ def normalize_event(
         "url": url,
     }
 
+
 # -------------------------------------------------------------------
-# St. Germain: AJAX-aware fetcher
+# St. Germain: AJAX-aware fetcher (embedded; no separate file needed)
 # -------------------------------------------------------------------
 def _extract_ajax_config(html: str, base_url: str) -> Tuple[str, Optional[str]]:
     """
@@ -103,10 +105,8 @@ def _extract_ajax_config(html: str, base_url: str) -> Tuple[str, Optional[str]]:
         obj = m.group(1)
         # crude extraction of key/value pairs
         kv = dict(re.findall(r'(\w+)\s*:\s*["\']([^"\']+)["\']', obj))
-        ajaxurl = kv.get("ajaxurl", ajaxurl)
+        ajaxurl = urljoin(base_url, kv.get("ajaxurl", ajaxurl))
         nonce = kv.get("nonce")
-        # Make absolute if needed
-        ajaxurl = urljoin(base_url, ajaxurl)
 
     return ajaxurl, nonce
 
@@ -119,7 +119,7 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
     page_html, _ = fetch_url(base_url, sess)
     ajaxurl, nonce = _extract_ajax_config(page_html, base_url)
 
-    # Time window: last month through +6 months (liberal, the server will filter)
+    # Time window: last month through +6 months (liberal, server will filter)
     start_date = (datetime.now(TZ) - timedelta(days=30)).strftime("%Y-%m-%d")
     end_date = (datetime.now(TZ) + timedelta(days=180)).strftime("%Y-%m-%d")
 
@@ -129,9 +129,9 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
             "page": page_num,
             "start_date": start_date,
             "end_date": end_date,
-            "category": "",     # all
-            "search": "",       # none
-            "limit": 40,        # reasonable page size
+            "category": "",
+            "search": "",
+            "limit": 40,
             "order": "asc",
         }
         if nonce:
@@ -142,10 +142,8 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
         try:
             return r.json()
         except Exception:
-            # Some sites return HTML; try to find JSON fragment
             return {"success": False, "data": {}}
 
-    # Pull pages until done
     normalized: List[Dict[str, Any]] = []
     page = 1
     max_pages = 15  # guardrail
@@ -164,7 +162,7 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
             location_parts = [p.get("venue", ""), p.get("address", ""), p.get("city", "")]
             location = ", ".join([s for s in location_parts if s])
 
-            # Try a handful of date field patterns commonly seen
+            # Try common date field patterns
             dt_candidates = [
                 p.get("start"), p.get("start_date"), p.get("date"),
                 f"{p.get('month','')} {p.get('day','')}, {p.get('year','')}".strip(),
@@ -174,7 +172,6 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
                 if not cand:
                     continue
                 try:
-                    # be lenient; dateutil is available
                     from dateutil import parser as dtp
                     start_dt = dtp.parse(str(cand))
                     break
@@ -182,9 +179,8 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
                     continue
 
             if not title or not start_dt:
-                continue  # skip malformed rows
+                continue
 
-            # End date/time (optional)
             end_dt = None
             for cand in [p.get("end"), p.get("end_date")]:
                 if not cand:
@@ -198,8 +194,6 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
 
             normalized.append(normalize_event(title, start_dt, end_dt, location, link))
 
-        # pagination bookkeeping
-        total = data.get("total") or len(normalized)
         current = data.get("current") or page
         if current >= data.get("pages", current):
             break
@@ -207,8 +201,9 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
 
     return normalized
 
+
 # -------------------------------------------------------------------
-# Source registry
+# Source registry (embedded; if you switch back to YAML, mirror these kinds)
 # -------------------------------------------------------------------
 Source = Dict[str, Any]
 
@@ -234,6 +229,7 @@ SOURCES: List[Source] = [
     {"name": "Town of Arbor Vitae (Municipal Calendar)", "url": "https://www.townofarborvitae.org/calendar/", "kind": "municipal"},
 ]
 
+
 # -------------------------------------------------------------------
 # Parser dispatch
 # -------------------------------------------------------------------
@@ -247,7 +243,7 @@ def _get_parser(kind: str):
     if kind == "municipal":
         return parse_municipal
     if kind == "st_germain_ajax":
-        # We'll return a shim that conforms to parser signature: (html_text, base_url) -> items
+        # Return a shim that conforms to parser signature: (html_text, base_url) -> items
         def _shim(_html_text: str, base_url: str) -> List[Dict[str, Any]]:
             items = st_germain_ajax(base_url)
             if items:
@@ -257,56 +253,5 @@ def _get_parser(kind: str):
         return _shim
     raise ValueError(f"Unknown parser kind: {kind}")
 
-# -------------------------------------------------------------------
-# Pipeline
-# -------------------------------------------------------------------
-def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
-    from utils.text import text as _text  # your tiny helper
-    report: Dict[str, Any] = {
-        "when": now_iso(),
-        "timezone": USER_TZ_NAME,
-        "sources": [],
-        "meta": {"status": "ok", "sources_file": "sources.yml"},
-    }
 
-    for src in sources:
-        name, url, kind = src["name"], src["url"], src["kind"]
-        row: Dict[str, Any] = {
-            "name": name, "url": url, "fetched": 0, "parsed": 0, "added": 0,
-            "samples": [], "http_status": None,
-            "snapshot": f"state/snapshots/{_snapshot_name(name)}.html",
-        }
-
-        try:
-            parser_fn = _get_parser(kind)
-            # Always fetch HTML (for snapshots and fallback parsers)
-            html, resp = fetch_url(url)
-            row["http_status"] = resp.status_code
-            row["fetched"] = 1
-            snap = save_snapshot(name, html)
-            # Parse
-            if kind == "st_germain_ajax":
-                # Special path calls AJAX internally, but still provide html to fallback
-                items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore
-            else:
-                items = parser_fn(html, base_url=url)  # type: ignore
-
-            row["parsed"] = len(items)
-            # Normalize pass-through: assume parser already returns normalized dicts per your existing convention.
-            # If raw items are returned, adapt here.
-            normalized = items
-
-            row["added"] = len(normalized)
-            row["samples"] = [
-                {
-                    "title": n.get("title", ""),
-                    "start": n.get("start", ""),
-                    "location": n.get("location", ""),
-                    "url": n.get("url", ""),
-                }
-                for n in normalized[:3]
-            ]
-
-        except Exception as e:
-            row["error"] = repr(e)
-            row["traceback"] = "".join(traceback.format_exception(t_
+# ----------------------------

@@ -1,61 +1,87 @@
 name: Scrape & Parse Events
+
 on:
-  # Manual run
-  workflow_dispatch: {}
-  # Nightly auto-run (UTC)
   schedule:
-    - cron: "22 10 * * *"
-  # Also run automatically AFTER CI completes successfully on main
-  workflow_run:
-    workflows: ["Python CI"]
-    types: [completed]
-    branches: [main]
+    - cron: "17 * * * *"          # hourly-ish; tune as needed
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "src/**"
+      - "requirements.txt"
+      - "sources.yml"
+      - ".github/workflows/scrape.yml"
+
+permissions:
+  contents: write   # allow committing the report back to the repo
 
 concurrency:
-  group: scrape-events
+  group: scrape
   cancel-in-progress: true
 
 jobs:
   scrape:
-    # Only proceed if the upstream CI finished successfully
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
+          cache: "pip"
 
-      - name: Install Python deps
+      - name: Install deps
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
-          pip install playwright beautifulsoup4 requests pyyaml
-
-      - name: Install Playwright (Chromium + system deps)
-        run: python -m playwright install --with-deps chromium
+          set -euo pipefail
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run scraper
         env:
-          NW_TZ: America/Chicago
+          PYTHONUNBUFFERED: "1"
         run: |
-          # If your code reads sources.yml from the repo:
-          python src/main.py
+          set -euo pipefail
+          mkdir -p state
+          python - <<'PY'
+import json, os, sys, datetime
+# Run main script; assume it writes state/last_run_report.json
+import subprocess, shlex
+cmd = "python src/main.py"
+print("Running:", cmd)
+rc = subprocess.call(shlex.split(cmd))
+if rc != 0:
+    sys.exit(rc)
+# sanity: ensure file exists
+p = "state/last_run_report.json"
+if not os.path.isfile(p):
+    # Some repos write to repo root; copy if present:
+    if os.path.isfile("last_run_report.json"):
+        os.makedirs("state", exist_ok=True)
+        os.replace("last_run_report.json", p)
+if not os.path.isfile(p):
+    raise SystemExit("Expected last_run_report.json not found")
+print("last_run_report.json OK")
+PY
 
-          # If you prefer passing inline JSON instead, replace the line above with:
-          # python src/main.py <<'JSON'
-          # [ { "name": "Vilas County (Modern Tribe)", "url": "https://vilaswi.com/events/?eventDisplay=list", "kind": "modern_tribe" } ]
-          # JSON
-
-      - name: Upload artifacts
-        if: always()
+      - name: Upload artifact (last_run_report)
         uses: actions/upload-artifact@v4
         with:
-          name: scrape-output
-          path: |
-            last_run_report.json
-            state/last_run_report.json
-            state/snapshots/**
+          name: last_run_report
+          path: state/last_run_report.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload snapshots (optional)
+        if: ${{ hashFiles('state/snapshots/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: state/snapshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Commit report back to repo (fallback for deploy)
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update last_run_report.json"
+          file_pattern: state/last_run_report.json

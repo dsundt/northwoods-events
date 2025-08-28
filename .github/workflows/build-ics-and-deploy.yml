@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    # If this was triggered by workflow_run, only proceed when the scrape concluded successfully
+    # Only proceed on successful scrape when triggered by workflow_run
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -59,48 +59,42 @@ jobs:
             if [ -f "$f" ]; then cp "$f" public/ics/; fi
           done
 
-          # Generate a tiny index.html
-          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          cat > public/index.html <<'HTML'
-<!doctype html>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+          # Generate a tiny index.html via Python (avoids heredoc quoting pitfalls)
+          python - <<'PY'
+import json, os, datetime
+os.makedirs("public", exist_ok=True)
+dt = datetime.datetime.utcnow().isoformat()+"Z"
+report_path = "public/state/last_run_report.json"
+try:
+    data = json.load(open(report_path,"r",encoding="utf-8"))
+except Exception as e:
+    data = {"error": str(e)}
+sources = (data.get("sources") or [])[:50]
+rows = "\n".join(
+    f"<tr><td>{s.get('name','')}</td><td>{s.get('parser_kind','')}</td><td>{s.get('parsed',0)}</td><td>{s.get('added',0)}</td></tr>"
+    for s in sources
+)
+html = f"""<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Northwoods Events</title>
 <style>
-  body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:2rem; }
-  code { background:#f6f8fa; padding:.1rem .3rem; border-radius:.25rem; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ddd; padding: .5rem; text-align:left; }
-  th { background: #f6f8fa; }
+  body {{ font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin:2rem; }}
+  code {{ background:#f6f8fa; padding:.1rem .3rem; border-radius:.25rem; }}
+  table {{ border-collapse: collapse; width: 100%; }}
+  th, td {{ border: 1px solid #ddd; padding: .5rem; text-align:left; }}
+  th {{ background: #f6f8fa; }}
 </style>
 <h1>Northwoods Events</h1>
-<p>Built: <code>__BUILD_TIME__</code></p>
+<p>Built: <code>{dt}</code></p>
 <p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>
-<script type="module">
-async function main() {
-  try {
-    const r = await fetch("./state/last_run_report.json");
-    const data = await r.json();
-    const sources = (data.sources || []).slice(0, 50);
-    const rows = sources.map(s =>
-      `<tr><td>${s.name||""}</td><td>${s.parser_kind||""}</td><td>${s.parsed||0}</td><td>${s.added||0}</td></tr>`
-    ).join("");
-    const html = `
-      <h2>Latest sources (sample)</h2>
-      <table>
-        <thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="4"><em>No data</em></td></tr>'}</tbody>
-      </table>`;
-    document.body.insertAdjacentHTML("beforeend", html);
-  } catch (e) {
-    document.body.insertAdjacentHTML("beforeend", `<pre>${String(e)}</pre>`);
-  }
-}
-main();
-</script>
-HTML
-          # inject build time
-          sed -i "s#__BUILD_TIME__#${BUILD_TIME}#g" public/index.html
+<h2>Latest sources (sample)</h2>
+<table>
+  <thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead>
+  <tbody>{rows or '<tr><td colspan="4"><em>No data</em></td></tr>'}</tbody>
+</table>
+"""
+open("public/index.html","w",encoding="utf-8").write(html)
+PY
 
       - name: Show output tree (debug)
         run: |

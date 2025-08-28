@@ -1,45 +1,38 @@
-# from __future__ must be first
 from __future__ import annotations
 
 import json
 import os
-import re
 import sys
 import traceback
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
-from urllib.parse import urlparse
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
-import yaml
 
-# Parsers
+# === Parsers ===
+# Ensure these files exist in src/parsers/ with matching exported functions.
 from parsers.modern_tribe import parse_modern_tribe
 from parsers.growthzone import parse_growthzone
 from parsers.simpleview import parse_simpleview
 from parsers.municipal import parse_municipal
 from parsers.st_germain_ajax import parse_st_germain_ajax
 
+# === Date helpers ===
+from utils.dates import looks_like_iso, try_parse_datetime_range
 
-# ----------------------------
-# Config & Utilities
-# ----------------------------
+# ------------------------------------------------------------------------------
+# Configuration
+# ------------------------------------------------------------------------------
 
-THIS_DIR = Path(__file__).resolve().parent
-ROOT = THIS_DIR.parent
-STATE_DIR = ROOT / "state"
-SNAPSHOT_DIR = STATE_DIR / "snapshots"
-STATE_DIR.mkdir(exist_ok=True, parents=True)
-SNAPSHOT_DIR.mkdir(exist_ok=True, parents=True)
+STATE_DIR = os.path.join(os.path.dirname(__file__), "..", "state")
+SNAPSHOT_DIR = os.path.join(STATE_DIR, "snapshots")
+REPORT_PATH = os.path.join(STATE_DIR, "last_run_report.json")
 
-DEFAULTS = {
-    "tzname": "America/Chicago",
-    "default_duration_minutes": 120,
-}
+TIMEOUT = 30
 
-PARSERS: Dict[str, Callable[[str, str], List[Dict[str, Any]]]] = {
+ParserFn = Callable[[str, str], List[Dict[str, Any]]]
+
+PARSERS: Dict[str, ParserFn] = {
     "modern_tribe": parse_modern_tribe,
     "growthzone": parse_growthzone,
     "simpleview": parse_simpleview,
@@ -47,148 +40,164 @@ PARSERS: Dict[str, Callable[[str, str], List[Dict[str, Any]]]] = {
     "st_germain_ajax": parse_st_germain_ajax,
 }
 
+# ------------------------------------------------------------------------------
+# Utilities
+# ------------------------------------------------------------------------------
 
-def _slug(name: str) -> str:
-    s = name.lower()
-    s = s.replace("–", "-")
-    s = re.sub(r"[^a-z0-9 _\-\(\)\.]+", "_", s)
-    s = re.sub(r"\s+", "_", s).strip("_")
-    return s
+def _ensure_dirs() -> None:
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
+def _save_snapshot(name: str, html: str) -> str:
+    # Keep filename format consistent with your run logs
+    safe = name.lower().replace(" ", "_").replace("/", "_")
+    path = os.path.join(SNAPSHOT_DIR, f"{safe}.html")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    return path
 
-def _now_iso_with_tz() -> str:
-    return datetime.now(timezone.utc).astimezone().isoformat()
-
-
-def _read_yaml(path: Path) -> Dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
-
-
-def _fetch(url: str, timeout: int = 30) -> requests.Response:
+def _fetch(url: str) -> requests.Response:
     headers = {
-        "User-Agent": "northwoods-events-bot/1.0 (+https://example.com)",
-        "Accept": "text/html,application/xhtml+xml",
+        "User-Agent": "northwoods-events-pipeline/1.0 (+https://example.org/bot)"
     }
-    return requests.get(url, headers=headers, timeout=timeout)
+    resp = requests.get(url, headers=headers, timeout=TIMEOUT)
+    resp.raise_for_status()
+    return resp
 
+def _clean_text(s: str) -> str:
+    return " ".join((s or "").split()).strip()
 
-def _write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        f.write(text)
+def _normalize_items(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Final safety net:
+      - drop items without a valid title or url
+      - coerce start to ISO using the tolerant parser when possible
+      - drop items whose 'start' cannot be normalized to a full date
+    """
+    out: List[Dict[str, Any]] = []
+    for it in items:
+        title = _clean_text(it.get("title", ""))
+        url = _clean_text(it.get("url", ""))
+        start = it.get("start")
+        location = _clean_text(it.get("location", ""))
 
+        if not title or not url:
+            continue
 
-def _ensure_serializable(obj: Any) -> Any:
-    """Recursively convert datetimes etc. into JSON-safe types."""
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    if isinstance(obj, dict):
-        return {k: _ensure_serializable(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_ensure_serializable(v) for v in obj]
-    return obj
+        # If parser already produced ISO, accept
+        if isinstance(start, str) and looks_like_iso(start):
+            out.append({"title": title, "start": start, "url": url, "location": location})
+            continue
 
+        # Otherwise, try to parse any residual textual date
+        start_iso = try_parse_datetime_range(_clean_text(str(start or "")))
+        if start_iso:
+            out.append({"title": title, "start": start_iso, "url": url, "location": location})
+            continue
+
+        # If still not parsable, skip (prevents "10:00 am" or nav copy from leaking)
+        # You can alternatively default to an all-day 'today', but skipping is safer.
+    return out
 
 @dataclass
-class SourceResult:
+class Source:
     name: str
     url: str
-    fetched: int = 0
-    parsed: int = 0
-    added: int = 0
-    samples: List[Dict[str, Any]] = None  # type: ignore
-    http_status: Optional[int] = None
-    snapshot: Optional[str] = None
-    parser_kind: Optional[str] = None
-    notes: Dict[str, Any] = None  # type: ignore
-    error: Optional[str] = None
-    traceback: Optional[str] = None
+    parser_kind: str
 
-    def to_dict(self) -> Dict[str, Any]:
-        d = asdict(self)
-        d["samples"] = d["samples"] or []
-        d["notes"] = d["notes"] or {}
-        return _ensure_serializable(d)
+# ------------------------------------------------------------------------------
+# Runner
+# ------------------------------------------------------------------------------
 
-
-# ----------------------------
-# Pipeline
-# ----------------------------
-
-def load_sources_from_yaml(path: Path) -> Dict[str, Any]:
-    data = _read_yaml(path)
-    cfg = dict(DEFAULTS)
-    cfg.update(data.get("defaults", {}))
-    cfg["sources"] = data.get("sources", [])
-    return cfg
-
-
-def run_pipeline(cfg: Dict[str, Any]) -> Dict[str, Any]:
+def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
+    _ensure_dirs()
     results: List[Dict[str, Any]] = []
-    for src in cfg["sources"]:
-        name: str = src["name"]
-        url: str = src["url"]
-        kind: str = src["kind"]
-        parser_fn = PARSERS.get(kind)
-        slug = _slug(name)
-        result = SourceResult(name=name, url=url, samples=[], notes={}, parser_kind=kind)
-
-        try:
-            resp = _fetch(url)
-            result.fetched = 1
-            result.http_status = resp.status_code
-            # Save snapshot (raw)
-            snap_name = f"{slug}.html"
-            snap_path = SNAPSHOT_DIR / snap_name
-            _write_text(snap_path, resp.text)
-            result.snapshot = str(snap_path.relative_to(ROOT)).replace("\\", "/")
-
-            if not parser_fn:
-                raise RuntimeError(f"No parser registered for kind={kind!r}")
-
-            items = parser_fn(resp.text, base_url=url)
-            result.parsed = len(items)
-            result.added = len(items)
-            result.samples = items[:3]
-
-        except Exception as e:
-            result.error = repr(e)
-            result.traceback = "".join(traceback.format_exception(*sys.exc_info()))
-
-        results.append(result.to_dict())
 
     report = {
-        "when": _now_iso_with_tz(),
-        "timezone": cfg.get("defaults", {}).get("tzname", DEFAULTS["tzname"])
-        if "defaults" in cfg else cfg.get("tzname", DEFAULTS["tzname"]),
-        "sources": results,
+        "when": None,
+        "timezone": "America/Chicago",
+        "sources": [],
         "meta": {"status": "ok", "sources_file": "sources.yml"},
     }
-    return report
 
+    for src in sources:
+        src_entry: Dict[str, Any] = {
+            "name": src.name,
+            "url": src.url,
+            "fetched": 0,
+            "parsed": 0,
+            "added": 0,
+            "samples": [],
+            "http_status": None,
+            "snapshot": None,
+            "parser_kind": src.parser_kind,
+            "notes": {},
+            "error": None,
+            "traceback": None,
+        }
 
-def write_reports(report: Dict[str, Any]) -> List[str]:
-    pretty = json.dumps(_ensure_serializable(report), indent=2, ensure_ascii=False)
-    out1 = ROOT / "last_run_report.json"
-    out2 = STATE_DIR / "last_run_report.json"
-    _write_text(out1, pretty)
-    _write_text(out2, pretty)
-    return [str(out1), str(out2)]
+        try:
+            parser_fn = PARSERS[src.parser_kind]
+        except KeyError:
+            src_entry["error"] = f"Unknown parser: {src.parser_kind}"
+            report["sources"].append(src_entry)
+            continue
 
+        try:
+            resp = _fetch(src.url)
+            src_entry["fetched"] = 1
+            src_entry["http_status"] = resp.status_code
+            snapshot_path = _save_snapshot(
+                f"{src.name} ({src.parser_kind})", resp.text
+            )
+            src_entry["snapshot"] = os.path.relpath(snapshot_path, os.path.join(os.path.dirname(__file__), ".."))
 
-def main() -> None:
-    cfg = load_sources_from_yaml(ROOT / "sources.yml")
-    report = run_pipeline(cfg)
-    paths = write_reports(report)
-    print("last_run_report.json written to:")
-    for p in paths:
-        print(f" - {p}")
-    # summary
-    total_parsed = sum(s.get("parsed", 0) for s in report["sources"])
-    total_added = sum(s.get("added", 0) for s in report["sources"])
-    print(f"Summary: parsed={total_parsed}, added={total_added}")
+            # Parse
+            raw_items = parser_fn(resp.text, base_url=src.url)
+            # Normalize and filter
+            items = _normalize_items(raw_items)
 
+            src_entry["parsed"] = len(items)
+            src_entry["added"] = len(items)
+            src_entry["samples"] = items[:3]
+            results.extend(items)
+
+        except Exception as e:
+            src_entry["error"] = repr(e)
+            src_entry["traceback"] = traceback.format_exc()
+
+        report["sources"].append(src_entry)
+
+    # Timestamp (ISO with offset-free; caller/system can add tz if needed)
+    from datetime import datetime as _dt
+    report["when"] = _dt.now().isoformat()
+
+    # Persist run report
+    _ensure_dirs()
+    with open(REPORT_PATH, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
+
+    return {"items": results, "report": report}
+
+# ------------------------------------------------------------------------------
+# CLI
+# ------------------------------------------------------------------------------
+
+def _default_sources() -> List[Source]:
+    # Mirror your current sources.yml (names matter only for snapshots/reports)
+    return [
+        Source("Vilas County (Modern Tribe)", "https://vilaswi.com/events/?eventDisplay=list", "modern_tribe"),
+        Source("Boulder Junction (Modern Tribe)", "https://boulderjct.org/events/?eventDisplay=list", "modern_tribe"),
+        Source("Eagle River Chamber (Modern Tribe)", "https://eagleriver.org/events/?eventDisplay=list", "modern_tribe"),
+        Source("St. Germain Chamber (Micronet AJAX)", "https://st-germain.com/events-calendar/?eventDisplay=list", "st_germain_ajax"),
+        Source("Sayner–Star Lake–Cloverland Chamber (Modern Tribe)", "https://sayner-starlake-cloverland.org/events/", "modern_tribe"),
+        Source("Rhinelander Chamber (GrowthZone)", "https://business.rhinelanderchamber.com/events/calendar", "growthzone"),
+        Source("Minocqua Area Chamber (Simpleview)", "https://www.minocqua.org/events/", "simpleview"),
+        Source("Oneida County – Festivals & Events (Simpleview)", "https://oneidacountywi.com/festivals-events/", "simpleview"),
+        Source("Town of Arbor Vitae (Municipal Calendar)", "https://www.townofarborvitae.org/calendar/", "municipal"),
+    ]
 
 if __name__ == "__main__":
-    main()
+    # If you want to supply a custom sources.yml loader, wire it here.
+    sources = _default_sources()
+    output = run_pipeline(sources)
+    print(json.dumps(output["report"], indent=2))

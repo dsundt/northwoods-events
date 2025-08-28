@@ -1,43 +1,71 @@
 from __future__ import annotations
-
-import re
 from typing import Any, Dict, List
 from urllib.parse import urljoin
-
 from bs4 import BeautifulSoup
+import re
+from datetime import datetime
 
 __all__ = ["parse_simpleview"]
 
-MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
+# Simpleview pages can be pure landing pages (no server-rendered events).
+# Only collect from specific containers that actually hold event list/cards.
+_EVENT_WRAPPERS = [
+    "[data-sv-search-results] .result",     # SV search/listing widget
+    ".sv-event-list .sv-event",             # common pattern
+    ".event-cards .card",                    # generic card grids
+    ".collection .card",                     # site-specific collections
+    ".events .card", ".events-list .card",
+]
 
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
+MONTHS = {m.lower(): i for i, m in enumerate(
+    ["January","February","March","April","May","June","July","August","September","October","November","December"], 1)}
+DATE_INLINE = re.compile(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?\b", re.I)
 
-def _looks_like_title(t: str) -> bool:
-    t = (t or "").strip()
-    if not t or len(t) < 3:
-        return False
-    if t.lower() in {"events", "calendar", "learn more", "read more"}:
-        return False
-    return True
+def _text(n) -> str:
+    return " ".join(n.stripped_strings) if n else ""
+
+def _infer_year(mon: int) -> int:
+    today = datetime.today().date()
+    y = today.year
+    # If page looks like fall schedule and month already passed far, bump year (safe heuristic)
+    if mon < today.month - 2:
+        return y + 1
+    return y
+
+def _parse_inline_date(txt: str) -> str | None:
+    m = DATE_INLINE.search(txt or "")
+    if not m:
+        return None
+    mon = MONTHS[m.group(1).lower()]
+    day = int(m.group(2))
+    year = int(m.group(3)) if m.group(3) else _infer_year(mon)
+    return datetime(year, mon, day).isoformat()
 
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # 1) Try known card/list containers
-    cards = soup.select(
-        ".event, .event-card, .event-list-item, .card.event, .listing, article, li"
-    )
+    # If the page has zero trusted wrappers, return [] — do NOT scrape page copy.
+    blocks = []
+    for sel in _EVENT_WRAPPERS:
+        blocks.extend(soup.select(sel))
 
-    # 2) Also consider anchors that clearly point to event pages
-    event_anchors = [a for a in soup.find_all("a", href=True)
-                     if ("/event" in a["href"] or "/events/" in a["href"]) and _looks_like_title(_text(a))]
-
-    # Normalize to unified “blocks”: prefer cards; else use anchor parents
-    blocks = cards[:]
-    if not blocks and event_anchors:
-        blocks = [a.find_parent(["article", "li", "div"]) or a for a in event_anchors]
+    if not blocks:
+        # Try a very conservative fallback: cards/links that *look* like event entries
+        # (title in heading + date snippet nearby) — otherwise return empty.
+        conservative = []
+        for card in soup.select(".card, article, li"):
+            a = card.find("a", href=True)
+            if not a:
+                continue
+            title = _text(card.find(["h3","h2"]) or a).strip()
+            if not title:
+                continue
+            # Needs a date mention inside the card
+            if not _parse_inline_date(_text(card)):
+                continue
+            conservative.append(card)
+        blocks = conservative
 
     seen = set()
     for b in blocks:
@@ -49,27 +77,23 @@ def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
             continue
         seen.add(url)
 
-        title = _text(b.find(["h2", "h3"])) or _text(a)
+        title = _text(b.find(["h3","h2"]) or a).strip()
         title = re.sub(r"\s+", " ", title).strip()
-        if not _looks_like_title(title):
+        if not title:
             continue
 
-        # Date text
-        dt = ""
-        for sel in ["time", ".date", ".event-date", ".dates", ".event__date", ".card-date"]:
-            el = b.select_one(sel)
-            if el:
-                dt = el["datetime"] if el.name == "time" and el.has_attr("datetime") else _text(el)
-                break
-        if not dt:
-            dt = _text(b)
-
-        if not re.search(MONTH_TOKEN, dt, re.I) and not (b.find("time") and b.find("time").has_attr("datetime")):
+        # Start date — attempt inline date within the same block
+        start = _parse_inline_date(_text(b))
+        if not start:
+            # Skip (prevents pulling marketing/guide pages like Oneida’s overview)
             continue
 
-        loc_el = b.find(class_=re.compile("location|venue|where", re.I))
-        location = _text(loc_el) if loc_el else ""
+        # Location (best-effort)
+        location = ""
+        loc = b.find(class_=re.compile(r"(venue|location)", re.I))
+        if loc:
+            location = _text(loc)
 
-        items.append({"title": title, "start": dt.strip(), "url": url, "location": location})
+        items.append({"title": title, "start": start, "url": url, "location": location})
 
     return items

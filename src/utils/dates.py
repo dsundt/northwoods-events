@@ -1,9 +1,9 @@
 from __future__ import annotations
 import re
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Optional, Tuple
 
-# Month table
+# -------- Month helpers --------
 MONTHS = {
     "jan": 1, "january": 1,
     "feb": 2, "february": 2,
@@ -19,92 +19,109 @@ MONTHS = {
     "dec": 12, "december": 12,
 }
 
-# Robust, *anchored* month token — prevents matching "Mar" inside "Market"
-_M = r"\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b"
+# -------- Patterns we support --------
+_M = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*"
 _TIME = r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ampm>am|pm)"
-# Month day [, year] [@ time]
-DATE_PRIMARY = re.compile(rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})(?:,\s*(?P<year>\d{{4}}))?(?:\s*@\s*(?P<time>{_TIME}))?", re.I)
-# Day range where we only need the START: "Oct 4 - 5" or "Oct 4 - Oct 5"
-DATE_RANGE = re.compile(rf"(?P<m1>{_M})?\s*(?P<d1>\d{{1,2}})\s*[-–]\s*(?P<m2>{_M})?\s*(?P<d2>\d{{1,2}})", re.I)
-# Time elsewhere in text – we join with the date match if present
-TIME_ANYWHERE = re.compile(_TIME, re.I)
+_DATE1 = re.compile(rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})(?:,\s*(?P<year>\d{{4}}))?", re.I)
+_DATE_AND_TIME = re.compile(rf"{_DATE1.pattern}(?:\s*@\s*(?P<stime>{_TIME}))?", re.I)
+_RANGE = re.compile(rf"(?P<m1>{_M})?\s*(?P<d1>\d{{1,2}})\s*[-–]\s*(?P<m2>{_M})?\s*(?P<d2>\d{{1,2}})", re.I)
+_TIME_ONLY = re.compile(_TIME, re.I)
+_URL_MDY = re.compile(r"-(?P<mm>\d{2})-(?P<dd>\d{2})-(?P<yyyy>\d{4})(?:-|$)")
 
-def _infer_year(month: int, day: int, explicit_year: Optional[int]) -> int:
-    if explicit_year:
-        return explicit_year
+def _infer_year(mon: int, day: int, explicit: Optional[int]) -> int:
+    if explicit:
+        return explicit
     today = date.today()
-    candidate = date(today.year, month, day)
-    # If it's ~next season (way in the past), roll forward
+    candidate = date(today.year, mon, day)
+    # If very far in the past, bump to next year
     if (candidate - today).days < -300:
         return today.year + 1
     return today.year
 
 def _to_24(h: int, m: int, ampm: str) -> Tuple[int, int]:
+    ampm = ampm.lower()
     h = h % 12
-    if ampm.lower() == "pm":
+    if ampm == "pm":
         h += 12
     return h, m
 
+def parse_date_string(raw: str) -> Optional[date]:
+    if not raw:
+        return None
+    m = _DATE1.search(raw)
+    if not m:
+        # range like "Oct 4 - 5" → return the start date
+        r = _RANGE.search(raw)
+        if r:
+            m1 = r.group("m1") or r.group("m2")
+            if not m1:
+                return None
+            mon = MONTHS[m1.lower()]
+            d1 = int(r.group("d1"))
+            yr = _infer_year(mon, d1, None)
+            return date(yr, mon, d1)
+        return None
+    mon = MONTHS[m.group("mon").lower()]
+    d = int(m.group("day"))
+    yr = _infer_year(mon, d, int(m.group("year")) if m.group("year") else None)
+    return date(yr, mon, d)
+
+def parse_time_string(raw: str) -> Optional[Tuple[int,int]]:
+    if not raw:
+        return None
+    m = _TIME_ONLY.search(raw)
+    if not m:
+        return None
+    h = int(m.group("h"))
+    mm = int(m.group("m"))
+    h, mm = _to_24(h, mm, m.group("ampm"))
+    return h, mm
+
 def parse_datetime_range(raw: str) -> str:
-    """
-    Return an ISO8601 local-naive start datetime string parsed from messy event text like:
-      - "August 30 @ 6:30 pm - 8:30 pm"
-      - "Oct 4 - Oct 5"
-      - "Aug 31, 2025 10:00 am"
-      - "Featured 10:00 am Labor Day Arts and Crafts Show October 4"
-    Raises ValueError if no usable date found.
-    """
-    txt = (raw or "").strip()
-    if not txt:
+    """Return ISO start from a freeform string (month day [year] [@ time])."""
+    raw = (raw or "").strip()
+    if not raw:
         raise ValueError(f"Could not find a date in: {raw!r}")
-
-    # 1) Primary: month day [, year] [@ time]
-    m = DATE_PRIMARY.search(txt)
+    m = _DATE_AND_TIME.search(raw)
     if m:
-        mon_name = m.group("mon")
-        mon = MONTHS[mon_name.lower()]
-        day = int(m.group("day"))
-        year = _infer_year(mon, day, int(m.group("year")) if m.group("year") else None)
-        if m.group("time"):
-            hh = int(m.group("h")); mm = int(m.group("m")); ampm = m.group("ampm")
-            hh, mm = _to_24(hh, mm, ampm)
-            return datetime(year, mon, day, hh, mm).isoformat()
-        # If there's a time elsewhere in the same string, borrow it
-        t = TIME_ANYWHERE.search(txt)
-        if t:
-            hh = int(t.group("h")); mm = int(t.group("m")); ampm = t.group("ampm")
-            hh, mm = _to_24(hh, mm, ampm)
-            return datetime(year, mon, day, hh, mm).isoformat()
-        return datetime(year, mon, day).isoformat()
-
-    # 2) Ranges: we return the start of the range
-    r = DATE_RANGE.search(txt)
-    if r:
-        m1 = r.group("m1") or r.group("m2")
-        if not m1:
-            raise ValueError(f"Could not find a date in: {raw!r}")
-        mon = MONTHS[m1.lower()]
-        day = int(r.group("d1"))
-        year = _infer_year(mon, day, None)
-        # Optional time anywhere
-        t = TIME_ANYWHERE.search(txt)
-        if t:
-            hh = int(t.group("h")); mm = int(t.group("m")); ampm = t.group("ampm")
-            hh, mm = _to_24(hh, mm, ampm)
-            return datetime(year, mon, day, hh, mm).isoformat()
-        return datetime(year, mon, day).isoformat()
-
-    # 3) As a last chance, accept plain month+day with the time found elsewhere.
-    m2 = re.search(rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})\b", txt, re.I)
-    if m2:
-        mon = MONTHS[m2.group("mon").lower()]
-        day = int(m2.group("day"))
-        year = _infer_year(mon, day, None)
-        t = TIME_ANYWHERE.search(txt)
-        if t:
-            hh = int(t.group("h")); mm = int(t.group("m")); ampm = t.group("ampm")
-            hh, mm = _to_24(hh, mm, ampm)
-            return datetime(year, mon, day, hh, mm).isoformat()
-        return datetime(year, mon, day).isoformat()
-
+        mon = MONTHS[m.group("mon").lower()]
+        d = int(m.group("day"))
+        yr = _infer_year(mon, d, int(m.group("year")) if m.group("year") else None)
+        if m.group("stime"):
+            h = int(m.group("h")); mm = int(m.group("m"))
+            h, mm = _to_24(h, mm, m.group("ampm"))
+            dt = datetime(yr, mon, d, h, mm)
+        else:
+            dt = datetime(yr, mon, d)
+        return dt.isoformat()
+    # range fallback
+    d = parse_date_string(raw)
+    if d:
+        return datetime(d.year, d.month, d.day).isoformat()
     raise ValueError(f"Could not find a date in: {raw!r}")
+
+def combine_date_and_time(date_iso_or_date: str, time_text: str) -> Optional[str]:
+    """
+    date_iso_or_date: 'YYYY-MM-DD' or full ISO (we only use the date part).
+    time_text: e.g. '10:00 am - 4:00 pm' or '7:00 am'.
+    Returns 'YYYY-MM-DDTHH:MM:00' or 'YYYY-MM-DDT00:00:00' if time cannot be parsed.
+    """
+    if not date_iso_or_date:
+        return None
+    date_part = date_iso_or_date.split("T")[0]
+    dt = None
+    t = parse_time_string(time_text)
+    if t:
+        h, m = t
+        dt = datetime.fromisoformat(f"{date_part}T00:00:00").replace(hour=h, minute=m)
+    else:
+        dt = datetime.fromisoformat(f"{date_part}T00:00:00")
+    return dt.isoformat()
+
+def parse_date_from_url(url: str) -> Optional[str]:
+    """Extract YYYY-MM-DD from GrowthZone detail URLs like '-08-01-2025-12345'."""
+    m = _URL_MDY.search(url or "")
+    if not m:
+        return None
+    yyyy = int(m.group("yyyy")); mm = int(m.group("mm")); dd = int(m.group("dd"))
+    return datetime(yyyy, mm, dd).isoformat()

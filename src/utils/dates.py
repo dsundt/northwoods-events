@@ -1,75 +1,91 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from typing import Optional, Tuple
+from datetime import datetime, date
+from typing import Tuple
 
-from dateutil import parser as dtp
+__all__ = ["parse_datetime_range"]
 
-# Month names to quickly screen strings that plausibly contain a date
-_MONTH_RE = r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)"
-# Anything that looks like a month name, a 4-digit year, or a time-of-day
-_DATEISH = re.compile(rf"{_MONTH_RE}|\b\d{{4}}\b|\b\d{{1,2}}:\d{{2}}\b", re.I)
+# Month map
+MONTHS = {
+    "jan": 1, "january": 1,
+    "feb": 2, "february": 2,
+    "mar": 3, "march": 3,
+    "apr": 4, "april": 4,
+    "may": 5,
+    "jun": 6, "june": 6,
+    "jul": 7, "july": 7,
+    "aug": 8, "august": 8,
+    "sep": 9, "sept": 9, "september": 9,
+    "oct": 10, "october": 10,
+    "nov": 11, "november": 11,
+    "dec": 12, "december": 12,
+}
 
-def clean(s: str) -> str:
-    return " ".join((s or "").split())
+# Patterns:
+# "Aug 31, 2025 10:00 am"
+# "August 30 @ 6:30 pm - 8:30 pm"
+# "Oct 4 - Oct 5" / "October 4 - 5"
+_M = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*"
+_TIME = r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ampm>am|pm)"
+_DATE1 = re.compile(rf"(?P<mon>{_M})\s+(?P<day>\d{{1,2}})(?:,?\s*(?P<year>\d{{4}}))?(?:\s*(?:@|,)?\s*(?P<stime>{_TIME}))?", re.I)
+_RANGE = re.compile(rf"(?P<m1>{_M})?\s*(?P<d1>\d{{1,2}})\s*[-–]\s*(?P<m2>{_M})?\s*(?P<d2>\d{{1,2}})", re.I)
 
-def looks_like_datetime(s: str) -> bool:
-    """Fast, cheap check before attempting full parsing."""
-    return bool(_DATEISH.search(s or ""))
 
-def _parse_one(piece: str, tz: Optional[timezone] = None) -> datetime:
-    dt = dtp.parse(clean(piece), fuzzy=True)
-    if dt.tzinfo is None:
-        # Default to local time if desired; most sites are Central
-        dt = dt.replace(tzinfo=timezone(timedelta(hours=-5)))  # America/Chicago CDT
-    return dt
+def _infer_year(mon: int, day: int, year: int | None) -> int:
+    if year:
+        return year
+    today = date.today()
+    candidate = date(today.year, mon, day)
+    if (candidate - today).days < -300:
+        return today.year + 1
+    return today.year
 
-def try_parse_datetime_range(raw: str, tz: Optional[timezone] = None) -> Optional[Tuple[datetime, Optional[datetime]]]:
+
+def _to_24(h: int, m: int, ampm: str) -> Tuple[int, int]:
+    ampm = ampm.lower()
+    h = h % 12
+    if ampm == "pm":
+        h += 12
+    return h, m
+
+
+def parse_datetime_range(raw: str) -> str:
     """
-    Best-effort parse of a date/time range string.
-    Returns (start, end?) or None if nothing date-like could be found.
-    Never raises.
+    Extracts and returns the *start* of a date/time range as ISO 8601 str.
+    Raises ValueError if nothing usable is found.
     """
-    s = clean(raw)
-    if not looks_like_datetime(s):
-        return None
+    raw = (raw or "").strip()
+    if not raw:
+        raise ValueError(f"Could not find a date in: {raw!r}")
 
-    # Common separators seen across sources
-    seps = ["–", "—", "-", " to ", "– ", " — ", " / ", "|", "@", " from ", " until "]
-    parts = None
-    for sep in seps:
-        if sep in s:
-            parts = [p.strip(" ,•") for p in s.split(sep, 1)]
-            break
+    # Case 1: single date with optional time
+    m = _DATE1.search(raw)
+    if m:
+        mon = MONTHS[m.group("mon").lower()]
+        day = int(m.group("day"))
+        year = int(m.group("year")) if m.group("year") else None
+        year = _infer_year(mon, day, year)
+        if m.group("stime"):
+            h = int(m.group("h"))
+            mm = int(m.group("m"))
+            ampm = m.group("ampm")
+            h, mm = _to_24(h, mm, ampm)
+            dt = datetime(year, mon, day, h, mm)
+        else:
+            dt = datetime(year, mon, day)
+        return dt.isoformat()
 
-    try:
-        if not parts:
-            start = _parse_one(s, tz)
-            return (start, None)
-        start = _parse_one(parts[0], tz)
-        # If RHS doesn't parse, keep it as an all-day/single time
-        try:
-            end = _parse_one(parts[1], tz)
-        except Exception:
-            end = None
-        return (start, end)
-    except Exception:
-        return None
+    # Case 2: date range like "Oct 4 - Oct 5" or "October 4 - 5"
+    r = _RANGE.search(raw)
+    if r:
+        m1 = r.group("m1") or r.group("m2")
+        if not m1:
+            raise ValueError(f"Could not find a date in: {raw!r}")
+        mon = MONTHS[m1.lower()]
+        day = int(r.group("d1"))
+        year = _infer_year(mon, day, None)
+        dt = datetime(year, mon, day)
+        return dt.isoformat()
 
-def parse_datetime_range(raw: str, tz: Optional[timezone] = None) -> Tuple[datetime, Optional[datetime]]:
-    """
-    Strict version used by some callers. Raises ValueError when no date.
-    """
-    result = try_parse_datetime_range(raw, tz)
-    if result is None:
-        raise ValueError(f"Could not find a date in: {clean(raw)!r}")
-    return result
-
-def parse_iso_or_text(raw: str, tz: Optional[timezone] = None) -> datetime:
-    """Convenience: single datetime parse that tolerates text noise."""
-    res = try_parse_datetime_range(raw, tz)
-    if res:
-        return res[0]
-    return _parse_one(raw, tz)
+    raise ValueError(f"Could not find a date in: {raw!r}")

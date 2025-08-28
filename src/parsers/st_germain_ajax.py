@@ -1,81 +1,83 @@
 from __future__ import annotations
-
 import re
 from typing import Any, Dict, List
 from urllib.parse import urljoin
-
 from bs4 import BeautifulSoup
 
 __all__ = ["parse_st_germain_ajax"]
 
-MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
+# Capture dates like "Monday, September 1st, 2025" with optional ordinal
+MONTH = r"(?:January|February|March|April|May|June|July|August|September|October|November|December)"
+ORD   = r"(?:st|nd|rd|th)"
+DATE_LONG = re.compile(rf"\b(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,\s+({MONTH})\s+(\d{{1,2}})(?:{ORD})?,\s+(\d{{4}})\b", re.I)
 
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
+MONTHS = {m.lower(): i for i, m in enumerate(
+    ["January","February","March","April","May","June","July","August","September","October","November","December"], 1)}
 
-def _looks_like_title(t: str) -> bool:
-    t = (t or "").strip()
-    if not t or len(t) < 3:
-        return False
-    if t.lower() in {"events", "read more", "learn more"}:
-        return False
-    return True
+def _text(n) -> str:
+    return " ".join(n.stripped_strings) if n else ""
 
-def _find_date_near(node) -> str:
-    # Prefer semantic tags first
-    el = node.find("time")
-    if el and el.has_attr("datetime"):
-        return el["datetime"]
-    if el:
-        return _text(el)
+def _to_iso(month: int, day: int, year: int) -> str:
+    return f"{year:04d}-{month:02d}-{day:02d}T00:00:00-05:00"
 
-    for sel in [".date", ".event-date", ".tribe-event-date", ".tribe-event-date-start"]:
-        e = node.select_one(sel)
-        if e:
-            return _text(e)
-
-    # scan surrounding text
-    parent = node.find_parent(["article", "li", "div"]) or node
-    txt = " ".join([_text(parent), _text(parent.find_next_sibling()), _text(parent.find_previous_sibling())])
-    m = re.search(rf"{MONTH_TOKEN}[^|\n]{{0,80}}", txt, re.I)
-    return m.group(0).strip() if m else txt.strip()
+def _parse_date_blob(t: str) -> str | None:
+    m = DATE_LONG.search(t or "")
+    if not m:
+        return None
+    mon = MONTHS[m.group(1).lower()]
+    day = int(m.group(2))
+    year = int(m.group(3))
+    return _to_iso(mon, day, year)
 
 def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Their site often loads via admin-ajax; snapshots may contain server-rendered fallback
+    blocks that look like cards with an <a> and nearby text including the long date.
+    We avoid concatenating every sibling’s text; we take tight scopes only.
+    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Collect any event-ish anchors living on this page
-    anchors = [
-        a for a in soup.find_all("a", href=True)
-        if ("/events/" in a["href"]) and _looks_like_title(_text(a))
-    ]
+    # Tight card targets: look for obvious event links inside list/card wrappers
+    # (The previous issue happened by reading a whole container’s text at once.)
+    cards = []
+    cards += soup.select("article, .event, .events-list li, .tribe-events-calendar-list__event, .et_pb_post")
+    if not cards:
+        # fallback to any links in the main content area pointing to /events/
+        for a in soup.select("main a[href*='/events/']"):
+            cards.append(a.find_parent(["li","article","div"]) or a)
+
     seen = set()
-    for a in anchors:
+    for c in cards:
+        a = c.find("a", href=True)
+        if not a:
+            continue
         url = urljoin(base_url, a["href"])
         if url in seen:
             continue
         seen.add(url)
 
-        # Grab a proper title (prefer heading around the link)
-        title = _text(a)
-        head = a.find_parent().find(["h2", "h3"]) if a.find_parent() else None
-        if head and _looks_like_title(_text(head)):
-            title = _text(head)
+        # Title: just the anchor’s text or a heading — do NOT concatenate entire card text
+        title = _text(a) or _text(c.find(["h3","h2"])).strip()
         title = re.sub(r"\s+", " ", title).strip()
-        if not _looks_like_title(title):
+        if not title:
             continue
 
-        # Pull a nearby date string
-        start = _find_date_near(a)
-        if not start or not re.search(MONTH_TOKEN, start, re.I):
-            # if no obvious date, skip (prevents junk)
+        # Date: search in small radius (link’s parent and immediate siblings)
+        local_blobs = [
+            _text(a.parent),
+            _text(c.find(class_=re.compile("date|when|time", re.I))),
+            _text(c.find_next_sibling()),
+            _text(c.find_previous_sibling()),
+        ]
+        start = None
+        for blob in local_blobs:
+            start = start or _parse_date_blob(blob)
+        # As a last resort, scan the card’s text (bounded) for a long date
+        start = start or _parse_date_blob(_text(c))
+        if not start:
             continue
 
-        # location (best-effort)
-        parent = a.find_parent(["article", "li", "div"]) or a
-        loc_el = parent.find(class_=re.compile("location|venue|where", re.I))
-        location = _text(loc_el) if loc_el else ""
-
-        items.append({"title": title, "start": start, "url": url, "location": location})
+        items.append({"title": title, "start": start, "url": url, "location": ""})
 
     return items

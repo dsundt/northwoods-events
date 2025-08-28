@@ -1,99 +1,48 @@
 {
-  "when": "2025-08-27T22:09:47.634182-05:00",
+  "when": "2025-08-27T22:55:31.771790-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 139,
-      "added": 139,
-      "samples": [
-        {
-          "title": "St. Germain Flea Market",
-          "start": "2025-07-28T08:00:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/"
-        },
-        {
-          "title": "Manitowish Waters Lions Club Bingo",
-          "start": "2025-07-28T18:00:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/"
-        },
-        {
-          "title": "Monday Night Bingo",
-          "start": "2025-07-28T18:15:00-05:00",
-          "location": "",
-          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
       "parser_kind": "modern_tribe",
-      "notes": {}
+      "notes": {},
+      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 76,
-      "added": 76,
-      "samples": [
-        {
-          "title": "Northwoods Children&#8217;s Museum Nature Education Classes",
-          "start": "2025-07-28T10:30:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/"
-        },
-        {
-          "title": "Mah Jongg at the Boulder Junction Public Library",
-          "start": "2025-07-28T13:00:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/"
-        },
-        {
-          "title": "Boulder Junction Lions Club Flea Market",
-          "start": "2025-07-29T08:00:00-05:00",
-          "location": "",
-          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
       "parser_kind": "modern_tribe",
-      "notes": {}
+      "notes": {},
+      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 42,
-      "added": 42,
-      "samples": [
-        {
-          "title": "Labor Day Arts and Crafts Show",
-          "start": "2025-08-31T10:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/"
-        },
-        {
-          "title": "SepTimber Ride",
-          "start": "2025-09-13T07:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/septimber-ride/"
-        },
-        {
-          "title": "Cranberry Fest",
-          "start": "2025-10-04T00:00:00-05:00",
-          "location": "",
-          "url": "https://eagleriver.org/events/cranberry-fest/"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
-      "notes": {}
+      "notes": {},
+      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
     },
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
@@ -137,40 +86,42 @@
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 20,
-      "added": 20,
-      "samples": [
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T18:30:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31T15:00:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/"
-        },
-        {
-          "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "2025-09-01T14:00:00-05:00",
-          "location": "",
-          "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
-      "notes": {}
+      "notes": {},
+      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 105, in parse_modern_tribe\n    maybe = try_parse_datetime_range(_text(dt_block) if dt_block else \"\")\n            ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 7,
+      "added": 7,
+      "samples": [
+        {
+          "title": "WILD Hodag Mini Triathlon",
+          "start": "2025-08-03T00:00:00",
+          "location": "",
+          "url": "https://business.rhinelanderchamber.com/events/details/wild-hodag-mini-triathlon-08-23-2025-17272"
+        },
+        {
+          "title": "Hodag Farmers' Market",
+          "start": "2025-08-03T00:00:00",
+          "location": "",
+          "url": "https://business.rhinelanderchamber.com/events/details/hodag-farmers-market-08-23-2025-17417"
+        },
+        {
+          "title": "3rd Annual Recycling Extravaganza",
+          "start": "2025-08-03T00:00:00",
+          "location": "",
+          "url": "https://business.rhinelanderchamber.com/events/details/3rd-annual-recycling-extravaganza-17602"
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
       "parser_kind": "growthzone",
@@ -180,9 +131,16 @@
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 1,
+      "added": 1,
+      "samples": [
+        {
+          "title": "The Beef Is Back!",
+          "start": "2025-09-28T00:00:00",
+          "location": "",
+          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/"
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
       "parser_kind": "simpleview",
@@ -204,32 +162,15 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 30,
-      "added": 30,
-      "samples": [
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-24T00:00:00-05:00",
-          "location": "",
-          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
-        },
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-23T00:00:00-05:00",
-          "location": "",
-          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna"
-        },
-        {
-          "title": "Brush Site Open",
-          "start": "2025-08-22T00:00:00-05:00",
-          "location": "",
-          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
       "parser_kind": "municipal",
-      "notes": {}
+      "notes": {},
+      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 37, in parse_municipal\n    maybe = try_parse_datetime_range(_text(dt_node))\n            ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
     }
   ],
   "meta": {

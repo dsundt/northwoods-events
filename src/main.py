@@ -1,13 +1,8 @@
 from __future__ import annotations
-import json
-import os
-import sys
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Tuple
-from urllib.parse import urlparse
+import sys, json, os, logging
+from dataclasses import dataclass
+from typing import List, Dict, Any, Callable, Tuple
 import requests
-import yaml
 
 from parsers.modern_tribe import parse_modern_tribe
 from parsers.growthzone import parse_growthzone
@@ -15,18 +10,11 @@ from parsers.simpleview import parse_simpleview
 from parsers.municipal import parse_municipal
 from parsers.st_germain_ajax import parse_st_germain_ajax
 
-PARSERS: Dict[str, Callable[[str, str], List[Dict[str, Any]]]] = {
-    "modern_tribe": parse_modern_tribe,
-    "growthzone": parse_growthzone,
-    "simpleview": parse_simpleview,
-    "municipal": parse_municipal,
-    "st_germain_ajax": parse_st_germain_ajax,
-}
+from utils.fetchers import fetch_text
 
-DEFAULTS = {
-    "tzname": "America/Chicago",
-    "default_duration_minutes": 120,
-}
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+
+ParserFn = Callable[[str, str], List[Dict[str, Any]]]
 
 @dataclass
 class Source:
@@ -34,101 +22,118 @@ class Source:
     url: str
     kind: str
 
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).astimezone().isoformat()
+PARSERS: Dict[str, ParserFn] = {
+    "modern_tribe": parse_modern_tribe,
+    "growthzone": parse_growthzone,
+    "simpleview": parse_simpleview,          # has internal JS-render fallback
+    "municipal": parse_municipal,
+    "st_germain_ajax": parse_st_germain_ajax # tries TEC JSON -> custom AJAX -> JS-render fallback
+}
 
-def _load_sources() -> Tuple[List[Source], Dict[str, Any], str]:
-    # 1) If stdin has JSON, read it (CI piping)
+def _load_sources_from_stdin_or_yaml() -> List[Source]:
+    # Prefer JSON from stdin if present
+    data = None
     if not sys.stdin.isatty():
         try:
             raw = sys.stdin.read().strip()
             if raw:
                 data = json.loads(raw)
-                defaults = data.get("defaults") or DEFAULTS
-                sources = [Source(**s) for s in data.get("sources") or []]
-                return sources, defaults, "<stdin>"
         except Exception:
             pass
 
-    # 2) YAML fallback (repo root or src/)
-    for candidate in ("sources.yml", os.path.join(os.path.dirname(__file__), "sources.yml")):
-        if os.path.exists(candidate):
-            with open(candidate, "r", encoding="utf-8") as f:
-                y = yaml.safe_load(f) or {}
-            defaults = y.get("defaults") or DEFAULTS
-            sources = [Source(**s) for s in (y.get("sources") or [])]
-            return sources, defaults, candidate
+    if data is None:
+        # FALLBACK: sources.yml (if your pipeline uses YAML)
+        yml = os.path.join(os.path.dirname(__file__), "..", "sources.yml")
+        if os.path.exists(yml):
+            try:
+                import yaml  # requires PyYAML
+                with open(yml, "r", encoding="utf-8") as f:
+                    y = yaml.safe_load(f)
+                entries = y.get("sources", [])
+                return [Source(name=e["name"], url=e["url"], kind=e["kind"]) for e in entries]
+            except Exception as e:
+                logging.error("Failed to read sources.yml: %s", e)
+                return []
+        else:
+            logging.error("No sources provided on stdin and no sources.yml found.")
+            return []
 
-    print("No sources provided on stdin and no sources.yml found.", file=sys.stderr)
-    return [], DEFAULTS, "<none>"
+    # JSON format: [{ name, url, kind }, ...]
+    entries = []
+    for e in data:
+        entries.append(Source(name=e["name"], url=e["url"], kind=e["kind"]))
+    return entries
 
 def _fetch(url: str) -> Tuple[int, str]:
-    ua = "northwoods-events/1.0 (+github action)"
-    headers = {"User-Agent": ua, "Accept": "text/html,application/xhtml+xml"}
-    r = requests.get(url, headers=headers, timeout=30)
-    return r.status_code, r.text
-
-def _snapshot_name(name: str, kind: str) -> str:
-    safe = name.replace(" ", "_").replace("–", "-").replace("—", "-").replace("/", "_")
-    safe = safe.replace("(", "").replace(")", "").replace("&", "and")
-    return f"state/snapshots/{safe.lower()}_({kind}).html"
+    try:
+        return fetch_text(url)
+    except requests.RequestException as e:
+        logging.error("Fetch failed for %s: %s", url, e)
+        return 0, ""
 
 def main() -> None:
-    sources, defaults, src_file = _load_sources()
-    report_sources: List[Dict[str, Any]] = []
-    os.makedirs("state/snapshots", exist_ok=True)
+    sources = _load_sources_from_stdin_or_yaml()
+    report: Dict[str, Any] = {
+        "when": os.environ.get("NW_NOW") or "",
+        "timezone": os.environ.get("NW_TZ") or "",
+        "sources": [],
+        "meta": {"status": "ok", "sources_file": "sources.yml"}
+    }
 
     for s in sources:
         row: Dict[str, Any] = {
-            "name": s.name,
-            "url": s.url,
+            "name": s.name, "url": s.url, "parser_kind": s.kind,
             "fetched": 0, "parsed": 0, "added": 0,
-            "samples": [],
-            "http_status": None,
-            "snapshot": _snapshot_name(s.name, s.kind),
-            "parser_kind": s.kind,
-            "notes": {},
-            "error": None, "traceback": None,
+            "samples": [], "http_status": None, "snapshot": None,
+            "notes": {}, "error": None, "traceback": None
         }
+        parser_fn = PARSERS.get(s.kind)
+        if not parser_fn:
+            row["error"] = f"Unknown parser kind: {s.kind}"
+            report["sources"].append(row)
+            continue
+
+        status, html = _fetch(s.url)
+        row["http_status"] = status
+        row["fetched"] = 1 if status == 200 else 0
+        snap_dir = os.path.join(os.path.dirname(__file__), "..", "state", "snapshots")
+        os.makedirs(snap_dir, exist_ok=True)
+        snap_name = f"{s.name.lower().replace(' ', '_').replace('—', '-').replace('–', '-')}__{s.kind}.html"
+        snap_path = os.path.join(snap_dir, snap_name)
         try:
-            status, html = _fetch(s.url)
-            row["http_status"] = status
-            with open(row["snapshot"], "w", encoding="utf-8") as f:
-                f.write(html)
-            row["fetched"] = 1
+            with open(snap_path, "w", encoding="utf-8") as f:
+                f.write(html or "")
+            row["snapshot"] = os.path.relpath(snap_path, os.path.join(os.path.dirname(__file__), ".."))
+        except Exception:
+            pass
 
-            parser_fn = PARSERS.get(s.kind)
-            if not parser_fn:
-                row["error"] = f"Unknown parser kind: {s.kind}"
-            else:
-                items = parser_fn(html, base_url=s.url)  # Some parsers may do extra HTTP (AJAX)
-                row["parsed"] = len(items)
-                row["added"] = len(items)
-                row["samples"] = items[:3]
+        items: List[Dict[str, Any]] = []
+        if status == 200 and html:
+            try:
+                items = parser_fn(html, base_url=s.url)
+            except Exception as e:
+                row["error"] = repr(e)
 
-        except Exception as e:
-            import traceback as tb
-            row["error"] = repr(e)
-            row["traceback"] = "".join(tb.format_exception(type(e), e, e.__traceback__))
+        row["parsed"] = len(items)
+        row["added"] = len(items)
+        row["samples"] = items[:3]
+        report["sources"].append(row)
 
-        report_sources.append(row)
-
-    report: Dict[str, Any] = {
-        "when": _now_iso(),
-        "timezone": DEFAULTS["tzname"],
-        "sources": report_sources,
-        "meta": {"status": "ok", "sources_file": os.path.basename(src_file)},
-    }
-
-    pretty = json.dumps(report, indent=2, ensure_ascii=False)
-    with open("last_run_report.json", "w", encoding="utf-8") as f:
-        f.write(pretty)
-    os.makedirs("state", exist_ok=True)
-    with open("state/last_run_report.json", "w", encoding="utf-8") as f:
-        f.write(pretty)
-
-    print("last_run_report.json written to:\n - last_run_report.json\n - state/last_run_report.json")
-    print(f"Summary: parsed={sum(s['parsed'] for s in report_sources)}, added={sum(s['added'] for s in report_sources)}")
+    # Write reports
+    out_pretty = os.path.join(os.path.dirname(__file__), "..", "last_run_report.json")
+    out_state = os.path.join(os.path.dirname(__file__), "..", "state", "last_run_report.json")
+    import json as _json, os as _os
+    try:
+        pretty = _json.dumps(report, ensure_ascii=False, indent=2)
+        with open(out_pretty, "w", encoding="utf-8") as f:
+            f.write(pretty)
+        _os.makedirs(_os.path.dirname(out_state), exist_ok=True)
+        with open(out_state, "w", encoding="utf-8") as f:
+            f.write(pretty)
+        print("== last_run_report.json (first 120 lines) ==")
+        print(pretty.splitlines()[0:120])
+    except Exception as e:
+        logging.error("Failed to write report: %s", e)
 
 if __name__ == "__main__":
     main()

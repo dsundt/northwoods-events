@@ -1,99 +1,69 @@
 from __future__ import annotations
-from typing import Any, Dict, List
-from urllib.parse import urljoin
-from bs4 import BeautifulSoup
 import re
-from datetime import datetime
+from typing import Any, Dict, List
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from utils.dates import parse_datetime_range
 
 __all__ = ["parse_simpleview"]
 
-# Simpleview pages can be pure landing pages (no server-rendered events).
-# Only collect from specific containers that actually hold event list/cards.
-_EVENT_WRAPPERS = [
-    "[data-sv-search-results] .result",     # SV search/listing widget
-    ".sv-event-list .sv-event",             # common pattern
-    ".event-cards .card",                    # generic card grids
-    ".collection .card",                     # site-specific collections
-    ".events .card", ".events-list .card",
-]
+EVENT_HREF_PAT = re.compile(r"/events?/(?:details|.+)", re.I)
 
-MONTHS = {m.lower(): i for i, m in enumerate(
-    ["January","February","March","April","May","June","July","August","September","October","November","December"], 1)}
-DATE_INLINE = re.compile(r"\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,\s*(\d{4}))?\b", re.I)
+def _text(el) -> str:
+    return " ".join(el.stripped_strings) if el else ""
 
-def _text(n) -> str:
-    return " ".join(n.stripped_strings) if n else ""
-
-def _infer_year(mon: int) -> int:
-    today = datetime.today().date()
-    y = today.year
-    # If page looks like fall schedule and month already passed far, bump year (safe heuristic)
-    if mon < today.month - 2:
-        return y + 1
-    return y
-
-def _parse_inline_date(txt: str) -> str | None:
-    m = DATE_INLINE.search(txt or "")
-    if not m:
-        return None
-    mon = MONTHS[m.group(1).lower()]
-    day = int(m.group(2))
-    year = int(m.group(3)) if m.group(3) else _infer_year(mon)
-    return datetime(year, mon, day).isoformat()
+def _looks_like_event_block(node) -> bool:
+    txt = _text(node).lower()
+    # avoid menus/headers; require at least one date-ish token
+    has_month = re.search(r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b", txt)
+    # and a number (day)
+    has_day = re.search(r"\b\d{1,2}\b", txt)
+    return bool(has_month and has_day)
 
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
+    """
+    Simpleview pages are often client-rendered; be conservative:
+    - Only pick anchors that look like event detail pages OR
+    - Blocks that look like event cards (month/day present).
+    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # If the page has zero trusted wrappers, return [] — do NOT scrape page copy.
-    blocks = []
-    for sel in _EVENT_WRAPPERS:
-        blocks.extend(soup.select(sel))
-
-    if not blocks:
-        # Try a very conservative fallback: cards/links that *look* like event entries
-        # (title in heading + date snippet nearby) — otherwise return empty.
-        conservative = []
-        for card in soup.select(".card, article, li"):
-            a = card.find("a", href=True)
-            if not a:
-                continue
-            title = _text(card.find(["h3","h2"]) or a).strip()
-            if not title:
-                continue
-            # Needs a date mention inside the card
-            if not _parse_inline_date(_text(card)):
-                continue
-            conservative.append(card)
-        blocks = conservative
+    anchors = [a for a in soup.find_all("a", href=True) if EVENT_HREF_PAT.search(a["href"])]
+    if not anchors:
+        # As a fallback, look for "card" style blocks with dates and an inner link
+        cards = [c for c in soup.select("article, .card, .event, .tile, li") if _looks_like_event_block(c)]
+        anchors = []
+        for c in cards:
+            a = c.find("a", href=True)
+            if a:
+                anchors.append(a)
 
     seen = set()
-    for b in blocks:
-        a = b.find("a", href=True)
-        if not a:
-            continue
+    for a in anchors:
         url = urljoin(base_url, a["href"])
         if url in seen:
             continue
         seen.add(url)
 
-        title = _text(b.find(["h3","h2"]) or a).strip()
+        block = a.find_parent(["article", "div", "li"]) or a
+        title = _text(block.find(["h3", "h2"])) or _text(a)
         title = re.sub(r"\s+", " ", title).strip()
         if not title:
             continue
 
-        # Start date — attempt inline date within the same block
-        start = _parse_inline_date(_text(b))
-        if not start:
-            # Skip (prevents pulling marketing/guide pages like Oneida’s overview)
+        # date text: search the block (never the whole page)
+        blob = _text(block)
+        # find first month token fragment
+        m = re.search(r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:,\s*\d{4})?(?:\s*@\s*\d{1,2}:\d{2}\s*(?:am|pm))?", blob, flags=re.I)
+        if not m:
+            # skip if we can’t confidently locate a date near the anchor
+            continue
+        try:
+            start = parse_datetime_range(m.group(0))
+        except Exception:
             continue
 
-        # Location (best-effort)
-        location = ""
-        loc = b.find(class_=re.compile(r"(venue|location)", re.I))
-        if loc:
-            location = _text(loc)
-
-        items.append({"title": title, "start": start, "url": url, "location": location})
+        items.append({"title": title, "start": start, "url": url, "location": ""})
 
     return items

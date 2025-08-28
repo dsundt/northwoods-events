@@ -9,32 +9,19 @@ from bs4 import BeautifulSoup
 
 __all__ = ["parse_growthzone"]
 
-# Month map + strict token regex to avoid matching "Mar" in "Market"
-MONTHS = {
-    "jan": 1, "january": 1,
-    "feb": 2, "february": 2,
-    "mar": 3, "march": 3,
-    "apr": 4, "april": 4,
-    "may": 5,
-    "jun": 6, "june": 6,
-    "jul": 7, "july": 7,
-    "aug": 8, "august": 8,
-    "sep": 9, "sept": 9, "september": 9,
-    "oct": 10, "october": 10,
-    "nov": 11, "november": 11,
-    "dec": 12, "december": 12,
-}
-MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
+# Only allow real month spellings (prevents matching "Market")
+MONTH_ALT = (
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|"
+    r"Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+)
 TIME_TOKEN = r"(?P<h>\d{1,2}):(?P<m>\d{2})\s*(?P<ampm>am|pm)"
 DATE_RE = re.compile(
-    rf"(?P<mon>{MONTH_TOKEN})\s+(?P<day>\d{{1,2}})(?:,?\s*(?P<year>\d{{4}}))?(?:\s*@\s*(?P<time>{TIME_TOKEN}))?",
+    rf"(?P<mon>{MONTH_ALT})\b\s+(?P<day>\d{{1,2}})(?:,?\s*(?P<year>\d{{4}}))?(?:\s*@\s*(?P<time>{TIME_TOKEN}))?",
     re.I,
 )
 
-
 def _text(el) -> str:
     return " ".join(el.stripped_strings) if el else ""
-
 
 def _infer_year(mon: int, day: int, explicit: Optional[int]) -> int:
     if explicit:
@@ -45,12 +32,21 @@ def _infer_year(mon: int, day: int, explicit: Optional[int]) -> int:
         return today.year + 1
     return today.year
 
+MONTHS = {
+    "jan": 1, "january": 1, "feb": 2, "february": 2, "mar": 3, "march": 3,
+    "apr": 4, "april": 4, "may": 5, "jun": 6, "june": 6, "jul": 7, "july": 7,
+    "aug": 8, "august": 8, "sep": 9, "sept": 9, "september": 9, "oct": 10,
+    "october": 10, "nov": 11, "november": 11, "dec": 12, "december": 12,
+}
 
 def _parse_one_datetime(s: str) -> Optional[str]:
     m = DATE_RE.search(s or "")
     if not m:
         return None
-    mon = MONTHS[m.group("mon").lower()]
+    mon_key = m.group("mon").lower()
+    if mon_key not in MONTHS:
+        return None
+    mon = MONTHS[mon_key]
     day = int(m.group("day"))
     year = _infer_year(mon, day, int(m.group("year")) if m.group("year") else None)
     if m.group("time"):
@@ -61,16 +57,10 @@ def _parse_one_datetime(s: str) -> Optional[str]:
         dt = datetime(year, mon, day)
     return dt.isoformat()
 
-
 def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
-    """
-    Robust GrowthZone list/grid parser.
-    Works against /events/calendar and embedded cards.
-    """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Prefer obvious cards/links for Events
     anchors = soup.select('[data-ga-category="Events"] a, a.mn-event, .mn-event a, .mn-card a')
     if not anchors:
         anchors = [a for a in soup.find_all("a", href=True) if "/events/details/" in a["href"]]
@@ -86,7 +76,7 @@ def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
         container = a.find_parent(["article", "li", "div"]) or a
         title = _text(a) or _text(container.find(["h3", "h2"])) or _text(container)
         title = re.sub(r"\s+", " ", title).strip()
-        if not title:
+        if not title or title.lower() in {"events", "calendar", "learn more"}:
             continue
 
         context_text = " ".join(
@@ -94,15 +84,15 @@ def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
         )
         start = _parse_one_datetime(context_text) or _parse_one_datetime(title)
         if not start:
-            # last resort: sniff for date in any small/strong tag nearby
-            near = container.find(["time", "small", "strong"])
+            # Look inside time/small elements
+            near = container.find(["time", "small", "strong", "span"])
             start = _parse_one_datetime(_text(near)) if near else None
         if not start:
-            # Skip if we truly cannot find a date
+            # give up on this card if no valid date
             continue
 
         loc = ""
-        for cls in ("mn-event-location", "mn-location", "location"):
+        for cls in ("mn-event-location", "mn-location", "location", "venue"):
             el = container.select_one(f".{cls}")
             if el:
                 loc = _text(el)

@@ -1,74 +1,47 @@
 name: Scrape & Parse Events
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"       # hourly-ish; adjust as needed
-  workflow_dispatch: {}
-  push:
-    paths:
-      - "src/**"
-      - "requirements.txt"
-      - "sources.yml"
-      - ".github/workflows/scrape.yml"
+    - cron: "7 */3 * * *"  # every 3 hours at minute 7
 
 permissions:
-  contents: write   # allows committing the report back to the repo
-
-concurrency:
-  group: scrape
-  cancel-in-progress: true
+  contents: write
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
       - name: Install deps
         run: |
-          set -euo pipefail
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ✅ REQUIRED for Playwright to launch Chromium on the runner
+      - name: Install Playwright browsers (Chromium)
+        run: |
+          python -m playwright install --with-deps chromium
 
       - name: Run scraper
         env:
-          PYTHONUNBUFFERED: "1"
+          # Let parsers know they can use a real browser
+          USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
-          mkdir -p state
-          python src/main.py
-          # Normalize: ensure state/last_run_report.json exists
-          if [ -f last_run_report.json ]; then
-            mkdir -p state
-            mv last_run_report.json state/last_run_report.json
-          fi
-          test -f state/last_run_report.json
+          python src/main.py < sources.yml
 
-      - name: Upload artifact (last_run_report)
+      # Optional: upload artifacts for the deploy workflow
+      - name: Upload scrape artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: last_run_report
-          path: state/last_run_report.json
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload snapshots (optional)
-        if: ${{ hashFiles('state/snapshots/**') != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: snapshots
-          path: state/snapshots
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Commit report back to repo (fallback for deploy)
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update last_run_report.json"
-          file_pattern: state/last_run_report.json
+          name: scrape-output
+          path: |
+            state/last_run_report.json
+            northwoods*.ics
+            state/snapshots/**

@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # commit/push changes (state/, northwoods.ics)
-  pages: write      # deploy to Pages
-  id-token: write   # required by deploy-pages
+  contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
@@ -76,17 +76,23 @@ jobs:
         run: |
           set -euo pipefail
           echo "Running: python src/main.py"
-          python src/main.py || exit_code=$?
-          # Always try to dump a report if main wrote it
+          if python src/main.py; then
+            status=0
+          else
+            status=$?
+          fi
+
+          # Always try to show a report if present
           for p in last_run_report.json state/last_run_report.json; do
             if [ -f "$p" ]; then
-              echo "== $p =="
+              echo "== $p (first 120 lines) =="
               sed -n '1,120p' "$p" || true
             fi
           done
-          # Re-throw prior failure (if any)
-          if [ -n "${exit_code:-}" ]; then
-            exit "$exit_code"
+
+          # Re-throw failure if main.py failed
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
           fi
 
       - name: List outputs & state tree
@@ -96,18 +102,11 @@ jobs:
           echo "----- Repo root after build -----"
           ls -la
           echo
-          echo "----- If state/ exists, show top of tree -----"
+          echo "----- state/ tree (top 200 files) -----"
           if [ -d state ]; then
             find state -maxdepth 2 -type f | sed -n '1,200p'
           else
             echo "(no state/ dir)"
-          fi
-          echo
-          echo "----- If snapshots exist, list first 40 -----"
-          if [ -d state/snapshots ]; then
-            find state/snapshots -maxdepth 1 -type f | sed -n '1,40p'
-          else
-            echo "(no state/snapshots dir)"
           fi
           echo
           if [ -f northwoods.ics ]; then
@@ -138,12 +137,13 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Build public site (no heredocs)
+      - name: Build public site
         shell: bash
         run: |
           set -euo pipefail
           rm -rf public
           mkdir -p public
+          # Minimal index (no heredocs)
           printf '%s\n' \
             '<!doctype html>' \
             '<meta charset="utf-8">' \
@@ -158,30 +158,13 @@ jobs:
             '<p>Auto-published by GitHub Pages workflow.</p>' \
             > public/index.html
 
+          # Copy state/ if it exists (no per-dir index generation to keep YAML simple)
           if [ -d state ]; then
             mkdir -p public/state
             cp -a state/. public/state/
-            python - <<'PY'
-import os, html
-root = "public/state"
-for base, dirs, files in os.walk(root):
-    rel = os.path.relpath(base, root)
-    if rel == ".": rel = ""
-    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
-        f.write("<!doctype html><meta charset='utf-8'>")
-        f.write("<title>state/{}</title>".format(html.escape(rel)))
-        f.write("<h1>state/{}</h1><ul>".format(html.escape(rel)))
-        for d in sorted(dirs):
-            d_esc = html.escape(d)
-            f.write("<li>[dir] <a href='{0}/'>{0}/</a></li>".format(d_esc))
-        for fn in sorted(files):
-            if fn == "index.html": continue
-            fn_esc = html.escape(fn)
-            f.write("<li><a href='{0}'>{0}</a></li>".format(fn_esc))
-        f.write("</ul>")
-PY
           fi
 
+          # Put ICS at site root if available
           if [ -f northwoods.ics ]; then
             cp northwoods.ics public/
           fi

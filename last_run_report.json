@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T22:55:31.771790-05:00",
+  "when": "2025-08-27T23:01:20.749772-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -13,8 +13,8 @@
       "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
+      "error": "ValueError(\"Could not find a date in: 'Events'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events'\n"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
@@ -27,8 +27,8 @@
       "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
+      "error": "ValueError(\"Could not find a date in: 'Events'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events'\n"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -41,8 +41,8 @@
       "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or try_parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
+      "error": "ValueError(\"Could not find a date in: 'Events Featured Events Cranberry Fest Craft Shows Musky Open Old Fashioneds Up North Pond Hockey Championships SepTimber Ride Up North Beerfest VIEW EVENT CALENDAR Downtown Events 4th of July Celebration Burger Bash Eagle River Car and Truck Show Christmas Kickoff Hallowfest Labor Day Arts and Crafts Show Memorial Day Arts and Crafts Show Mistletoe Magic Sip-N-Shop Wine Walk Small Business Saturday Wi-Does Wine Walk VIEW DOWNTOWN EVENTS UPCOMING Events Aug 31 Featured 10:00 am - 4:00 pm Labor Day Arts and Crafts Show Sep 13 Featured 7:00 am - 3:00 pm SepTimber Ride Oct 4 Featured October 4 - October 5 Cranberry Fest Oct 25 Featured 11:00 am - 2:00 pm Hallowfest Nov 8 Featured 6:00 pm - 9:00 pm Old Fashioneds Up North View Calendar'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events Featured Events Cranberry Fest Craft Shows Musky Open Old Fashioneds Up North Pond Hockey Championships SepTimber Ride Up North Beerfest VIEW EVENT CALENDAR Downtown Events 4th of July Celebration Burger Bash Eagle River Car and Truck Show Christmas Kickoff Hallowfest Labor Day Arts and Crafts Show Memorial Day Arts and Crafts Show Mistletoe Magic Sip-N-Shop Wine Walk Small Business Saturday Wi-Does Wine Walk VIEW DOWNTOWN EVENTS UPCOMING Events Aug 31 Featured 10:00 am - 4:00 pm Labor Day Arts and Crafts Show Sep 13 Featured 7:00 am - 3:00 pm SepTimber Ride Oct 4 Featured October 4 - October 5 Cranberry Fest Oct 25 Featured 11:00 am - 2:00 pm Hallowfest Nov 8 Featured 6:00 pm - 9:00 pm Old Fashioneds Up North View Calendar'\n"
     },
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
@@ -93,8 +93,8 @@
       "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 105, in parse_modern_tribe\n    maybe = try_parse_datetime_range(_text(dt_block) if dt_block else \"\")\n            ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
+      "error": "ValueError(\"Could not find a date in: 'August 30 @ 6:30 pm - 8:30 pm'\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 105, in parse_modern_tribe\n    maybe = parse_datetime_range(_text(dt_block) if dt_block else \"\")\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'August 30 @ 6:30 pm - 8:30 pm'\n"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",

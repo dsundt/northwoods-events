@@ -1,15 +1,18 @@
+# .github/workflows/build-and-deploy-pages.yml
 name: Build & Deploy Pages
 
 on:
   workflow_run:
-    workflows: ["Scrape & Parse Events"]
+    workflows: ["Scrape & Parse Events"]  # <-- must exactly match your scrape workflow's name
     types: [completed]
   workflow_dispatch:
 
+# Avoid overlapping deployments
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
+# Top-level permissions; we'll also set job-level for clarity
 permissions:
   contents: read
   pages: write
@@ -18,10 +21,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      # If the scrape workflow uploaded artifacts, pull them in
+      # Pull artifacts from the scrape run if present
       - name: Download artifacts from scrape run (if present)
         if: ${{ github.event_name == 'workflow_run' }}
         uses: dawidd6/action-download-artifact@v3
@@ -38,18 +43,26 @@ jobs:
           mkdir -p public/state
 
           # Prefer artifact copy of last_run_report.json if present
-          ART_JSON="$(find downloaded -name last_run_report.json -print -quit || true)"
+          if [[ -d downloaded ]]; then
+            ART_JSON="$(find downloaded -type f -name last_run_report.json -print -quit || true)"
+          else
+            ART_JSON=""
+          fi
+
           if [[ -n "${ART_JSON:-}" ]]; then
             echo "Using artifact: ${ART_JSON}"
             cp "${ART_JSON}" public/state/last_run_report.json
           elif [[ -f state/last_run_report.json ]]; then
             echo "Using repo file: state/last_run_report.json"
             cp state/last_run_report.json public/state/last_run_report.json
+          elif [[ -f last_run_report.json ]]; then
+            echo "Using repo file at root: last_run_report.json"
+            cp last_run_report.json public/state/last_run_report.json
           else
             echo "No last_run_report.json found."
           fi
 
-          # Minimal index.html (no heredoc, to avoid YAML parser issues)
+          # Minimal index.html
           BUILD_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           printf '%s\n' \
             '<!doctype html>' \
@@ -69,8 +82,10 @@ jobs:
           echo "---- public ----"; ls -lah public || true
           echo "---- public/state ----"; ls -lah public/state || true
 
+      # Configure the Pages deployment
       - uses: actions/configure-pages@v5
 
+      # Upload the site as a Pages artifact
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
@@ -81,6 +96,12 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Echo site URL
+        run: echo "Deployed to ${{ steps.deployment.outputs.page_url }}"

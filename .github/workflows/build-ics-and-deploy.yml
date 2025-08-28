@@ -2,23 +2,70 @@ name: Build & Deploy Pages
 
 on:
   workflow_run:
-    workflows: ["Scrape & Parse Events"]
+    workflows: ["Scrape & Parse Events"]   # or whatever your scrape workflow is named
     types: [completed]
+  workflow_dispatch:
 
 permissions:
-  contents: read      # to checkout/read the repo
-  pages: write        # to upload & publish the Pages artifact
-  id-token: write     # for OIDC auth used by actions/deploy-pages
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # OPTIONAL: if you need Python to render pages from your JSON
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Create the site output
+      - name: Build static site
+        run: |
+          set -euo pipefail
+          mkdir -p public/state
+          # If your scrape workflow wrote these, copy them into the site:
+          if [ -f state/last_run_report.json ]; then
+            cp state/last_run_report.json public/state/last_run_report.json
+          fi
+          # Produce a minimal index.html so the folder isn't empty.
+          python - <<'PY'
+import json, os, datetime
+p = "public/index.html"
+data = {}
+try:
+    data = json.load(open("state/last_run_report.json", "r"))
+except Exception:
+    pass
+html = f"""<!doctype html>
+<meta charset="utf-8">
+<title>Northwoods Events</title>
+<h1>Northwoods Events</h1>
+<p>Built: {datetime.datetime.utcnow().isoformat()}Z</p>
+<pre>{json.dumps(data.get("meta", {}), indent=2)}</pre>
+"""
+os.makedirs("public", exist_ok=True)
+open(p, "w").write(html)
+PY
+
+      - name: Show output tree (debug)
+        run: |
+          echo "---- repo root ----"
+          ls -lah
+          echo "---- public ----"
+          ls -lah public || true
+          echo "---- public/state ----"
+          ls -lah public/state || true
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

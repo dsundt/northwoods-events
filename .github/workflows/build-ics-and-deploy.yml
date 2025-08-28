@@ -1,52 +1,30 @@
-# .github/workflows/build-deploy-pages.yml
 name: Build & Deploy Pages
 
 on:
   workflow_run:
     workflows: ["Scrape & Parse Events"]
     types: [completed]
-  push:
-    branches: [main]
-    paths:
-      - "site/**"
-      - "public/**"
-      - "data/**"
-      - "state/last_run_report.json"
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: read      # to checkout/read the repo
+  pages: write        # to upload & publish the Pages artifact
+  id-token: write     # for OIDC auth used by actions/deploy-pages
 
 jobs:
   build:
-    if: ${{ github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-
-      # If your site needs a build step, do it here (optional):
-      # - run: pip install -r requirements.txt
-      # - run: python tools/build_site.py  # produce ./public
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public    # or ./site, whatever you output
+          path: ./public
   deploy:
     needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4

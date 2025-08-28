@@ -1,4 +1,4 @@
-name: Build and Deploy Pages
+name: Build & Deploy Pages
 
 on:
   workflow_run:
@@ -6,7 +6,6 @@ on:
     types: [completed]
   workflow_dispatch:
 
-# Avoid overlapping deployments
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -33,40 +32,35 @@ jobs:
           if_no_artifact_found: ignore
 
       - name: Build static site
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p public/state
 
-          # Prefer an artifact copy of last_run_report.json if one exists
+          # Prefer artifact copy of last_run_report.json if present
           ART_JSON="$(find downloaded -name last_run_report.json -print -quit || true)"
-          if [ -n "${ART_JSON:-}" ]; then
-            echo "Found artifact: ${ART_JSON}"
+          if [[ -n "${ART_JSON:-}" ]]; then
+            echo "Using artifact: ${ART_JSON}"
             cp "${ART_JSON}" public/state/last_run_report.json
-          elif [ -f state/last_run_report.json ]; then
-            echo "Found repo file: state/last_run_report.json"
+          elif [[ -f state/last_run_report.json ]]; then
+            echo "Using repo file: state/last_run_report.json"
             cp state/last_run_report.json public/state/last_run_report.json
           else
             echo "No last_run_report.json found."
           fi
 
-          # Minimal index.html so the site isn't empty
-          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          cat > public/index.html <<'HTML'
-<!doctype html>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Northwoods Events</title>
-<style>
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; }
-  code { background:#f6f8fa; padding:.1rem .3rem; border-radius:.25rem; }
-</style>
-<h1>Northwoods Events</h1>
-<p>This site publishes the latest scrape report, if available.</p>
-<p>Built: <code>__BUILD_TIME__</code></p>
-<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>
-HTML
-          # inject build time
-          sed -i "s#__BUILD_TIME__#${BUILD_TIME}#g" public/index.html
+          # Minimal index.html (no heredoc, to avoid YAML parser issues)
+          BUILD_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          printf '%s\n' \
+            '<!doctype html>' \
+            '<meta charset="utf-8">' \
+            '<meta name="viewport" content="width=device-width, initial-scale=1">' \
+            '<title>Northwoods Events</title>' \
+            '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' \
+            '<h1>Northwoods Events</h1>' \
+            "<p>Built: <code>${BUILD_TIME}</code></p>" \
+            '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' \
+            > public/index.html
 
       - name: Show output tree (debug)
         run: |

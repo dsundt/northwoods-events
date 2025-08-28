@@ -1,9 +1,9 @@
 name: Scrape & Parse Events
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"  # every 3 hours at minute 7
+    - cron: "7 */3 * * *"   # every 3 hours @ :07
 
 permissions:
   contents: write
@@ -18,30 +18,31 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      # ✅ REQUIRED for Playwright to launch Chromium on the runner
-      - name: Install Playwright browsers (Chromium)
-        run: |
+          # playwright is in requirements.txt, this installs browser binaries:
           python -m playwright install --with-deps chromium
 
       - name: Run scraper
         env:
-          # Let parsers know they can use a real browser
           USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
+          mkdir -p state/snapshots
+          # IMPORTANT: feed sources.yml on stdin (your main.py expects it)
           python src/main.py < sources.yml
 
-      # Optional: upload artifacts for the deploy workflow
+          # Sanity check: fail fast if the scraper made nothing
+          test -s state/last_run_report.json || (echo "last_run_report.json not created" && exit 1)
+
       - name: Upload scrape artifacts
         uses: actions/upload-artifact@v4
         with:
           name: scrape-output
+          retention-days: 7
           path: |
             state/last_run_report.json
-            northwoods*.ics
             state/snapshots/**
+            northwoods*.ics

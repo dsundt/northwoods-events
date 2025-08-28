@@ -1,61 +1,74 @@
 from __future__ import annotations
-import json
-import sys
-from typing import Callable, Dict, List, Any
+import json, sys, os
+from typing import Any, Dict, List, Callable
 import requests
 
-from parsers.modern_tribe import parse_modern_tribe
-from parsers.growthzone import parse_growthzone
-from parsers.simpleview import parse_simpleview
-from parsers.municipal import parse_municipal
-from parsers.st_germain_ajax import parse_st_germain_ajax
+from parsers import (
+    parse_modern_tribe,
+    parse_growthzone,
+    parse_simpleview,
+    parse_st_germain_ajax,
+    parse_municipal,
+)
 
 PARSERS: Dict[str, Callable[[str, str], List[Dict[str, Any]]]] = {
     "modern_tribe": parse_modern_tribe,
     "growthzone": parse_growthzone,
     "simpleview": parse_simpleview,
-    "municipal": parse_municipal,
     "st_germain_ajax": parse_st_germain_ajax,
+    "municipal": parse_municipal,
 }
 
-def fetch(url: str) -> requests.Response:
-    headers = {
-        "User-Agent": "northwoods-events/1.0 (+https://example.test)",
-        "Accept": "text/html,application/xhtml+xml",
-    }
-    resp = requests.get(url, headers=headers, timeout=30)
-    resp.raise_for_status()
-    return resp
+def _read_sources_from_stdin_or_file() -> List[Dict[str, Any]]:
+    buf = sys.stdin.read()
+    if buf.strip():
+        return json.loads(buf)
+    # fallback: sources.json next to this script
+    here = os.path.dirname(os.path.abspath(__file__))
+    default_path = os.path.join(here, "sources.json")
+    if os.path.exists(default_path):
+        with open(default_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    raise SystemExit("No sources provided on stdin and no sources.json found.")
 
-def run_source(name: str, url: str, kind: str) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
-        "name": name, "url": url, "parser_kind": kind,
-        "fetched": 0, "parsed": 0, "added": 0, "samples": [],
-        "http_status": None, "notes": {}, "error": None, "traceback": None,
-    }
-    try:
-        resp = fetch(url)
-        out["http_status"] = resp.status_code
-        out["fetched"] = 1
-        parser_fn = PARSERS[kind]
-        items = parser_fn(resp.text, base_url=url)
-        out["parsed"] = len(items)
-        out["added"] = len(items)
-        out["samples"] = items[:3]
-    except Exception as e:
-        import traceback as _tb
-        out["error"] = repr(e)
-        out["traceback"] = _tb.format_exc()
-    return out
+def run_pipeline(sources: List[Dict[str, Any]]) -> Dict[str, Any]:
+    report = {"when": None, "timezone": None, "sources": [], "meta": {"status": "ok", "sources_file": "stdin"}}
+    for src in sources:
+        name = src["name"]; url = src["url"]; kind = src["parser_kind"]
+        entry: Dict[str, Any] = {"name": name, "url": url, "parser_kind": kind}
+        try:
+            r = requests.get(url, timeout=30)
+            entry["http_status"] = r.status_code
+            entry["snapshot"] = src.get("snapshot", "")
+            if r.ok:
+                parser_fn = PARSERS[kind]
+                items = parser_fn(r.text, base_url=url)
+                entry["fetched"] = 1
+                entry["parsed"] = len(items)
+                entry["added"] = len(items)
+                entry["samples"] = items[:3]
+                entry["error"] = None
+            else:
+                entry["fetched"] = 0
+                entry["parsed"] = 0
+                entry["added"] = 0
+                entry["samples"] = []
+                entry["error"] = f"http {r.status_code}"
+        except Exception as e:
+            import traceback
+            entry.setdefault("fetched", 1)
+            entry["parsed"] = entry.get("parsed", 0)
+            entry["added"] = entry.get("added", 0)
+            entry["samples"] = entry.get("samples", [])
+            entry["error"] = repr(e)
+            entry["traceback"] = traceback.format_exc()
+        report["sources"].append(entry)
+    return report
 
-def main():
-    # Minimal runner: read sources.yml-like dict on stdin OR hardcode in your orchestrator
-    # Expecting a list of {"name","url","parser_kind"}
-    sources = json.load(sys.stdin)
-    results = []
-    for s in sources:
-        results.append(run_source(s["name"], s["url"], s["parser_kind"]))
-    print(json.dumps({"sources": results}, indent=2))
+def main() -> None:
+    sources = _read_sources_from_stdin_or_file()
+    report = run_pipeline(sources)
+    print(json.dumps(report, indent=2))
 
 if __name__ == "__main__":
     main()

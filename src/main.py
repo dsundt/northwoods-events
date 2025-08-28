@@ -6,6 +6,11 @@ Northwoods Events builder.
 - Fetch -> Parse -> Normalize -> Write report (+ optional ICS)
 - Always writes last_run_report.json, even if fatal errors occur.
 """
+# at the very top of src/main.py, before other local imports
+import os, sys
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+if THIS_DIR not in sys.path:
+    sys.path.insert(0, THIS_DIR)
 
 from __future__ import annotations
 

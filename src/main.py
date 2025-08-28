@@ -1,426 +1,259 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Northwoods Events builder (drop-in).
-- Loads sources from sources.yml (falls back to embedded list if missing/invalid)
-- Special handling for St. Germain (AJAX endpoint via admin-ajax.php)
-- Central post-filters (e.g., municipal 'Untitled', external links)
-- Writes last_run_report.json (and state/last_run_report.json) every run
-"""
-
 from __future__ import annotations
 
-# --- stdlib / path setup ---
-import os, sys, json, traceback, re
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Tuple, Optional
+import json
+import os
+import re
+import sys
+import traceback
+from dataclasses import dataclass, asdict
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import urljoin, urlparse
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
-STATE_DIR = os.path.join(REPO_ROOT, "state")
-SNAPSHOT_DIR = os.path.join(STATE_DIR, "snapshots")
-os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-
-if THIS_DIR not in sys.path:
-    sys.path.insert(0, THIS_DIR)
-
-# --- third-party ---
 import requests
+import yaml
 from bs4 import BeautifulSoup
-import yaml  # used to load sources.yml
-from dateutil import parser as dtp  # lenient date parsing
 
-# --- project imports ---
+# ---- Parsers ----
 from parsers.modern_tribe import parse_modern_tribe
 from parsers.growthzone import parse_growthzone
-from parsers.simpleview import parse_simpleview
-from parsers.municipal import parse_municipal
 
-# --- timezone (serialization only; parsing should be tz-aware elsewhere) ---
-USER_TZ_NAME = "America/Chicago"
-TZ = timezone(timedelta(hours=-5))  # note: simplistic CST/CDT; swap to zoneinfo if needed
+# Optional parsers (present in your repo, but we won't hard-require them)
+try:
+    from parsers.simpleview import parse_simpleview  # type: ignore
+except Exception:  # pragma: no cover
+    parse_simpleview = None  # type: ignore
+
+try:
+    from parsers.municipal import parse_municipal  # type: ignore
+except Exception:  # pragma: no cover
+    parse_municipal = None  # type: ignore
 
 
-# -------------------------------------------------------------------
-# Helpers
-# -------------------------------------------------------------------
-def now_iso() -> str:
-    return datetime.now(TZ).isoformat()
+# ---- Config dataclasses ----
 
-def _snapshot_name(title: str) -> str:
-    safe = title.lower().replace(" ", "_")
-    return re.sub(r"[^a-z0-9._()-]+", "_", safe)
+@dataclass
+class Source:
+    name: str
+    url: str
+    kind: str
 
-def save_snapshot(name: str, content: str) -> str:
-    path = os.path.join(SNAPSHOT_DIR, f"{_snapshot_name(name)}.html")
+@dataclass
+class Defaults:
+    tzname: str = "America/Chicago"
+    default_duration_minutes: int = 120
+
+@dataclass
+class RunRow:
+    name: str
+    url: str
+    fetched: int = 0
+    parsed: int = 0
+    added: int = 0
+    samples: List[Dict[str, Any]] = None  # type: ignore
+    http_status: Optional[int] = None
+    snapshot: Optional[str] = None
+    parser_kind: Optional[str] = None
+    notes: Dict[str, Any] = None  # type: ignore
+    error: Optional[str] = None
+    traceback: Optional[str] = None
+
+
+# ---- YAML loader ----
+
+def load_sources_from_yaml(path: str) -> tuple[Defaults, List[Source]]:
+    with open(path, "r", encoding="utf-8") as f:
+        y = yaml.safe_load(f) or {}
+    defaults = Defaults(**(y.get("defaults") or {}))
+    srcs = [Source(**s) for s in (y.get("sources") or [])]
+    return defaults, srcs
+
+
+# ---- Snapshot helpers ----
+
+def _slug(s: str) -> str:
+    s = s.strip().lower()
+    s = re.sub(r"[\s/]+", "_", s)
+    s = re.sub(r"[^a-z0-9_()+-]+", "", s)
+    return s
+
+def _snap_path(name: str, kind: str) -> str:
+    os.makedirs("state/snapshots", exist_ok=True)
+    return os.path.join("state", "snapshots", f"{_slug(name)}.html")
+
+def _write_snapshot(path: str, text: str) -> None:
     with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
-    return path
+        f.write(text)
 
-def fetch_url(url: str, session: Optional[requests.Session] = None) -> Tuple[str, requests.Response]:
-    sess = session or requests.Session()
-    headers = {
-        "User-Agent": "NorthwoodsEventsBot/1.0 (+https://example.invalid)",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    }
-    resp = sess.get(url, headers=headers, timeout=30)
-    resp.raise_for_status()
-    return resp.text, resp
 
-def normalize_event(
-    title: str,
-    start: datetime,
-    end: Optional[datetime] = None,
-    location: str = "",
-    url: str = "",
-) -> Dict[str, Any]:
-    return {
-        "title": title.strip(),
-        "start": start.astimezone(TZ).isoformat(),
-        "end": (end or start).astimezone(TZ).isoformat(),
-        "location": location.strip(),
-        "url": url,
-    }
+# ---- Fetchers ----
 
-def _to_sample_field(v: Any) -> str:
-    """Make values JSON-safe for the samples block."""
-    if isinstance(v, datetime):
-        return v.astimezone(TZ).isoformat()
-    return str(v) if v is not None else ""
+def _http_get(url: str) -> tuple[str, int]:
+    r = requests.get(url, timeout=30, headers={"User-Agent": "northwoods-events/1.0"})
+    return r.text, r.status_code
 
-def _same_host(link: str, base_url: str) -> bool:
+
+def st_germain_ajax_fetch(list_url: str) -> dict:
+    """
+    Special fetch for St. Germain (Micronet/WordPress AJAX).
+    If AJAX fails, we fall back to the regular list page HTML.
+    Returns: {"html": "<...>", "notes": {...}}
+    """
+    notes: Dict[str, Any] = {"attempt": "ajax"}
+
     try:
-        u = urlparse(urljoin(base_url, link))
-        b = urlparse(base_url)
-        return (not u.netloc) or (u.netloc == b.netloc)
-    except Exception:
-        return True
+        # Try to discover the AJAX endpoint from the page itself
+        html, status = _http_get(list_url)
+        notes["list_status"] = status
+        soup = BeautifulSoup(html, "html.parser")
 
-def _post_filter_items(kind: str, base_url: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Central, conservative filters—kept minimal to avoid over-filtering."""
-    if kind != "municipal":
-        return items
-    out: List[Dict[str, Any]] = []
-    for n in items:
-        title = (n.get("title") or "").strip()
-        link = (n.get("url") or "").strip()
-        if not title or title.lower() == "untitled":
-            continue
-        if link.startswith("http") and not _same_host(link, base_url):
-            # Skip obvious external promos or unrelated links
-            continue
-        out.append(n)
-    return out
-
-
-# -------------------------------------------------------------------
-# St. Germain: AJAX-aware fetcher (embedded; no separate file needed)
-# -------------------------------------------------------------------
-def _extract_ajax_config(html: str, base_url: str) -> Tuple[str, Optional[str]]:
-    """
-    Look for a localized JS config object:
-      var micronet_api_intergration_for_wordpress_ajax = { ajaxurl: "...", nonce: "..." }
-    Return (ajaxurl, nonce_or_None). Fall back to '/wp-admin/admin-ajax.php'.
-    """
-    ajaxurl = urljoin(base_url, "/wp-admin/admin-ajax.php")
-    nonce = None
-
-    m = re.search(
-        r"micronet_api_intergration_for_wordpress_ajax\s*=\s*\{([^}]+)\}",
-        html, re.DOTALL | re.IGNORECASE
-    )
-    if m:
-        obj = m.group(1)
-        kv = dict(re.findall(r'(\w+)\s*:\s*["\']([^"\']+)["\']', obj))
-        ajaxurl = urljoin(base_url, kv.get("ajaxurl", ajaxurl))
-        nonce = kv.get("nonce")
-
-    return ajaxurl, nonce
-
-
-def st_germain_ajax(base_url: str, return_debug: bool = False) -> List[Dict[str, Any]] | tuple[List[Dict[str, Any]], Dict[str, Any]]:
-    """
-    Hit St. Germain's AJAX endpoint (Micronet) to retrieve events.
-    Returns items, and optionally a debug dict if return_debug=True.
-    """
-    debug: Dict[str, Any] = {
-        "attempt": "ajax",
-        "ajaxurl": None,
-        "nonce_found": False,
-        "pages": 0,
-        "posts_total": 0,
-        "success_pages": 0,
-    }
-
-    sess = requests.Session()
-    page_html, _ = fetch_url(base_url, sess)
-    ajaxurl, nonce = _extract_ajax_config(page_html, base_url)
-    debug["ajaxurl"] = ajaxurl
-    debug["nonce_found"] = bool(nonce)
-
-    # Time window: last 30 days -> next 180 days (server will filter)
-    start_date = (datetime.now(TZ) - timedelta(days=30)).strftime("%Y-%m-%d")
-    end_date = (datetime.now(TZ) + timedelta(days=180)).strftime("%Y-%m-%d")
-
-    def one_page(page_num: int) -> Dict[str, Any]:
-        data = {
-            "action": "mbi_filter_events",
-            "page": page_num,
-            "start_date": start_date,
-            "end_date": end_date,
-            "category": "",
-            "search": "",
-            "limit": 200,           # bumped limit for more results
-            "order": "asc",
-        }
-        if nonce:
-            data["nonce"] = nonce
-
-        r = sess.post(ajaxurl, data=data, timeout=30, headers={"Referer": base_url})
-        r.raise_for_status()
-        try:
-            return r.json()
-        except Exception:
-            return {"success": False, "data": {}}
-
-    normalized: List[Dict[str, Any]] = []
-    page = 1
-    max_pages = 30
-    success_pages = 0
-
-    while page <= max_pages:
-        payload = one_page(page)
-        if not payload:
-            break
-        if payload.get("success"):
-            success_pages += 1
-        data = payload.get("data", {}) or {}
-        posts = data.get("posts") or []
-        if not posts:
-            break
-
-        debug["pages"] = page
-        debug["posts_total"] += len(posts)
-
-        for p in posts:
-            title = (p.get("title") or p.get("post_title") or "").strip()
-            link = p.get("permalink") or p.get("url") or urljoin(base_url, "/events-calendar/")
-            location_parts = [p.get("venue", ""), p.get("address", ""), p.get("city", "")]
-            location = ", ".join([s for s in location_parts if s])
-
-            # Try common date fields
-            dt_candidates = [
-                p.get("start"),
-                p.get("start_date"),
-                p.get("date"),
-                " ".join(x for x in [p.get("month", ""), p.get("day", ""), p.get("year", "")] if x).strip(),
-            ]
-            start_dt = None
-            for cand in dt_candidates:
-                if not cand:
-                    continue
-                try:
-                    start_dt = dtp.parse(str(cand))
+        ajaxurl = None
+        for s in soup.find_all("script"):
+            if s.string and "admin-ajax.php" in s.string:
+                m = re.search(r"(https?:\/\/[^\"']+admin-ajax\.php)", s.string)
+                if m:
+                    ajaxurl = m.group(1)
                     break
-                except Exception:
-                    continue
-            if not title or not start_dt:
+        if not ajaxurl:
+            # default guess for WP sites
+            parsed = urlparse(list_url)
+            ajaxurl = f"{parsed.scheme}://{parsed.netloc}/wp-admin/admin-ajax.php"
+        notes["ajaxurl"] = ajaxurl
+
+        # Try common action/params used by Micronet event shortcodes
+        payloads = [
+            {"action": "load_events", "page": 1},
+            {"action": "tribe_event_list", "paged": 1},
+            {"action": "events", "paged": 1},
+        ]
+        gathered: List[str] = []
+        for p in payloads:
+            try:
+                r = requests.post(ajaxurl, data=p, timeout=30)
+                if r.status_code == 200 and ("event" in r.text.lower() or "<article" in r.text.lower()):
+                    gathered.append(r.text)
+                    break
+            except Exception:
                 continue
 
-            end_dt = None
-            for cand in [p.get("end"), p.get("end_date")]:
-                if not cand:
-                    continue
-                try:
-                    end_dt = dtp.parse(str(cand))
-                    break
-                except Exception:
-                    continue
+        if gathered:
+            html_combined = "\n".join(gathered)
+            notes["pages"] = len(gathered)
+            return {"html": html_combined, "notes": notes}
 
-            normalized.append(normalize_event(title, start_dt, end_dt, location, link))
-
-        pages_total = data.get("pages", page)
-        if page >= pages_total:
-            break
-        page += 1
-
-    debug["success_pages"] = success_pages
-
-    if return_debug:
-        return normalized, debug
-    return normalized
+        # Fallback to list page HTML
+        notes["pages"] = 1
+        notes["fallback"] = True
+        return {"html": html, "notes": notes}
+    except Exception as e:
+        # Final fallback: GET the list page
+        notes["exception"] = str(e)
+        html, _ = _http_get(list_url)
+        notes["fallback"] = True
+        return {"html": html, "notes": notes}
 
 
-# -------------------------------------------------------------------
-# Load sources from YAML (fallback to embedded list)
-# -------------------------------------------------------------------
-def load_sources_from_yaml(path: str) -> List[Dict[str, Any]]:
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            doc = yaml.safe_load(f) or {}
-        lst = doc.get("sources", [])
-        return [s for s in lst if isinstance(s, dict) and "url" in s and "kind" in s and "name" in s]
-    except Exception:
-        return []
+# ---- Parser registry ----
+
+PARSERS: Dict[str, Callable[[str, str], List[Dict[str, Any]]]] = {
+    "modern_tribe": parse_modern_tribe,
+    "growthzone": parse_growthzone,
+}
+
+if parse_simpleview:
+    PARSERS["simpleview"] = parse_simpleview  # type: ignore
+if parse_municipal:
+    PARSERS["municipal"] = parse_municipal  # type: ignore
+
+# st_germain_ajax is handled here (fetch differs), but we still parse via modern_tribe after fetch.
+PARSERS["st_germain_ajax"] = parse_modern_tribe
 
 
-Source = Dict[str, Any]
+# ---- Pipeline ----
 
-# Prefer sources.yml; fallback to embedded list if missing/invalid
-YAML_SOURCES = load_sources_from_yaml(os.path.join(REPO_ROOT, "sources.yml"))
-SOURCES: List[Source] = YAML_SOURCES or [
-    {"name": "Vilas County (Modern Tribe)", "url": "https://vilaswi.com/events/?eventDisplay=list", "kind": "modern_tribe"},
-    {"name": "Boulder Junction (Modern Tribe)", "url": "https://boulderjct.org/events/?eventDisplay=list", "kind": "modern_tribe"},
-    {"name": "Eagle River Chamber (Modern Tribe)", "url": "https://eagleriver.org/events/?eventDisplay=list", "kind": "modern_tribe"},
-    {"name": "St. Germain Chamber (Micronet AJAX)", "url": "https://st-germain.com/events-calendar/?eventDisplay=list", "kind": "st_germain_ajax"},
-    {"name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)", "url": "https://sayner-starlake-cloverland.org/events/", "kind": "modern_tribe"},
-    {"name": "Rhinelander Chamber (GrowthZone)", "url": "https://business.rhinelanderchamber.com/events/calendar", "kind": "growthzone"},
-    {"name": "Minocqua Area Chamber (Simpleview)", "url": "https://www.minocqua.org/events/", "kind": "simpleview"},
-    {"name": "Oneida County – Festivals & Events (Simpleview)", "url": "https://oneidacountywi.com/festivals-events/", "kind": "simpleview"},
-    {"name": "Town of Arbor Vitae (Municipal Calendar)", "url": "https://www.townofarborvitae.org/calendar/", "kind": "municipal"},
-]
-
-
-# -------------------------------------------------------------------
-# Parser dispatch
-# -------------------------------------------------------------------
-def _get_parser(kind: str):
-    if kind == "modern_tribe":
-        return parse_modern_tribe
-    if kind == "growthzone":
-        return parse_growthzone
-    if kind == "simpleview":
-        return parse_simpleview
-    if kind == "municipal":
-        return parse_municipal
-    if kind == "st_germain_ajax":
-        # Shim returns items and stashes debug so run_pipeline can log it
-        def _shim(_html_text: str, base_url: str) -> List[Dict[str, Any]]:
-            items, debug = st_germain_ajax(base_url, return_debug=True)  # type: ignore[assignment]
-            _shim._last_debug = debug  # type: ignore[attr-defined]
-            if items:
-                return items
-            # Fallback to Modern Tribe DOM parsing if AJAX gave nothing
-            return parse_modern_tribe(_html_text, base_url=base_url)
-        _shim._last_debug = {}  # type: ignore[attr-defined]
-        return _shim
-    raise ValueError(f"Unknown parser kind: {kind}")
-
-
-# -------------------------------------------------------------------
-# Pipeline
-# -------------------------------------------------------------------
-def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
-    report: Dict[str, Any] = {
-        "when": now_iso(),
-        "timezone": USER_TZ_NAME,
+def run_pipeline(defaults: Defaults, sources: List[Source]) -> Dict[str, Any]:
+    out: Dict[str, Any] = {
+        "when": datetime.now().astimezone().isoformat(),
+        "timezone": defaults.tzname,
         "sources": [],
         "meta": {"status": "ok", "sources_file": "sources.yml"},
     }
 
-    for src in sources:
-        name, url, kind = src["name"], src["url"], src["kind"]
-        row: Dict[str, Any] = {
-            "name": name,
-            "url": url,
-            "fetched": 0,
-            "parsed": 0,
-            "added": 0,
-            "samples": [],
-            "http_status": None,
-            "snapshot": f"state/snapshots/{_snapshot_name(name)}.html",
-            "parser_kind": kind,  # show which parser ran
-            "notes": {},          # place for AJAX/debug notes
-        }
-
+    for s in sources:
+        row = RunRow(
+            name=s.name,
+            url=s.url,
+            samples=[],
+            notes={},
+            parser_kind=s.kind,
+        )
         try:
-            parser_fn = _get_parser(kind)
+            if s.kind == "st_germain_ajax":
+                fetch = st_germain_ajax_fetch(s.url)
+                html = fetch["html"]
+                row.notes.update(fetch.get("notes", {}))
+                status = row.notes.get("list_status") or 200
+                row.http_status = int(status)
+            else:
+                html, status = _http_get(s.url)
+                row.http_status = status
 
-            # Always fetch HTML (for snapshots + potential fallbacks)
-            html, resp = fetch_url(url)
-            row["http_status"] = resp.status_code
-            row["fetched"] = 1
-            save_snapshot(name, html)
+            row.fetched = 1
+
+            # Save snapshot
+            snap = _snap_path(f"{s.name} ({s.kind})", s.kind)
+            _write_snapshot(snap, html)
+            row.snapshot = snap
 
             # Parse
-            items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]
+            parser = PARSERS.get(s.kind)
+            if not parser:
+                raise RuntimeError(f"No parser for kind={s.kind}")
 
-            # Central, conservative post-filters (currently: municipal)
-            items = _post_filter_items(kind, url, items)
-
-            row["parsed"] = len(items)
-            normalized = items
-            row["added"] = len(normalized)
-
-            # ---- JSON-safe samples ----
-            row["samples"] = [
-                {
-                    "title": _to_sample_field(n.get("title", "")),
-                    "start": _to_sample_field(n.get("start", "")),
-                    "location": _to_sample_field(n.get("location", "")),
-                    "url": _to_sample_field(n.get("url", "")),
-                }
-                for n in normalized[:3]
-            ]
-
-            # capture AJAX debug notes if provided by shim
-            notes = getattr(parser_fn, "_last_debug", None)  # type: ignore[attr-defined]
-            if isinstance(notes, dict):
-                # ensure notes are JSON-safe too
-                row["notes"] = {k: _to_sample_field(v) for k, v in notes.items()}
+            items = parser(html, base_url=s.url) or []
+            row.parsed = len(items)
+            row.added = len(items)
+            row.samples = items[:3]
 
         except Exception as e:
-            row["error"] = repr(e)
-            row["traceback"] = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+            row.error = repr(e)
+            row.traceback = "".join(traceback.format_exception(*sys.exc_info()))
 
-        report["sources"].append(row)
+        out["sources"].append(asdict(row))
 
-    return report
+    return out
 
 
-# -------------------------------------------------------------------
-# Write report (always)
-# -------------------------------------------------------------------
+# ---- Reporting ----
+
 def _write_reports(report: Dict[str, Any]) -> List[str]:
     pretty = json.dumps(report, indent=2, ensure_ascii=False)
-
-    out_a = os.path.join(REPO_ROOT, "last_run_report.json")
-    out_b = os.path.join(REPO_ROOT, "state", "last_run_report.json")
-    os.makedirs(os.path.dirname(out_b), exist_ok=True)
-
-    with open(out_a, "w", encoding="utf-8") as f:
+    os.makedirs("state", exist_ok=True)
+    with open("last_run_report.json", "w", encoding="utf-8") as f:
         f.write(pretty)
-    with open(out_b, "w", encoding="utf-8") as f:
+    with open(os.path.join("state", "last_run_report.json"), "w", encoding="utf-8") as f:
         f.write(pretty)
+    return ["last_run_report.json", os.path.join("state", "last_run_report.json")]
 
-    return [out_a, out_b]
 
+# ---- Main ----
 
-# -------------------------------------------------------------------
-# CLI
-# -------------------------------------------------------------------
-def main():
-    report = {"meta": {"status": "ok"}}
-    try:
-        report = run_pipeline(SOURCES)
-    except Exception as e:
-        report = {
-            "when": now_iso(),
-            "timezone": USER_TZ_NAME,
-            "sources": [],
-            "meta": {"status": "error", "msg": str(e)},
-        }
-        report["meta"]["traceback"] = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+def main() -> None:
+    # Allow running from repo root or from src/
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.abspath(os.path.join(here))
+    yaml_path = os.path.join(root, "sources.yml")
+    if not os.path.exists(yaml_path):
+        yaml_path = os.path.join(os.path.dirname(root), "sources.yml")
 
+    defaults, srcs = load_sources_from_yaml(yaml_path)
+    report = run_pipeline(defaults, srcs)
     paths = _write_reports(report)
     print("last_run_report.json written to:")
     for p in paths:
-        print(" -", os.path.relpath(p, REPO_ROOT))
-
-    total_parsed = sum(s.get("parsed", 0) for s in report.get("sources", []))
-    total_added = sum(s.get("added", 0) for s in report.get("sources", []))
-    print(f"Summary: parsed={total_parsed}, added={total_added}")
+        print(" -", p)
+    print(f"Summary: parsed={sum(s.get('parsed', 0) for s in report['sources'])}, "
+          f"added={sum(s.get('added', 0) for s in report['sources'])}")
 
 
 if __name__ == "__main__":

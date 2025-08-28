@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-28T08:05:51.468265-05:00",
+  "when": "2025-08-28T08:56:29.697749-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -29,7 +29,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe)_(modern_tribe).html",
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -62,7 +62,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe)_(modern_tribe).html",
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -95,7 +95,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe)_(modern_tribe).html",
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -109,15 +109,9 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/st_germain_chamber_(micronet_ajax)_(st_germain_ajax).html",
+      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax).html",
       "parser_kind": "st_germain_ajax",
-      "notes": {
-        "attempt": "ajax",
-        "list_status": 200,
-        "ajaxurl": "https://st-germain.com/wp-admin/admin-ajax.php",
-        "pages": 1,
-        "fallback": true
-      },
+      "notes": {},
       "error": null,
       "traceback": null
     },
@@ -148,7 +142,7 @@
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/saynerstar_lakecloverland_chamber_(modern_tribe)_(modern_tribe).html",
+      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
       "error": null,
@@ -162,34 +156,21 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone)_(growthzone).html",
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
       "parser_kind": "growthzone",
       "notes": {},
       "error": "KeyError('market')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 213, in run_pipeline\n    items = parser(html, base_url=s.url) or []\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 119, in parse_growthzone\n    start = _parse_card_datetime(ctx) or _parse_card_datetime(title)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 59, in _parse_card_datetime\n    mon = MONTHS[m.group(\"month\").lower()]\n          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'market'\n"
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 150, in run_pipeline\n    items = parser_fn(resp.text, base_url=url)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 95, in parse_growthzone\n    start = _parse_one_datetime(context_text) or _parse_one_datetime(title)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 53, in _parse_one_datetime\n    mon = MONTHS[m.group(\"mon\").lower()]\n          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'market'\n"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "fetched": 1,
-      "parsed": 2,
-      "added": 2,
-      "samples": [
-        {
-          "title": "The Beef Is Back!",
-          "start": "2025-09-28T00:00:00",
-          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
-          "location": ""
-        },
-        {
-          "title": "Read More",
-          "start": "2025-09-28T00:00:00",
-          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview)_(simpleview).html",
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -199,11 +180,18 @@
       "name": "Oneida County – Festivals & Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 1,
+      "added": 1,
+      "samples": [
+        {
+          "title": "Festivals & Events",
+          "start": "Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations to arts attractions and scenic rides. Whether you’re visiting northern Wisconsin in spring, summer, fall, or winter, you’re sure to find an event that appeals to you. Learn about some of Oneida County’s top annual events below or use the listings on this page to find upcoming events. Featured events Art Fair on the Courthouse Lawn – Rhinelander See works from more than 150 Midwestern artists at this annual art fair in early June on the lawn of the historic Oneida County Courthouse in downtown Rhinelander. Learn more Snowshoe Baseball – Lake Tomahawk For more than 50 years, local residents and visitors alike have turned out every summer to take in these modified baseball games played with a softball, no gloves, and (you guessed it) snowshoes. Lake Tomahawk hosts games every Monday night in June, July, and August, and food and drinks are available for spectators. Learn more Hodag Country Festival – Rhinelander If you love country music, you need to be in Rhinelander in July for the annual Hodag Country Festival. Join 30,000 country music fans for four days of live shows by some of the biggest names in country music. Learn more about the Hodag Country Festival Oneida County Fair – Rhinelander Since 1896, this family-friendly event has welcomed visitors from across Oneida County, the Northwoods, and the state to take in exhibitions, enjoy rides and midway games, food vendors, entertainment, and more. Learn more about the Oneida County Fair. Project North Festival – Rhinelander This annual event highlights live music, interactive art, and the environment to draw visitors to locations throughout Rhinelander. The two-day festival features a variety of national, state, and regional musicians at venues across the city, as well as multimedia art installations and performances and sustainable education activities. Learn more about the Project North Festival. Beef-A-Rama – Minocqua Beef-a-Rama™ is a celebration of everything beef. Held annually on the last weekend in September, this fun-filled festival includes the Rump Roast Run and a Parade of Beef. There’s also a special “Calf Mile” race for kids. Beef-a-Rama™ features cook-offs, games for all ages, live music and great food. Learn more about Beef-a-Rama™ Community events See more Minocqua Area events here . See more Rhinelander events here . See more Three Lakes events here .",
+          "url": "https://explorerhinelander.com/all-events/art-fair/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county__festivals__events_(simpleview)_(simpleview).html",
+      "snapshot": "state/snapshots/oneida_county_-_festivals___events_(simpleview).html",
       "parser_kind": "simpleview",
       "notes": {},
       "error": null,
@@ -213,11 +201,18 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 1,
+      "added": 1,
+      "samples": [
+        {
+          "title": "Minocqua Area Visitors Bureau",
+          "start": "2025-08-24",
+          "url": "https://www.minocqua.org/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar)_(municipal).html",
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
       "parser_kind": "municipal",
       "notes": {},
       "error": null,

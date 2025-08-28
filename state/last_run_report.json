@@ -1,150 +1,199 @@
 {
-  "when": "2025-08-27T23:04:32.362886-05:00",
+  "when": "2025-08-28T08:05:51.468265-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 108,
+      "added": 108,
+      "samples": [
+        {
+          "title": "Featured Arbor Vitae Fireman’s Summerfest",
+          "start": "2025-08-02T00:00:00",
+          "url": "https://vilaswi.com/event/arbor-vitae-firemans-summerfest/",
+          "location": ""
+        },
+        {
+          "title": "Community Garage Sale Weekend",
+          "start": "2025-08-02T08:00:00",
+          "url": "https://vilaswi.com/event/community-garage-sale-weekend-2/",
+          "location": ""
+        },
+        {
+          "title": "Presque Isle Lions Rummage Sale",
+          "start": "2025-08-02T09:00:00",
+          "url": "https://vilaswi.com/event/presque-isle-lions-rummage-sale/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe)_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Could not find a date in: 'Events'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 134,
+      "added": 134,
+      "samples": [
+        {
+          "title": "Recurring",
+          "start": "2025-07-28T10:30:00",
+          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/",
+          "location": ""
+        },
+        {
+          "title": "Recurring",
+          "start": "2025-07-28T13:00:00",
+          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/",
+          "location": ""
+        },
+        {
+          "title": "Recurring",
+          "start": "2025-07-29T08:00:00",
+          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe)_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Could not find a date in: 'Events'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 143,
+      "added": 143,
+      "samples": [
+        {
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T00:00:00",
+          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "location": ""
+        },
+        {
+          "title": "Back To School Drive",
+          "start": "2025-08-15T00:00:00",
+          "url": "https://eagleriver.org/events/back-to-school-drive/",
+          "location": ""
+        },
+        {
+          "title": "Cranberry Fest",
+          "start": "2025-10-04T00:00:00",
+          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe)_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Could not find a date in: 'Events Featured Events Cranberry Fest Craft Shows Musky Open Old Fashioneds Up North Pond Hockey Championships SepTimber Ride Up North Beerfest VIEW EVENT CALENDAR Downtown Events 4th of July Celebration Burger Bash Eagle River Car and Truck Show Christmas Kickoff Hallowfest Labor Day Arts and Crafts Show Memorial Day Arts and Crafts Show Mistletoe Magic Sip-N-Shop Wine Walk Small Business Saturday Wi-Does Wine Walk VIEW DOWNTOWN EVENTS UPCOMING Events Aug 31 Featured 10:00 am - 4:00 pm Labor Day Arts and Crafts Show Sep 13 Featured 7:00 am - 3:00 pm SepTimber Ride Oct 4 Featured October 4 - October 5 Cranberry Fest Oct 25 Featured 11:00 am - 2:00 pm Hallowfest Nov 8 Featured 6:00 pm - 9:00 pm Old Fashioneds Up North View Calendar'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 132, in parse_modern_tribe\n    dt = _prefer_times(block) or parse_datetime_range(_text(block))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'Events Featured Events Cranberry Fest Craft Shows Musky Open Old Fashioneds Up North Pond Hockey Championships SepTimber Ride Up North Beerfest VIEW EVENT CALENDAR Downtown Events 4th of July Celebration Burger Bash Eagle River Car and Truck Show Christmas Kickoff Hallowfest Labor Day Arts and Crafts Show Memorial Day Arts and Crafts Show Mistletoe Magic Sip-N-Shop Wine Walk Small Business Saturday Wi-Does Wine Walk VIEW DOWNTOWN EVENTS UPCOMING Events Aug 31 Featured 10:00 am - 4:00 pm Labor Day Arts and Crafts Show Sep 13 Featured 7:00 am - 3:00 pm SepTimber Ride Oct 4 Featured October 4 - October 5 Cranberry Fest Oct 25 Featured 11:00 am - 2:00 pm Hallowfest Nov 8 Featured 6:00 pm - 9:00 pm Old Fashioneds Up North View Calendar'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "St. Germain Chamber (Micronet AJAX)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 6,
-      "added": 6,
-      "samples": [
-        {
-          "title": "Flea Market 2025",
-          "start": "2025-09-01T00:00:00-05:00",
-          "location": "St. Germain Community Park 545 Hwy 155",
-          "url": "https://st-germain.com/events/flea-market-2025-15/"
-        },
-        {
-          "title": "Colorama 2025",
-          "start": "2025-09-20T00:00:00-05:00",
-          "location": "St Germain Community Park",
-          "url": "https://st-germain.com/events/colorama-2025/"
-        },
-        {
-          "title": "Pints in the Park 2025",
-          "start": "2025-09-20T00:00:00-05:00",
-          "location": "St Germain Community Park",
-          "url": "https://st-germain.com/events/pints-in-the-park/"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax).html",
+      "snapshot": "state/snapshots/st_germain_chamber_(micronet_ajax)_(st_germain_ajax).html",
       "parser_kind": "st_germain_ajax",
       "notes": {
         "attempt": "ajax",
+        "list_status": 200,
         "ajaxurl": "https://st-germain.com/wp-admin/admin-ajax.php",
-        "nonce_found": "False",
-        "pages": "1",
-        "posts_total": "6",
-        "success_pages": "1"
-      }
+        "pages": 1,
+        "fallback": true
+      },
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 10,
+      "added": 10,
+      "samples": [
+        {
+          "title": "Plum Ski-ters Water Ski Show",
+          "start": "2025-08-30T18:30:00",
+          "url": "https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/",
+          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States"
+        },
+        {
+          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
+          "start": "2025-08-31T15:00:00",
+          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
+          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI"
+        },
+        {
+          "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
+          "start": "2025-09-01T14:00:00",
+          "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/",
+          "location": "Weber's 2649 Co. Rd C, Sayner, WI"
+        }
+      ],
       "http_status": 200,
-      "snapshot": "state/snapshots/sayner_star_lake_cloverland_chamber_(modern_tribe).html",
+      "snapshot": "state/snapshots/saynerstar_lakecloverland_chamber_(modern_tribe)_(modern_tribe).html",
       "parser_kind": "modern_tribe",
       "notes": {},
-      "error": "ValueError(\"Could not find a date in: 'August 30 @ 6:30 pm - 8:30 pm'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 105, in parse_modern_tribe\n    maybe = parse_datetime_range(_text(dt_block) if dt_block else \"\")\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 136, in parse_datetime_range\n    raise ValueError(f\"Could not find a date in: {raw!r}\")\nValueError: Could not find a date in: 'August 30 @ 6:30 pm - 8:30 pm'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "fetched": 1,
-      "parsed": 7,
-      "added": 7,
-      "samples": [
-        {
-          "title": "WILD Hodag Mini Triathlon",
-          "start": "2025-08-03T00:00:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/wild-hodag-mini-triathlon-08-23-2025-17272"
-        },
-        {
-          "title": "Hodag Farmers' Market",
-          "start": "2025-08-03T00:00:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/hodag-farmers-market-08-23-2025-17417"
-        },
-        {
-          "title": "3rd Annual Recycling Extravaganza",
-          "start": "2025-08-03T00:00:00",
-          "location": "",
-          "url": "https://business.rhinelanderchamber.com/events/details/3rd-annual-recycling-extravaganza-17602"
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
+      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone)_(growthzone).html",
       "parser_kind": "growthzone",
-      "notes": {}
+      "notes": {},
+      "error": "KeyError('market')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 213, in run_pipeline\n    items = parser(html, base_url=s.url) or []\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 119, in parse_growthzone\n    start = _parse_card_datetime(ctx) or _parse_card_datetime(title)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 59, in _parse_card_datetime\n    mon = MONTHS[m.group(\"month\").lower()]\n          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'market'\n"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "fetched": 1,
-      "parsed": 1,
-      "added": 1,
+      "parsed": 2,
+      "added": 2,
       "samples": [
         {
           "title": "The Beef Is Back!",
           "start": "2025-09-28T00:00:00",
-          "location": "",
-          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/"
+          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
+          "location": ""
+        },
+        {
+          "title": "Read More",
+          "start": "2025-09-28T00:00:00",
+          "url": "https://www.minocqua.org/events/annual-events/beef-a-rama/",
+          "location": ""
         }
       ],
       "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview)_(simpleview).html",
       "parser_kind": "simpleview",
-      "notes": {}
+      "notes": {},
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
@@ -154,9 +203,11 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county___festivals___events_(simpleview).html",
+      "snapshot": "state/snapshots/oneida_county__festivals__events_(simpleview)_(simpleview).html",
       "parser_kind": "simpleview",
-      "notes": {}
+      "notes": {},
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -166,11 +217,11 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
+      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar)_(municipal).html",
       "parser_kind": "municipal",
       "notes": {},
-      "error": "NameError(\"name 'try_parse_datetime_range' is not defined\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 347, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 37, in parse_municipal\n    maybe = try_parse_datetime_range(_text(dt_node))\n            ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name 'try_parse_datetime_range' is not defined\n"
+      "error": null,
+      "traceback": null
     }
   ],
   "meta": {

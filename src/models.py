@@ -1,14 +1,13 @@
-from __future__ import annotations
+# src/models.py
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 @dataclass
 class Event:
     title: str
-    start_iso: str
-    end_iso: str
-    url: str = ""
-    location: str = ""
-    all_day: bool = False
-    description: str = ""
-
+    start: datetime          # <- ensure these exact names exist
+    end: datetime
+    url: str
+    location: Optional[str] = None
+    description: Optional[str] = None

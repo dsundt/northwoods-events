@@ -1,114 +1,203 @@
-name: Build ICS and Deploy Pages
+name: Build ICS & Deploy Pages
 
 on:
   schedule:
-    - cron: '15 9 * * *'  # daily at 09:15 UTC
-  workflow_dispatch: {}
+    - cron: "15 9 * * *"   # daily at 09:15 UTC
+  workflow_dispatch:
 
 permissions:
   contents: write
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+
 jobs:
   build:
+    name: Build ICS & prepare site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           persist-credentials: true
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+      - name: Show working dir (pre)
+        shell: bash
+        run: |
+          echo "===== BUILD START $(date -u +%FT%TZ) ====="
+          echo "CWD: $(pwd)"
+          python3 --version || true
+          echo "-------------------------------------------"
+          ls -la
+          echo "-------------------------------------------"
 
-      - name: Show Python & install deps
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        shell: bash
         run: |
           set -euo pipefail
-          python -V
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
             pip install requests beautifulsoup4 lxml ics python-dateutil pytz pyyaml
           fi
-          echo "---- pip freeze (first 200 lines) ----"
-          pip freeze | sed -n '1,200p'
 
-      - name: Run builder and collect artifacts
+      - name: Show sources file(s) found
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Looking for sources.{yaml,yml} at repo root and in src/..."
+          found=0
+          for p in sources.yaml sources.yml src/sources.yaml src/sources.yml; do
+            if [ -f "$p" ]; then
+              echo " - found: $p"
+              found=1
+            fi
+          done
+          if [ $found -eq 0 ]; then
+            echo "::warning::No sources.yaml/yml found at repo root or in src/. main.py will error if none is present."
+          fi
+
+      - name: Run builder (src/main.py)
+        shell: bash
         env:
           TZ: America/Chicago
         run: |
           set -euo pipefail
+          echo "Running: python src/main.py"
+          python src/main.py
+
+      # 👇 NEW: quick check to print the reports (both locations)
+      - name: Show reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          printed=0
+          for p in last_run_report.json state/last_run_report.json; do
+            if [ -f "$p" ]; then
+              echo "== $p =="
+              # Print first 120 lines to keep logs readable
+              sed -n '1,120p' "$p" || head -n 120 "$p" || true
+              echo
+              printed=1
+            fi
+          done
+          if [ $printed -eq 0 ]; then
+            echo "::error::No last_run_report.json found. That means src/main.py likely exited before writing it. Check the previous step’s error."
+          fi
+
+      # Helpful diagnostics so you can see what was produced
+      - name: List outputs & state tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "----- Repo root after build -----"
+          ls -la
+          echo
+          echo "----- If state/ exists, show top of tree -----"
+          if [ -d state ]; then
+            find state -maxdepth 2 -type f -printf "%p\n" | sed -n '1,200p'
+          else
+            echo "(no state/ dir)"
+          fi
+          echo
+          echo "----- If snapshots exist, list first 40 -----"
+          if [ -d state/snapshots ]; then
+            find state/snapshots -maxdepth 1 -type f -printf "%p\n" | sed -n '1,40p'
+          else
+            echo "(no state/snapshots dir)"
+          fi
+          echo
+          if [ -f northwoods.ics ]; then
+            echo "ICS at repo root: northwoods.ics (size bytes): $(wc -c < northwoods.ics)"
+          elif [ -f src/northwoods.ics ]; then
+            echo "ICS in src/: src/northwoods.ics (size bytes): $(wc -c < src/northwoods.ics)"
+            cp src/northwoods.ics ./northwoods.ics
+          else
+            echo "::warning::No ICS file produced."
+          fi
+
+      - name: Commit & push changes (if any)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Daily update: ICS + state"
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build public site
+        shell: bash
+        run: |
+          set -euo pipefail
           rm -rf public
           mkdir -p public
+          # Minimal index (avoid YAML-heredoc gotchas)
+          printf '%s\n' \
+            '<!doctype html>' \
+            '<meta charset="utf-8">' \
+            '<title>Northwoods Events - Artifacts</title>' \
+            '<h1>Northwoods Events - Artifacts</h1>' \
+            '<p>This page lists useful generated files from the repo.</p>' \
+            '<ul>' \
+            '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>' \
+            '  <li><a href="northwoods.ics">northwoods.ics (if present)</a></li>' \
+            '</ul>' \
+            '<hr>' \
+            '<p>Auto-published by GitHub Pages workflow.</p>' \
+            > public/index.html
 
-          {
-            echo "===== BUILD START $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
-            echo "CWD: $(pwd)"
-            echo "PYTHON: $(python -V)"
-            echo "-------------------------------------------"
-            ls -la
-            echo "-------------------------------------------"
-            if [ -f src/main.py ]; then
-              echo "Running: python src/main.py"
-              python src/main.py
-            else
-              echo "::error::No src/main.py found."
-              exit 2
-            fi
-            echo "-------------------------------------------"
-            echo "Repo root after build:"
-            ls -la
-            echo "-------------------------------------------"
-            if [ -d state ]; then
-              echo "state/ (top 200 files):"
-              find state -type f | sed -n '1,200p'
-            else
-              echo "NOTE: No state/ directory produced."
-            fi
-            echo "===== BUILD END $(date -u +'%Y-%m-%dT%H:%M:%SZ') ====="
-          } 2>&1 | tee public/build.log
-
-          # Surface ICS from src/ to root if needed
-          if [ -f src/northwoods.ics ] && [ ! -f northwoods.ics ]; then
-            cp src/northwoods.ics ./northwoods.ics
-          fi
-
-          # Prepare public site
-          mkdir -p public/state
           if [ -d state ]; then
+            mkdir -p public/state
             cp -a state/. public/state/
+            python - <<'PY'
+import os, html
+root = "public/state"
+for base, dirs, files in os.walk(root):
+    rel = os.path.relpath(base, root)
+    if rel == ".": rel = ""
+    with open(os.path.join(base, "index.html"), "w", encoding="utf-8") as f:
+        f.write("<!doctype html><meta charset='utf-8'>")
+        f.write("<title>state/{}</title>".format(html.escape(rel)))
+        f.write("<h1>state/{}</h1><ul>".format(html.escape(rel)))
+        for d in sorted(dirs):
+            d_esc = html.escape(d)
+            f.write("<li>[dir] <a href='{0}/'>{0}/</a></li>".format(d_esc))
+        for fn in sorted(files):
+            if fn == "index.html": continue
+            fn_esc = html.escape(fn)
+            f.write("<li><a href='{0}'>{0}</a></li>".format(fn_esc))
+        f.write("</ul>")
+PY
           fi
+
           if [ -f northwoods.ics ]; then
             cp northwoods.ics public/
           fi
 
-          # Index
-          {
-            echo '<!doctype html>'
-            echo '<meta charset="utf-8">'
-            echo '<title>Northwoods Events - Artifacts</title>'
-            echo '<h1>Northwoods Events - Artifacts</h1>'
-            echo '<ul>'
-            [ -f public/northwoods.ics ] && echo '  <li><a href="northwoods.ics">northwoods.ics</a></li>'
-            [ -d public/state ] && echo '  <li><a href="state/">state/ (snapshots, last_run_report.json)</a></li>'
-            echo '  <li><a href="build.log">build.log (full console output)</a></li>'
-            echo '</ul>'
-            echo '<hr><p>Auto-published by GitHub Actions.</p>'
-          } > public/index.html
-
           echo "Public artifact contents (top):"
           find public -maxdepth 3 -type f | sed -n '1,200p'
-
-          # Fail if nothing meaningful was produced
-          if [ ! -f public/northwoods.ics ] && [ ! -d public/state ]; then
-            echo "::error::No northwoods.ics and no state/ produced. See build.log."
-            exit 1
-          fi
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
 
       - name: Upload artifact (github-pages)
         uses: actions/upload-pages-artifact@v3
@@ -116,9 +205,13 @@ jobs:
           path: public
 
   deploy:
+    name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v4
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

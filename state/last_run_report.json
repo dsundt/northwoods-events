@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T22:00:36.864512-05:00",
+  "when": "2025-08-27T22:09:47.634182-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -68,8 +68,8 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 406,
-      "added": 406,
+      "parsed": 42,
+      "added": 42,
       "samples": [
         {
           "title": "Labor Day Arts and Crafts Show",
@@ -204,26 +204,26 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 92,
-      "added": 92,
+      "parsed": 30,
+      "added": 30,
       "samples": [
         {
-          "title": "Minocqua Area Visitors Bureau",
-          "start": "2025-08-24T00:00:00-05:00",
-          "location": "",
-          "url": "https://www.minocqua.org/"
-        },
-        {
-          "title": "Untitled",
+          "title": "Brush Site Open",
           "start": "2025-08-24T00:00:00-05:00",
           "location": "",
           "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
         },
         {
-          "title": "Untitled",
-          "start": "2025-08-24T00:00:00-05:00",
+          "title": "Brush Site Open",
+          "start": "2025-08-23T00:00:00-05:00",
           "location": "",
-          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna-3aafg"
+          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp-h4rna"
+        },
+        {
+          "title": "Brush Site Open",
+          "start": "2025-08-22T00:00:00-05:00",
+          "location": "",
+          "url": "/calendar/89mxhhfcx5t5rnm-ag7dx-nr2x4-gwcbp"
         }
       ],
       "http_status": 200,

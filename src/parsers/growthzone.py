@@ -11,38 +11,40 @@ from bs4 import BeautifulSoup
 from parsers._text import text as _text
 from models import Event
 from utils.dates import try_parse_datetime_range, parse_iso_or_text
+from utils.jsonld import extract_events_from_jsonld
 
 def parse_growthzone(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     out: List[Dict[str, Any]] = []
 
-    for a in soup.select("a[href*='events/details'], a[href*='events/details/']"):
-        parent = a.find_parent() or a
+    # JSON-LD (many GrowthZone sites include it)
+    for ev in extract_events_from_jsonld(soup):
+        title = (ev.get("name") or "Untitled").strip()
+        url = ev.get("url") or base_url
+        start_raw = ev.get("startDate") or ""
+        end_raw   = ev.get("endDate") or start_raw
+        try:
+            start = parse_iso_or_text(start_raw)
+            end   = parse_iso_or_text(end_raw, default=start)
+            out.append(Event(title=title, start=start, end=end, url=url).__dict__)
+        except Exception:
+            pass
+
+    # DOM-based fallback
+    for row in soup.select("li, article, .event-row, .event, .list-item"):
+        a = row.select_one("a[href*='events/details']")
+        if not a:
+            continue
         title = (_text(a) or "Untitled").strip()
         url = a["href"] if a.has_attr("href") else base_url
 
-        # Prefer nearby <time datetime>, else use parent text
-        times = (parent or soup).select("time[datetime]")
-        start = end = None
-        if times:
-            try:
-                start = parse_iso_or_text(times[0]["datetime"])
-                end = parse_iso_or_text(times[1]["datetime"]) if len(times) > 1 else start
-            except Exception:
-                start = end = None
+        # Use the smallest date-ish region near the link
+        dt_block = row.select_one("time, .date, .event-date, .when, .eventTime, .eventDate")
+        maybe = try_parse_datetime_range(_text(dt_block) if dt_block else _text(row))
+        if not maybe:
+            continue
+        start, end = maybe
 
-        if start is None:
-            maybe = try_parse_datetime_range(_text(parent))
-            if not maybe:
-                continue
-            start, end = maybe
+        out.append(Event(title=title, start=start, end=end, url=url).__dict__)
 
-        out.append(Event(
-            title=title,
-            start=start,
-            end=end,
-            url=url,
-            location=None,
-            description=None,
-        ).__dict__)
     return out

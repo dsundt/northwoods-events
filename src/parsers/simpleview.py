@@ -11,28 +11,45 @@ from bs4 import BeautifulSoup
 from parsers._text import text as _text
 from models import Event
 from utils.dates import try_parse_datetime_range, parse_iso_or_text
+from utils.jsonld import extract_events_from_jsonld
 
 def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     out: List[Dict[str, Any]] = []
 
-    for c in soup.select("[data-result], .event, .cards .card, article, li"):
-        title_node = c.select_one("h3 a, .card-title a, a[href]")
-        title = (_text(title_node) or "Untitled").strip()
-        url = title_node["href"] if title_node and title_node.has_attr("href") else base_url
+    # JSON-LD first
+    for ev in extract_events_from_jsonld(soup):
+        title = (ev.get("name") or "Untitled").strip()
+        url = ev.get("url") or base_url
+        start_raw = ev.get("startDate") or ""
+        end_raw   = ev.get("endDate") or start_raw
+        try:
+            start = parse_iso_or_text(start_raw)
+            end   = parse_iso_or_text(end_raw, default=start)
+            out.append(Event(title=title, start=start, end=end, url=url).__dict__)
+        except Exception:
+            pass
 
-        times = c.select("time[datetime]")
+    # DOM route with itemprop hints
+    for c in soup.select("article, li, .event, [data-result], .cards .card"):
+        title_a = c.select_one("a[href]")
+        title = (_text(title_a) or _text(c.select_one('meta[itemprop="name"]')) or "Untitled").strip()
+        url = title_a["href"] if title_a and title_a.has_attr("href") else base_url
+
+        # Prefer schema.org microdata
+        start_meta = c.select_one('[itemprop="startDate"][content]')
+        end_meta   = c.select_one('[itemprop="endDate"][content]')
         start = end = None
-        if times:
+        if start_meta:
             try:
-                start = parse_iso_or_text(times[0]["datetime"])
-                end = parse_iso_or_text(times[1]["datetime"]) if len(times) > 1 else start
+                start = parse_iso_or_text(start_meta["content"])
+                end   = parse_iso_or_text(end_meta["content"]) if end_meta else start
             except Exception:
                 start = end = None
 
         if start is None:
-            dt_block = c.select_one(".date, .event-date, time") or c
-            maybe = try_parse_datetime_range(_text(dt_block))
+            dt_block = c.select_one(".date, .event-date, time")
+            maybe = try_parse_datetime_range(_text(dt_block) if dt_block else "")
             if not maybe:
                 continue
             start, end = maybe
@@ -41,12 +58,9 @@ def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
         desc  = c.select_one(".summary, .description, [itemprop='description']")
 
         out.append(Event(
-            title=title,
-            start=start,
-            end=end,
-            url=url,
+            title=title, start=start, end=end, url=url,
             location=_text(venue) or None,
-            description=_text(desc) or None,
+            description=_text(desc) or None
         ).__dict__)
 
     return out

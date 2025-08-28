@@ -1,4 +1,3 @@
-# src/parsers/__init__.py
 from .modern_tribe import parse_modern_tribe
 from .growthzone import parse_growthzone
 from .simpleview import parse_simpleview

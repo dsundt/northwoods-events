@@ -237,4 +237,154 @@ def load_sources_from_yaml(path: str) -> List[Dict[str, Any]]:
 Source = Dict[str, Any]
 
 # Prefer sources.yml; fallback to embedded list if missing/invalid
-YAML_SOURCES = load_sources_from_yaml(os.path.joi
+YAML_SOURCES = load_sources_from_yaml(os.path.join(REPO_ROOT, "sources.yml"))
+SOURCES: List[Source] = YAML_SOURCES or [
+    {"name": "Vilas County (Modern Tribe)", "url": "https://vilaswi.com/events/?eventDisplay=list", "kind": "modern_tribe"},
+    {"name": "Boulder Junction (Modern Tribe)", "url": "https://boulderjct.org/events/?eventDisplay=list", "kind": "modern_tribe"},
+    {"name": "Eagle River Chamber (Modern Tribe)", "url": "https://eagleriver.org/events/?eventDisplay=list", "kind": "modern_tribe"},
+    {"name": "St. Germain Chamber (Micronet AJAX)", "url": "https://st-germain.com/events-calendar/?eventDisplay=list", "kind": "st_germain_ajax"},
+    {"name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)", "url": "https://sayner-starlake-cloverland.org/events/", "kind": "modern_tribe"},
+    {"name": "Rhinelander Chamber (GrowthZone)", "url": "https://business.rhinelanderchamber.com/events/calendar", "kind": "growthzone"},
+    {"name": "Minocqua Area Chamber (Simpleview)", "url": "https://www.minocqua.org/events/", "kind": "simpleview"},
+    {"name": "Oneida County – Festivals & Events (Simpleview)", "url": "https://oneidacountywi.com/festivals-events/", "kind": "simpleview"},
+    {"name": "Town of Arbor Vitae (Municipal Calendar)", "url": "https://www.townofarborvitae.org/calendar/", "kind": "municipal"},
+]
+
+
+# -------------------------------------------------------------------
+# Parser dispatch
+# -------------------------------------------------------------------
+def _get_parser(kind: str):
+    if kind == "modern_tribe":
+        return parse_modern_tribe
+    if kind == "growthzone":
+        return parse_growthzone
+    if kind == "simpleview":
+        return parse_simpleview
+    if kind == "municipal":
+        return parse_municipal
+    if kind == "st_germain_ajax":
+        # Shim returns items and stashes debug so run_pipeline can log it
+        def _shim(_html_text: str, base_url: str) -> List[Dict[str, Any]]:
+            items, debug = st_germain_ajax(base_url, return_debug=True)  # type: ignore[assignment]
+            _shim._last_debug = debug  # type: ignore[attr-defined]
+            if items:
+                return items
+            # Fallback to Modern Tribe DOM parsing if AJAX gave nothing
+            return parse_modern_tribe(_html_text, base_url=base_url)
+        _shim._last_debug = {}  # type: ignore[attr-defined]
+        return _shim
+    raise ValueError(f"Unknown parser kind: {kind}")
+
+
+# -------------------------------------------------------------------
+# Pipeline
+# -------------------------------------------------------------------
+def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
+    report: Dict[str, Any] = {
+        "when": now_iso(),
+        "timezone": USER_TZ_NAME,
+        "sources": [],
+        "meta": {"status": "ok", "sources_file": "sources.yml"},
+    }
+
+    for src in sources:
+        name, url, kind = src["name"], src["url"], src["kind"]
+        row: Dict[str, Any] = {
+            "name": name,
+            "url": url,
+            "fetched": 0,
+            "parsed": 0,
+            "added": 0,
+            "samples": [],
+            "http_status": None,
+            "snapshot": f"state/snapshots/{_snapshot_name(name)}.html",
+            "parser_kind": kind,  # show which parser ran
+            "notes": {},          # place for AJAX/debug notes
+        }
+
+        try:
+            parser_fn = _get_parser(kind)
+
+            # Always fetch HTML (for snapshots + potential fallbacks)
+            html, resp = fetch_url(url)
+            row["http_status"] = resp.status_code
+            row["fetched"] = 1
+            save_snapshot(name, html)
+
+            # Parse
+            items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]
+            row["parsed"] = len(items)
+
+            normalized = items
+            row["added"] = len(normalized)
+            row["samples"] = [
+                {
+                    "title": n.get("title", ""),
+                    "start": n.get("start", ""),
+                    "location": n.get("location", ""),
+                    "url": n.get("url", ""),
+                }
+                for n in normalized[:3]
+            ]
+
+            # capture AJAX debug notes if provided by shim
+            notes = getattr(parser_fn, "_last_debug", None)  # type: ignore[attr-defined]
+            if isinstance(notes, dict):
+                row["notes"] = notes
+
+        except Exception as e:
+            row["error"] = repr(e)
+            row["traceback"] = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+
+        report["sources"].append(row)
+
+    return report
+
+
+# -------------------------------------------------------------------
+# Write report (always)
+# -------------------------------------------------------------------
+def _write_reports(report: Dict[str, Any]) -> List[str]:
+    pretty = json.dumps(report, indent=2, ensure_ascii=False)
+
+    out_a = os.path.join(REPO_ROOT, "last_run_report.json")
+    out_b = os.path.join(REPO_ROOT, "state", "last_run_report.json")
+    os.makedirs(os.path.dirname(out_b), exist_ok=True)
+
+    with open(out_a, "w", encoding="utf-8") as f:
+        f.write(pretty)
+    with open(out_b, "w", encoding="utf-8") as f:
+        f.write(pretty)
+
+    return [out_a, out_b]
+
+
+# -------------------------------------------------------------------
+# CLI
+# -------------------------------------------------------------------
+def main():
+    report = {"meta": {"status": "ok"}}
+    try:
+        report = run_pipeline(SOURCES)
+    except Exception as e:
+        report = {
+            "when": now_iso(),
+            "timezone": USER_TZ_NAME,
+            "sources": [],
+            "meta": {"status": "error", "msg": str(e)},
+        }
+        report["meta"]["traceback"] = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+
+    paths = _write_reports(report)
+    print("last_run_report.json written to:")
+    for p in paths:
+        print(" -", os.path.relpath(p, REPO_ROOT))
+
+    total_parsed = sum(s.get("parsed", 0) for s in report.get("sources", []))
+    total_added = sum(s.get("added", 0) for s in report.get("sources", []))
+    print(f"Summary: parsed={total_parsed}, added={total_added}")
+
+
+if __name__ == "__main__":
+    main()

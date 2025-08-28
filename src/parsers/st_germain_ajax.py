@@ -1,8 +1,9 @@
 from __future__ import annotations
 import re
 from typing import Any, Dict, List
-from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from bs4 import BeautifulSoup
+
 from utils.dates import parse_datetime_range
 
 __all__ = ["parse_st_germain_ajax"]
@@ -12,46 +13,43 @@ def _text(el) -> str:
 
 def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict[str, Any]]:
     """
-    Their site renders three static cards server-side (even though it's called 'AJAX').
-    We only take anchors within the event list/cards and parse a single clean line for the date.
+    The listing page is AJAX-powered on the site, but our snapshot contains
+    server-rendered featured cards linking to event pages. Use tight selectors
+    so the title doesn't balloon and the start doesn't include full page text.
     """
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    # Find likely event cards: main content links under /events/
+    # Look for obvious event tiles/cards (links to /events/<slug>/)
     anchors = [a for a in soup.find_all("a", href=True) if "/events/" in a["href"]]
     seen = set()
-    for a in anchors:
-        url = urljoin(base_url, a["href"])
-        if url in seen:
-            continue
-        seen.add(url)
 
-        # Title: just the anchor text (no concatenation of siblings)
-        title = _text(a).strip()
+    for a in anchors:
+        href = urljoin(base_url, a["href"])
+        if href in seen:
+            continue
+        seen.add(href)
+
+        card = a.find_parent(["article", "div", "li"]) or a
+        title_el = a.find(["h2", "h3"]) or card.find(["h2", "h3"])
+        title = _text(title_el) or _text(a)
+        title = re.sub(r"\s+", " ", title).strip()
         if not title:
             continue
 
-        # Look near the link for a line like "Monday, September 20th, 2025" etc.
-        container = a.find_parent(["article", "div", "li"]) or a
-        blob = _text(container)
-        # Grab the first date-looking fragment (month word + day + optional year)
-        m = re.search(r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t|tember)|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:,\s*\d{4})?", blob, flags=re.I)
-        start = None
-        if m:
-            # remove ordinal suffixes like "20th"
-            frag = re.sub(r"(\d)(st|nd|rd|th)", r"\1", m.group(0))
-            try:
-                start = parse_datetime_range(frag)
-            except Exception:
-                start = None
-        if not start:
-            # as a fallback try the title itself
-            try:
-                start = parse_datetime_range(title)
-            except Exception:
-                continue  # skip if we can't get a date
+        # Try to harvest a concise date string from the same card (not entire page)
+        date_el = None
+        for sel in [".date", ".event-date", ".tribe-event-date-start", ".entry-meta", ".when"]:
+            date_el = date_el or card.select_one(sel)
+        date_txt = _text(date_el)
 
-        items.append({"title": title, "start": start, "url": url, "location": ""})
+        start = ""
+        if date_txt:
+            try:
+                start = parse_datetime_range(date_txt)
+            except Exception:
+                start = ""
+
+        items.append({"title": title, "start": start, "url": href, "location": ""})
 
     return items

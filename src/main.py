@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 """
 Northwoods Events builder (drop-in).
-Adds special handling for St. Germain, which loads events via AJAX.
-- Fetch -> Parse -> Normalize -> Write report (+ optional ICS)
-- Always writes last_run_report.json, even if fatal errors occur.
+- Loads sources from sources.yml (falls back to embedded list if missing/invalid)
+- Special handling for St. Germain (AJAX endpoint via admin-ajax.php)
+- Writes last_run_report.json (and state/last_run_report.json) every run
 """
 
 from __future__ import annotations
 
-# --- sys.path & stdlib ---
+# --- stdlib / path setup ---
 import os, sys, json, traceback, re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple, Optional
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
@@ -21,26 +21,24 @@ STATE_DIR = os.path.join(REPO_ROOT, "state")
 SNAPSHOT_DIR = os.path.join(STATE_DIR, "snapshots")
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
-# Ensure local imports work both in CI and local runs
 if THIS_DIR not in sys.path:
     sys.path.insert(0, THIS_DIR)
 
 # --- third-party ---
 import requests
 from bs4 import BeautifulSoup
+import yaml  # used to load sources.yml
+from dateutil import parser as dtp  # lenient date parsing
 
-# --- project imports (your existing modules) ---
+# --- project imports ---
 from parsers.modern_tribe import parse_modern_tribe
 from parsers.growthzone import parse_growthzone
 from parsers.simpleview import parse_simpleview
 from parsers.municipal import parse_municipal
 
-
-# Timezone handling
+# --- timezone (serialization only; parsing should be tz-aware elsewhere) ---
 USER_TZ_NAME = "America/Chicago"
-# This is a simple fixed offset used for serialization; your actual date parsing
-# should already be timezone-aware. Adjust if you keep persistent tz logic elsewhere.
-TZ = timezone(timedelta(hours=-5))
+TZ = timezone(timedelta(hours=-5))  # Central time; adjust if you maintain a more robust tz layer
 
 
 # -------------------------------------------------------------------
@@ -90,9 +88,9 @@ def normalize_event(
 # -------------------------------------------------------------------
 def _extract_ajax_config(html: str, base_url: str) -> Tuple[str, Optional[str]]:
     """
-    Look for a wp_localize_script-style object:
+    Look for a localized JS config object:
       var micronet_api_intergration_for_wordpress_ajax = { ajaxurl: "...", nonce: "..." }
-    Return (ajaxurl, nonce_or_None). Fall back to wp-admin/admin-ajax.php if not embedded.
+    Return (ajaxurl, nonce_or_None). Fall back to '/wp-admin/admin-ajax.php'.
     """
     ajaxurl = urljoin(base_url, "/wp-admin/admin-ajax.php")
     nonce = None
@@ -103,23 +101,34 @@ def _extract_ajax_config(html: str, base_url: str) -> Tuple[str, Optional[str]]:
     )
     if m:
         obj = m.group(1)
-        # crude extraction of key/value pairs
         kv = dict(re.findall(r'(\w+)\s*:\s*["\']([^"\']+)["\']', obj))
         ajaxurl = urljoin(base_url, kv.get("ajaxurl", ajaxurl))
         nonce = kv.get("nonce")
 
     return ajaxurl, nonce
 
-def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
+
+def st_germain_ajax(base_url: str, return_debug: bool = False) -> List[Dict[str, Any]] | tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """
-    Hit the site's AJAX endpoint to retrieve events across pages.
-    Falls back to zero if endpoint/format changes or no events are returned.
+    Hit St. Germain's AJAX endpoint (Micronet) to retrieve events.
+    Returns items, and optionally a debug dict if return_debug=True.
     """
+    debug: Dict[str, Any] = {
+        "attempt": "ajax",
+        "ajaxurl": None,
+        "nonce_found": False,
+        "pages": 0,
+        "posts_total": 0,
+        "success_pages": 0,
+    }
+
     sess = requests.Session()
     page_html, _ = fetch_url(base_url, sess)
     ajaxurl, nonce = _extract_ajax_config(page_html, base_url)
+    debug["ajaxurl"] = ajaxurl
+    debug["nonce_found"] = bool(nonce)
 
-    # Time window: last month through +6 months (liberal, server will filter)
+    # Time window: last 30 days -> next 180 days (server will filter)
     start_date = (datetime.now(TZ) - timedelta(days=30)).strftime("%Y-%m-%d")
     end_date = (datetime.now(TZ) + timedelta(days=180)).strftime("%Y-%m-%d")
 
@@ -146,15 +155,22 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
 
     normalized: List[Dict[str, Any]] = []
     page = 1
-    max_pages = 15  # guardrail
+    max_pages = 15
+    success_pages = 0
+
     while page <= max_pages:
         payload = one_page(page)
-        if not payload or not payload.get("success"):
+        if not payload:
             break
+        if payload.get("success"):
+            success_pages += 1
         data = payload.get("data", {})
         posts = data.get("posts") or []
         if not posts:
             break
+
+        debug["pages"] = page
+        debug["posts_total"] += len(posts)
 
         for p in posts:
             title = (p.get("title") or p.get("post_title") or "").strip()
@@ -162,22 +178,22 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
             location_parts = [p.get("venue", ""), p.get("address", ""), p.get("city", "")]
             location = ", ".join([s for s in location_parts if s])
 
-            # Try common date field patterns
+            # Try common date fields
             dt_candidates = [
-                p.get("start"), p.get("start_date"), p.get("date"),
-                f"{p.get('month','')} {p.get('day','')}, {p.get('year','')}".strip(),
+                p.get("start"),
+                p.get("start_date"),
+                p.get("date"),
+                " ".join(x for x in [p.get("month", ""), p.get("day", ""), p.get("year", "")] if x).strip(),
             ]
             start_dt = None
             for cand in dt_candidates:
                 if not cand:
                     continue
                 try:
-                    from dateutil import parser as dtp
                     start_dt = dtp.parse(str(cand))
                     break
                 except Exception:
                     continue
-
             if not title or not start_dt:
                 continue
 
@@ -186,7 +202,6 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
                 if not cand:
                     continue
                 try:
-                    from dateutil import parser as dtp
                     end_dt = dtp.parse(str(cand))
                     break
                 except Exception:
@@ -194,64 +209,32 @@ def st_germain_ajax(base_url: str) -> List[Dict[str, Any]]:
 
             normalized.append(normalize_event(title, start_dt, end_dt, location, link))
 
-        current = data.get("current") or page
-        if current >= data.get("pages", current):
+        pages_total = data.get("pages", page)
+        if page >= pages_total:
             break
         page += 1
 
+    debug["success_pages"] = success_pages
+
+    if return_debug:
+        return normalized, debug
     return normalized
 
 
 # -------------------------------------------------------------------
-# Source registry (embedded; if you switch back to YAML, mirror these kinds)
+# Load sources from YAML (fallback to embedded list)
 # -------------------------------------------------------------------
+def load_sources_from_yaml(path: str) -> List[Dict[str, Any]]:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            doc = yaml.safe_load(f) or {}
+        lst = doc.get("sources", [])
+        return [s for s in lst if isinstance(s, dict) and "url" in s and "kind" in s and "name" in s]
+    except Exception:
+        return []
+
+
 Source = Dict[str, Any]
 
-SOURCES: List[Source] = [
-    # Modern Tribe (The Events Calendar)
-    {"name": "Vilas County (Modern Tribe)", "url": "https://vilaswi.com/events/?eventDisplay=list", "kind": "modern_tribe"},
-    {"name": "Boulder Junction (Modern Tribe)", "url": "https://boulderjct.org/events/?eventDisplay=list", "kind": "modern_tribe"},
-    {"name": "Eagle River Chamber (Modern Tribe)", "url": "https://eagleriver.org/events/?eventDisplay=list", "kind": "modern_tribe"},
-
-    # St. Germain – custom AJAX loader (falls back to modern_tribe)
-    {"name": "St. Germain Chamber (Modern Tribe)", "url": "https://st-germain.com/events-calendar/?eventDisplay=list", "kind": "st_germain_ajax"},
-
-    {"name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)", "url": "https://sayner-starlake-cloverland.org/events/", "kind": "modern_tribe"},
-
-    # GrowthZone
-    {"name": "Rhinelander Chamber (GrowthZone)", "url": "https://business.rhinelanderchamber.com/events/calendar", "kind": "growthzone"},
-
-    # Simpleview
-    {"name": "Minocqua Area Chamber (Simpleview)", "url": "https://www.minocqua.org/events/", "kind": "simpleview"},
-    {"name": "Oneida County – Festivals & Events (Simpleview)", "url": "https://oneidacountywi.com/festivals-events/", "kind": "simpleview"},
-
-    # Municipal
-    {"name": "Town of Arbor Vitae (Municipal Calendar)", "url": "https://www.townofarborvitae.org/calendar/", "kind": "municipal"},
-]
-
-
-# -------------------------------------------------------------------
-# Parser dispatch
-# -------------------------------------------------------------------
-def _get_parser(kind: str):
-    if kind == "modern_tribe":
-        return parse_modern_tribe
-    if kind == "growthzone":
-        return parse_growthzone
-    if kind == "simpleview":
-        return parse_simpleview
-    if kind == "municipal":
-        return parse_municipal
-    if kind == "st_germain_ajax":
-        # Return a shim that conforms to parser signature: (html_text, base_url) -> items
-        def _shim(_html_text: str, base_url: str) -> List[Dict[str, Any]]:
-            items = st_germain_ajax(base_url)
-            if items:
-                return items
-            # fallback: if AJAX yielded nothing, try HTML parser
-            return parse_modern_tribe(_html_text, base_url=base_url)
-        return _shim
-    raise ValueError(f"Unknown parser kind: {kind}")
-
-
-# ----------------------------
+# Prefer sources.yml; fallback to embedded list if missing/invalid
+YAML_SOURCES = load_sources_from_yaml(os.path.joi

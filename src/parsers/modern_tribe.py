@@ -1,107 +1,89 @@
 from __future__ import annotations
 import re
-from datetime import datetime
 from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-
+from urllib.parse import urljoin
 from utils.dates import parse_datetime_range
 
 __all__ = ["parse_modern_tribe"]
 
-# Helpers
-def _text(node) -> str:
-    return " ".join(node.stripped_strings) if node else ""
+def _text(el) -> str:
+    return " ".join(el.stripped_strings) if el else ""
 
-# Containers/classes we trust for individual events across MT versions
-_EVENT_SELECTORS = [
-    "article.tribe-events-calendar-list__event",
-    "div.tribe-events-calendar-list__event",
-    "div.tribe-common-g-row",                    # legacy list rows
-    "li.tribe-events-list-event",                # very old
-    "div.tribe-events-event-card",               # card variant
-]
+HEADER_WORDS = {"events", "featured events", "upcoming events"}
+TIME_CLASSES = (
+    "tribe-event-date-start",
+    "tribe-event-date",
+    "tribe-events-calendar-list__event-date-tag",
+)
 
-# Things that are *not* events (page headers, section headings)
-_DEFUSE = {"events", "upcoming events", "featured events", "view calendar", "view downtown events"}
+def _pick_datetime(card) -> Optional[str]:
+    # 1) semantic <time> tag with datetime attr
+    time_el = card.find("time", attrs={"datetime": True})
+    if time_el and time_el.get("datetime"):
+        dt = time_el["datetime"].strip()
+        # Some sites put ISO here already; accept
+        if re.match(r"^\d{4}-\d{2}-\d{2}", dt):
+            return dt
+        # Otherwise try to parse whatever is inside
+        try:
+            return parse_datetime_range(_text(time_el))
+        except Exception:
+            pass
 
-def _best_title(card) -> str:
-    # Prefer the inner event title element, fall back to the first anchor/heading
-    for sel in (".tribe-events-calendar-list__event-title",
-                ".tribe-events-event-card__title",
-                "h3", "h2", "a[rel='bookmark']", "a"):
-        el = card.select_one(sel)
-        if el and (t := _text(el)).strip():
-            return re.sub(r"\s+", " ", t).strip()
-    return ""
-
-def _find_dt_text(card) -> Optional[str]:
-    # Prefer explicit date/time blocks; otherwise use a trimmed card text minus obvious headings
-    for sel in (".tribe-event-date-start", ".tribe-event-date",
-                ".tribe-events-calendar-list__event-datetime",
-                "time", ".tribe-events-event-datetime"):
-        el = card.select_one(sel)
+    # 2) text blocks likely holding the date/time
+    for cls in TIME_CLASSES:
+        el = card.select_one(f".{cls}")
         if el:
-            txt = _text(el).strip()
-            if txt and txt.lower() not in _DEFUSE:
-                return txt
-    # fallback: card text without navigation/buttons
-    txt = _text(card).strip()
-    if not txt or txt.lower() in _DEFUSE:
-        return None
-    return txt
+            t = _text(el)
+            if t and t.lower() not in HEADER_WORDS:
+                try:
+                    return parse_datetime_range(t)
+                except Exception:
+                    pass
+
+    # 3) last-ditch: parse from whole card text (but never from bare "Events")
+    body = _text(card)
+    if body and body.lower() not in HEADER_WORDS:
+        try:
+            return parse_datetime_range(body)
+        except Exception:
+            return None
+    return None
 
 def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    cards = []
-    for sel in _EVENT_SELECTORS:
-        cards.extend(soup.select(sel))
-    # De-dup
-    seen = set()
-    uniq_cards = []
+    # Typical containers
+    cards = soup.select("article, .tribe-events-calendar-list__event, .tribe-events-event-card")
+    if not cards:
+        cards = soup.select(".tribe-common-g-row, li.tribe-events-list-event")
+
     for c in cards:
-        if id(c) in seen:
-            continue
-        seen.add(id(c))
-        uniq_cards.append(c)
-
-    for c in uniq_cards:
-        title = _best_title(c)
-        if not title:
-            continue
-
-        # Date/time (always run through parser to guarantee ISO, never keep raw fragments like "10:00 am")
-        start_iso: Optional[str] = None
-        dt_text = _find_dt_text(c)
-
-        # Try datetime in the dedicated block, then in the title (handles things like "October 4 - October 5")
-        for candidate in (dt_text, title):
-            if not candidate:
-                continue
-            try:
-                start_iso = parse_datetime_range(candidate)
-                break
-            except Exception:
-                continue
-        if not start_iso:
-            # Not an actual event card (or no date visible)
-            continue
-
+        # anchor & URL
         a = c.find("a", href=True)
         url = urljoin(base_url, a["href"]) if a else base_url
 
-        # location (best-effort)
-        location = ""
-        loc = c.find(class_=re.compile(r"(venue|location)", re.I))
-        if loc:
-            location = _text(loc)
+        # clean title: prefer heading text, else anchor text; drop “Recurring”
+        title = _text(c.find(["h3", "h2"])) or _text(a)
+        title = re.sub(r"\s+", " ", title).strip()
+        if not title or title.lower() in {"recurring"}:
+            # Some list rows labelled "Recurring" (Boulder Junction) – use series title if present
+            series = c.find(class_=re.compile(r"(?:series|title)", re.I))
+            title = _text(series) or title
+        if not title or title.lower() in {"events", "recurring"}:
+            continue
 
-        items.append({
-            "title": title,
-            "start": start_iso,
-            "url": url,
-            "location": location,
-        })
+        start = _pick_datetime(c)
+        if not start:
+            # Skip container rows that aren’t real events (prevents “10:00 am” only etc.)
+            continue
+
+        # optional location
+        loc_el = c.find(class_=re.compile(r"(venue|location)", re.I))
+        location = _text(loc_el)
+
+        items.append({"title": title, "start": start, "url": url, "location": location})
+
     return items

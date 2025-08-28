@@ -1,29 +1,29 @@
 {
-  "when": "2025-08-28T08:56:29.697749-05:00",
+  "when": "2025-08-28T09:30:21.584630-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 108,
-      "added": 108,
+      "parsed": 124,
+      "added": 124,
       "samples": [
         {
-          "title": "Featured Arbor Vitae Fireman’s Summerfest",
-          "start": "2025-08-02T00:00:00",
+          "title": "Arbor Vitae Fireman’s Summerfest",
+          "start": "August 2",
           "url": "https://vilaswi.com/event/arbor-vitae-firemans-summerfest/",
           "location": ""
         },
         {
           "title": "Community Garage Sale Weekend",
-          "start": "2025-08-02T08:00:00",
+          "start": "August 2 @ 8:00 am",
           "url": "https://vilaswi.com/event/community-garage-sale-weekend-2/",
           "location": ""
         },
         {
           "title": "Presque Isle Lions Rummage Sale",
-          "start": "2025-08-02T09:00:00",
+          "start": "August 2 @ 9:00 am",
           "url": "https://vilaswi.com/event/presque-isle-lions-rummage-sale/",
           "location": ""
         }
@@ -39,25 +39,25 @@
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 134,
-      "added": 134,
+      "parsed": 98,
+      "added": 98,
       "samples": [
         {
-          "title": "Recurring",
-          "start": "2025-07-28T10:30:00",
-          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/all/",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "August 1",
+          "url": "https://boulderjct.org/events/marywood-franciscan-spirituality-center-summer-a-season-of-gathering-retreat/",
           "location": ""
         },
         {
-          "title": "Recurring",
-          "start": "2025-07-28T13:00:00",
-          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/all/",
+          "title": "Boulder Junction Community Foundation 15th Anniversary Celebration",
+          "start": "August 1 @ 7:00 pm",
+          "url": "https://boulderjct.org/events/boulder-junction-community-foundation-15th-anniversary-celebration/",
           "location": ""
         },
         {
-          "title": "Recurring",
-          "start": "2025-07-29T08:00:00",
-          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/all/",
+          "title": "Marywood Franciscan Spirituality Center Summer: A Season of Gathering Retreat",
+          "start": "2025-08-01",
+          "url": "https://boulderjct.org/events/marywood-franciscan-spirituality-center-summer-a-season-of-gathering-retreat/",
           "location": ""
         }
       ],
@@ -72,24 +72,24 @@
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 143,
-      "added": 143,
+      "parsed": 207,
+      "added": 207,
       "samples": [
         {
-          "title": "Cranberry Fest",
-          "start": "2025-10-04T00:00:00",
-          "url": "https://eagleriver.org/events/cranberry-fest/",
+          "title": "Labor Day Arts and Crafts Show",
+          "start": "10:00 am",
+          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
           "location": ""
         },
         {
-          "title": "Back To School Drive",
-          "start": "2025-08-15T00:00:00",
-          "url": "https://eagleriver.org/events/back-to-school-drive/",
+          "title": "SepTimber Ride",
+          "start": "7:00 am",
+          "url": "https://eagleriver.org/events/septimber-ride/",
           "location": ""
         },
         {
           "title": "Cranberry Fest",
-          "start": "2025-10-04T00:00:00",
+          "start": "October 4",
           "url": "https://eagleriver.org/events/cranberry-fest/",
           "location": ""
         }
@@ -105,9 +105,28 @@
       "name": "St. Germain Chamber (Micronet AJAX)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
+      "parsed": 3,
+      "added": 3,
+      "samples": [
+        {
+          "title": "Flea Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155",
+          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
+          "url": "https://st-germain.com/events/flea-market-2025-15/",
+          "location": ""
+        },
+        {
+          "title": "Colorama 2025 Saturday, September 20th, 2025 St Germain Community Park",
+          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
+          "url": "https://st-germain.com/events/colorama-2025/",
+          "location": ""
+        },
+        {
+          "title": "Pints in the Park 2025 Saturday, September 20th, 2025 St Germain Community Park",
+          "start": "Market 2025 Monday, September 1st, 2025 St. Germain Community Park 545 Hwy 155 Coloram",
+          "url": "https://st-germain.com/events/pints-in-the-park/",
+          "location": ""
+        }
+      ],
       "http_status": 200,
       "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax).html",
       "parser_kind": "st_germain_ajax",
@@ -124,21 +143,21 @@
       "samples": [
         {
           "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T18:30:00",
-          "url": "https://sayner-starlake-cloverland.org/series/plum-ski-ters-water-ski-show-2/",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States"
+          "start": "August 30 @ 6:30 pm",
+          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
+          "location": ""
         },
         {
           "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31T15:00:00",
+          "start": "August 31 @ 3:00 pm",
           "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
-          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI"
+          "location": ""
         },
         {
           "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "2025-09-01T14:00:00",
+          "start": "September 1 @ 2:00 pm",
           "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/",
-          "location": "Weber's 2649 Co. Rd C, Sayner, WI"
+          "location": ""
         }
       ],
       "http_status": 200,
@@ -159,8 +178,8 @@
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
       "parser_kind": "growthzone",
       "notes": {},
-      "error": "KeyError('market')",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 150, in run_pipeline\n    items = parser_fn(resp.text, base_url=url)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 95, in parse_growthzone\n    start = _parse_one_datetime(context_text) or _parse_one_datetime(title)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 53, in _parse_one_datetime\n    mon = MONTHS[m.group(\"mon\").lower()]\n          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nKeyError: 'market'\n"
+      "error": null,
+      "traceback": null
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -201,16 +220,9 @@
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
       "fetched": 1,
-      "parsed": 1,
-      "added": 1,
-      "samples": [
-        {
-          "title": "Minocqua Area Visitors Bureau",
-          "start": "2025-08-24",
-          "url": "https://www.minocqua.org/",
-          "location": ""
-        }
-      ],
+      "parsed": 0,
+      "added": 0,
+      "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
       "parser_kind": "municipal",

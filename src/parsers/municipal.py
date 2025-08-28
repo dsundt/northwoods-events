@@ -1,62 +1,65 @@
 from __future__ import annotations
-
-import re
-from urllib.parse import urljoin, urlparse
 from typing import Any, Dict, List
-
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+import re
+from datetime import datetime
 
 __all__ = ["parse_municipal"]
 
-MONTH_TOKEN = r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)(?:[a-z]{0,6})\b"
+DATE_ATTRS = ["datetime", "content", "data-date"]
+INLINE_DATE = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")  # ISO date present in many municipal calendars
 
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
-
-def _same_host(url: str, base: str) -> bool:
-    try:
-        return urlparse(url).netloc in ("", urlparse(base).netloc)
-    except Exception:
-        return True
+def _text(n) -> str:
+    return " ".join(n.stripped_strings) if n else ""
 
 def parse_municipal(html: str, base_url: str) -> List[Dict[str, Any]]:
     soup = BeautifulSoup(html, "html.parser")
     items: List[Dict[str, Any]] = []
 
-    blocks = soup.select("article, .wp-block-post, .event, .calendar-item, table tr, li")
-    for b in blocks:
-        a = b.find("a", href=True)
+    # Look for obvious calendar grid/list items; avoid generic “links” tiles (promos)
+    rows = []
+    rows += soup.select(".calendar .event, .calendar li, .ai1ec-event, .tribe-events-calendar-list__event")
+    if not rows:
+        rows = soup.select("li, article")
+
+    for r in rows:
+        # Skip items that are clearly external promo tiles (e.g., “Minocqua Area Visitors Bureau” pointing off-site)
+        a = r.find("a", href=True)
         if not a:
             continue
-        url = urljoin(base_url, a["href"])
-        if not _same_host(url, base_url):
-            # skip obvious external promos
+        href = a["href"]
+        if href.startswith("http") and base_url.split("/")[2] not in href:
+            # external link tile: only accept if there is a valid date attribute nearby
+            if not any(t.get(attr) for attr in DATE_ATTRS for t in r.find_all(True)):
+                continue
+
+        title = _text(r.find(["h3","h2"]) or a).strip()
+        if not title or title.lower() in {"untitled"}:
             continue
 
-        title = _text(b.find(["h2", "h3"])) or _text(a)
-        title = re.sub(r"\s+", " ", (title or "")).strip()
-        if not title or title.lower() in {"events", "calendar"}:
+        # Derive date: prefer <time datetime=...> then any ISO-like date found within the row
+        dt_iso = None
+        t = r.find("time")
+        if t:
+            for k in DATE_ATTRS:
+                if t.has_attr(k):
+                    dt_iso = t[k]
+                    break
+        if not dt_iso:
+            m = INLINE_DATE.search(_text(r))
+            if m:
+                y, mo, d = map(int, m.groups())
+                dt_iso = datetime(y, mo, d).isoformat()
+
+        if not dt_iso:
             continue
 
-        # Date candidates
-        dt = ""
-        t = b.find("time")
-        if t and t.has_attr("datetime"):
-            dt = t["datetime"]
-        elif t:
-            dt = _text(t)
-        if not dt:
-            cand = b.find(class_=re.compile("date|time", re.I))
-            dt = _text(cand)
-        if not dt:
-            dt = _text(b)
-
-        if not dt or (not re.search(MONTH_TOKEN, dt, re.I) and not (t and t.has_attr("datetime"))):
-            continue
-
-        loc_el = b.find(class_=re.compile("location|venue|where", re.I))
-        location = _text(loc_el) if loc_el else ""
-
-        items.append({"title": title, "start": dt.strip(), "url": url, "location": location})
+        items.append({
+            "title": title,
+            "start": dt_iso,
+            "url": urljoin(base_url, href),
+            "location": "",
+        })
 
     return items

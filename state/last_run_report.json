@@ -1,5 +1,5 @@
 {
-  "when": "2025-08-27T21:00:21-05:00",
+  "when": "2025-08-27T21:05:48-05:00",
   "timezone": "America/Chicago",
   "sources": [
     {
@@ -10,9 +10,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "snapshot": "state/snapshots/vilas_county_(modern_tribe).html"
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
@@ -22,9 +20,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "snapshot": "state/snapshots/boulder_junction_(modern_tribe).html"
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
@@ -34,9 +30,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe).html"
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
@@ -46,9 +40,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "snapshot": "state/snapshots/st._germain_chamber_(modern_tribe).html"
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
@@ -59,8 +51,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 104, in _get_parser\n    from parsers.modern_tribe import parse_modern_tribe\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 8, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "error": "ParserError('String does not contain a date: %s', 'Oc')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/modern_tribe.py\", line 38, in parse_modern_tribe\n    start, end = parse_datetime_range(_text(dt_block))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 42, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Oc\n"
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
@@ -71,8 +63,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/rhinelander_chamber_(growthzone).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 107, in _get_parser\n    from parsers.growthzone import parse_growthzone\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "error": "ParserError('String does not contain a date: %s', 'Oneida County Fair')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/growthzone.py\", line 21, in parse_growthzone\n    start, end = parse_datetime_range(_text(parent))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 37, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Oneida County Fair\n"
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
@@ -82,9 +74,7 @@
       "added": 0,
       "samples": [],
       "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview).html"
     },
     {
       "name": "Oneida County – Festivals & Events (Simpleview)",
@@ -95,8 +85,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/oneida_county_-_festivals_and_events_(simpleview).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 110, in _get_parser\n    from parsers.simpleview import parse_simpleview\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "error": "ParserError('String does not contain a date: %s', 'Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/simpleview.py\", line 21, in parse_simpleview\n    start, end = parse_datetime_range(_text(dt_block))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 42, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Festivals & Events You’ll find a full calendar of events all year long in Oneida County’s friendly communities, from fun Northwoods food festivals and community celebrations\n"
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
@@ -107,8 +97,8 @@
       "samples": [],
       "http_status": 200,
       "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar).html",
-      "error": "ModuleNotFoundError(\"No module named 'utils.dates'\")",
-      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 167, in run_pipeline\n    parser_fn = _get_parser(kind)\n                ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 113, in _get_parser\n    from parsers.municipal import parse_municipal\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 7, in <module>\n    from utils.dates import parse_datetime_range\nModuleNotFoundError: No module named 'utils.dates'\n"
+      "error": "ParserError('String does not contain a date: %s', 'Board Meetings')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/main.py\", line 168, in run_pipeline\n    items: List[Dict[str, Any]] = parser_fn(text, base_url=url)  # type: ignore\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/parsers/municipal.py\", line 25, in parse_municipal\n    start, end = parse_datetime_range(_text(dt_node))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 37, in parse_datetime_range\n    start = _parse_one(parts[0])\n            ^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/northwoods-events/northwoods-events/src/utils/dates.py\", line 19, in _parse_one\n    return dtp.parse(piece, fuzzy=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 1368, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/hostedtoolcache/Python/3.11.13/x64/lib/python3.11/site-packages/dateutil/parser/_parser.py\", line 646, in parse\n    raise ParserError(\"String does not contain a date: %s\", timestr)\ndateutil.parser._parser.ParserError: String does not contain a date: Board Meetings\n"
     }
   ],
   "meta": {

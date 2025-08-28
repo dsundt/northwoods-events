@@ -3,7 +3,7 @@ name: Scrape, Build & Deploy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"
+    - cron: "7 */3 * * *"  # every 3 hours at :07
 
 permissions:
   contents: read
@@ -25,32 +25,50 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python deps and Playwright
+      - name: Install Python deps + Playwright
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pyyaml
           python -m playwright install --with-deps chromium
 
-      - name: Scrape and parse
+      - name: Convert sources.yml → sources.json
+        run: |
+          python - <<'PY'
+import yaml, json
+with open('sources.yml','r', encoding='utf-8') as f:
+    data = yaml.safe_load(f)
+with open('sources.json','w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2)
+print("Wrote sources.json")
+PY
+          test -s sources.json
+
+      - name: Scrape & parse
+        env:
+          USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          python src/main.py < sources.yml
+          # Run WITHOUT stdin so main.py can read sources.json
+          python src/main.py
+          # Normalize report location
+          if [ -f state/last_run_report.json ]; then
+            echo "Found report at state/last_run_report.json"
+          elif [ -f last_run_report.json ]; then
+            echo "Found report at repo root; moving into state/"
+            mkdir -p state
+            mv last_run_report.json state/last_run_report.json
+          fi
           test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
 
       - name: Build static site
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          if [ -f state/last_run_report.json ]; then
-            cp state/last_run_report.json public/state/last_run_report.json
-          elif [ -f last_run_report.json ]; then
-            cp last_run_report.json public/state/last_run_report.json
-          else
-            echo '{}' > public/state/last_run_report.json
-          fi
+          cp state/last_run_report.json public/state/last_run_report.json
           for f in northwoods.ics northwoods-events.ics; do
-            if [ -f "$f" ]; then cp "$f" public/ics/; fi
+            [ -f "$f" ] && cp "$f" public/ics/ || true
           done
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
           {
@@ -67,6 +85,12 @@ jobs:
             echo 'async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();'
             echo '</script>'
           } > public/index.html
+
+      - name: Show output tree (debug)
+        run: |
+          echo "---- public ----"; ls -lah public || true
+          echo "---- public/state ----"; ls -lah public/state || true
+          echo "---- public/ics ----"; ls -lah public/ics || true
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

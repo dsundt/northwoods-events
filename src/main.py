@@ -4,6 +4,7 @@
 Northwoods Events builder (drop-in).
 - Loads sources from sources.yml (falls back to embedded list if missing/invalid)
 - Special handling for St. Germain (AJAX endpoint via admin-ajax.php)
+- Central post-filters (e.g., municipal 'Untitled', external links)
 - Writes last_run_report.json (and state/last_run_report.json) every run
 """
 
@@ -13,7 +14,7 @@ from __future__ import annotations
 import os, sys, json, traceback, re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
@@ -38,7 +39,7 @@ from parsers.municipal import parse_municipal
 
 # --- timezone (serialization only; parsing should be tz-aware elsewhere) ---
 USER_TZ_NAME = "America/Chicago"
-TZ = timezone(timedelta(hours=-5))  # Central time; adjust if you maintain a more robust tz layer
+TZ = timezone(timedelta(hours=-5))  # note: simplistic CST/CDT; swap to zoneinfo if needed
 
 
 # -------------------------------------------------------------------
@@ -87,6 +88,30 @@ def _to_sample_field(v: Any) -> str:
     if isinstance(v, datetime):
         return v.astimezone(TZ).isoformat()
     return str(v) if v is not None else ""
+
+def _same_host(link: str, base_url: str) -> bool:
+    try:
+        u = urlparse(urljoin(base_url, link))
+        b = urlparse(base_url)
+        return (not u.netloc) or (u.netloc == b.netloc)
+    except Exception:
+        return True
+
+def _post_filter_items(kind: str, base_url: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Central, conservative filters—kept minimal to avoid over-filtering."""
+    if kind != "municipal":
+        return items
+    out: List[Dict[str, Any]] = []
+    for n in items:
+        title = (n.get("title") or "").strip()
+        link = (n.get("url") or "").strip()
+        if not title or title.lower() == "untitled":
+            continue
+        if link.startswith("http") and not _same_host(link, base_url):
+            # Skip obvious external promos or unrelated links
+            continue
+        out.append(n)
+    return out
 
 
 # -------------------------------------------------------------------
@@ -146,7 +171,7 @@ def st_germain_ajax(base_url: str, return_debug: bool = False) -> List[Dict[str,
             "end_date": end_date,
             "category": "",
             "search": "",
-            "limit": 40,
+            "limit": 200,           # bumped limit for more results
             "order": "asc",
         }
         if nonce:
@@ -161,7 +186,7 @@ def st_germain_ajax(base_url: str, return_debug: bool = False) -> List[Dict[str,
 
     normalized: List[Dict[str, Any]] = []
     page = 1
-    max_pages = 15
+    max_pages = 30
     success_pages = 0
 
     while page <= max_pages:
@@ -170,7 +195,7 @@ def st_germain_ajax(base_url: str, return_debug: bool = False) -> List[Dict[str,
             break
         if payload.get("success"):
             success_pages += 1
-        data = payload.get("data", {})
+        data = payload.get("data", {}) or {}
         posts = data.get("posts") or []
         if not posts:
             break
@@ -320,12 +345,15 @@ def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
 
             # Parse
             items: List[Dict[str, Any]] = parser_fn(html, base_url=url)  # type: ignore[misc]
-            row["parsed"] = len(items)
 
+            # Central, conservative post-filters (currently: municipal)
+            items = _post_filter_items(kind, url, items)
+
+            row["parsed"] = len(items)
             normalized = items
             row["added"] = len(normalized)
 
-            # ---- JSON-safe samples (fix for datetime serialization) ----
+            # ---- JSON-safe samples ----
             row["samples"] = [
                 {
                     "title": _to_sample_field(n.get("title", "")),

@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from parsers._text import text as _text
 from models import Event
-from utils.dates import parse_datetime_range, parse_iso_or_text
+from utils.dates import parse_datetime_range
 from utils.jsonld import extract_events_from_jsonld
 
 

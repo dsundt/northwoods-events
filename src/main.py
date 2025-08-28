@@ -82,6 +82,12 @@ def normalize_event(
         "url": url,
     }
 
+def _to_sample_field(v: Any) -> str:
+    """Make values JSON-safe for the samples block."""
+    if isinstance(v, datetime):
+        return v.astimezone(TZ).isoformat()
+    return str(v) if v is not None else ""
+
 
 # -------------------------------------------------------------------
 # St. Germain: AJAX-aware fetcher (embedded; no separate file needed)
@@ -318,12 +324,14 @@ def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
 
             normalized = items
             row["added"] = len(normalized)
+
+            # ---- JSON-safe samples (fix for datetime serialization) ----
             row["samples"] = [
                 {
-                    "title": n.get("title", ""),
-                    "start": n.get("start", ""),
-                    "location": n.get("location", ""),
-                    "url": n.get("url", ""),
+                    "title": _to_sample_field(n.get("title", "")),
+                    "start": _to_sample_field(n.get("start", "")),
+                    "location": _to_sample_field(n.get("location", "")),
+                    "url": _to_sample_field(n.get("url", "")),
                 }
                 for n in normalized[:3]
             ]
@@ -331,7 +339,8 @@ def run_pipeline(sources: List[Source]) -> Dict[str, Any]:
             # capture AJAX debug notes if provided by shim
             notes = getattr(parser_fn, "_last_debug", None)  # type: ignore[attr-defined]
             if isinstance(notes, dict):
-                row["notes"] = notes
+                # ensure notes are JSON-safe too
+                row["notes"] = {k: _to_sample_field(v) for k, v in notes.items()}
 
         except Exception as e:
             row["error"] = repr(e)

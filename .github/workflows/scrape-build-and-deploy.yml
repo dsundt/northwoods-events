@@ -21,71 +21,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show repo tree (pre)
-        run: |
-          echo "---- repo root ----"; ls -lah
-          echo "---- src ----"; ls -lah src || true
-          echo "---- state ----"; ls -lah state || true
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Python deps + Playwright (with browsers)
+      - name: Install dependencies (pip + Playwright browsers)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Convert sources.yml to JSON (debug)
-        run: |
-          python -c "import yaml, json, io; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); io.open('sources.json','w',encoding='utf-8').write(json.dumps(d,indent=2))"
-          echo "Wrote sources.json"
-
       - name: Scrape & Parse
+        shell: bash
         env:
           USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          PRE_MTIME="$(test -f state/last_run_report.json && stat -c %Y state/last_run_report.json || echo 0)"
-          echo "PRE_MTIME=${PRE_MTIME}"
-          python -c "import sys,io; import src.main as M; import yaml; M.main.__wrapped__ if hasattr(M.main,'__wrapped__') else None" || true
-          # the real run (stdin = sources.yml)
-          python - <<'PY' 2>/dev/null || true
-# import sys,io,yaml
-# from src.main import main
-# sys.stdin = io.StringIO(io.open('sources.yml','r',encoding='utf-8').read())
-# main()
-# PY
-          # If heredocs are disallowed in your repo policy, comment the block above
-          # and use the one-liner below instead:
-          python -c "import sys,io,yaml; from src.main import main; sys.stdin = io.StringIO(io.open('sources.yml','r',encoding='utf-8').read()); main()"
-          test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
-          POST_MTIME="$(stat -c %Y state/last_run_report.json)"
-          echo "POST_MTIME=${POST_MTIME}"
-          if [ "${POST_MTIME}" = "${PRE_MTIME}" ]; then
-            echo "WARN: last_run_report.json timestamp unchanged. Check parser outputs."
+          if [ -f state/last_run_report.json ]; then
+            PRE_MTIME="$(stat -c %Y state/last_run_report.json)"
           else
-            echo "SUCCESS: last_run_report.json updated."
+            PRE_MTIME=0
           fi
+          # Run your scraper (reads sources from stdin). No heredocs used.
+          python src/main.py < sources.yml
+          test -s state/last_run_report.json
+          POST_MTIME="$(stat -c %Y state/last_run_report.json)"
+          echo "PRE_MTIME=${PRE_MTIME}"
+          echo "POST_MTIME=${POST_MTIME}"
 
       - name: Quick report to logs
         run: |
           python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
 
       - name: Build static site (no heredocs)
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          # Copy JSON report
-          cp state/last_run_report.json public/state/last_run_report.json || echo "{}" > public/state/last_run_report.json
-          # Copy ICS files if you generate them in repo root
+          cp state/last_run_report.json public/state/last_run_report.json
           [ -f northwoods.ics ] && cp northwoods.ics public/ics/ || true
           [ -f northwoods-events.ics ] && cp northwoods-events.ics public/ics/ || true
-          # Write a tiny index.html without heredocs
-          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           printf '%s\n' \
             '<!doctype html>' \
             '<meta charset="utf-8">' \
@@ -102,13 +80,7 @@ jobs:
             '</script>' \
             > public/index.html
 
-      - name: Show output tree
-        run: |
-          echo "---- public ----"; ls -lah public
-          echo "---- public/state ----"; ls -lah public/state
-          echo "---- public/ics ----"; ls -lah public/ics || true
-
-      - name: Upload state as artifact (debug)
+      - name: Upload state + site (debug)
         uses: actions/upload-artifact@v4
         with:
           name: state-debug
@@ -117,8 +89,10 @@ jobs:
             public/
 
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
+
       - id: deployment
         uses: actions/deploy-pages@v4

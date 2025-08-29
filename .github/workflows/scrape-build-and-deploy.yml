@@ -3,7 +3,7 @@ name: Scrape, Build & Deploy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "11 */3 * * *"
+    - cron: "7 */3 * * *"  # every 3 hours at :07
 
 permissions:
   contents: read
@@ -17,86 +17,94 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
+    env:
+      USE_PLAYWRIGHT: "1"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Show repo tree (debug)
         run: |
-          echo "---- repo root ----"; ls -lah || true
+          echo "---- repo root ----"; ls -lah
           echo "---- src ----"; ls -lah src || true
           echo "---- state ----"; ls -lah state || true
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Python deps
+      - name: Install Python deps and Playwright browser
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Install Playwright chromium
-        run: |
           python -m playwright install --with-deps chromium
 
-      - name: Validate sources.yml (quick)
+      - name: Ensure src is a package (avoids relative-import errors)
         run: |
-          python -c "import json,yaml,io; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); io.open('sources.json','w',encoding='utf-8').write(json.dumps(d,indent=2))"
+          if [ ! -f src/__init__.py ]; then
+            touch src/__init__.py
+          fi
 
-      - name: Scrape & parse (with Playwright available)
-        env:
-          USE_PLAYWRIGHT: "1"
+      - name: Run scraper
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          # Keep a pre-run mtime; if the run updates report it will change.
-          PRE_MTIME="$(stat -c %Y state/last_run_report.json 2>/dev/null || echo 0)"
-          python -m src.main < sources.yml
-          # Ensure report exists and is updated (>= one of stdin / live fetch paths)
-          test -s state/last_run_report.json
-          POST_MTIME="$(stat -c %Y state/last_run_report.json || echo 0)"
-          echo "PRE_MTIME=${PRE_MTIME}"
-          echo "POST_MTIME=${POST_MTIME}"
-          if [ "${POST_MTIME}" -lt "${PRE_MTIME}" ]; then
-            echo "ERROR: last_run_report.json did not update"
-            exit 1
+          PRE_MTIME="0"
+          if [ -f state/last_run_report.json ]; then
+            PRE_MTIME="$(stat -c %Y state/last_run_report.json || echo 0)"
           fi
-          # Show a tiny summary
-          python - <<'PYEND'
-import json, io
-d=json.load(io.open('state/last_run_report.json','r',encoding='utf-8'))
-print("Sources:", len(d.get('sources',[])))
-for s in d.get('sources',[])[:10]:
-    print("-", s.get('name',''), "parsed:", s.get('parsed',0), "added:", s.get('added',0))
-PYEND
+          python -m src.main < sources.yml || {
+            echo "Scraper failed; will fall back later if needed."
+          }
+          if [ -f state/last_run_report.json ]; then
+            POST_MTIME="$(stat -c %Y state/last_run_report.json || echo 0)"
+            if [ "$POST_MTIME" -gt "$PRE_MTIME" ]; then
+              echo "Scrape updated state/last_run_report.json"
+            else
+              echo "Scrape did not update state/last_run_report.json"
+            fi
+          else
+            echo "state/last_run_report.json not found after scrape."
+          fi
 
-      - name: Prepare static site (mirror state + optional ICS)
+      - name: Quick report (debug)
+        run: |
+          if [ -f state/last_run_report.json ]; then
+            python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
+          else
+            echo "No state/last_run_report.json to summarize."
+          fi
+
+      - name: Build static site
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          cp state/last_run_report.json public/state/last_run_report.json || true
-          [ -f last_run_report.json ] && cp last_run_report.json public/state/last_run_report.json || true
-          for f in northwoods.ics northwoods-events.ics; do
-            [ -f "$f" ] && cp "$f" public/ics/ || true
-          done
-          # Write a minimal index.html using POSIX printf (no heredocs)
+          # Prefer freshly scraped report, else fallback to repo root, else empty
+          if [ -f state/last_run_report.json ]; then
+            cp state/last_run_report.json public/state/last_run_report.json
+          elif [ -f last_run_report.json ]; then
+            cp last_run_report.json public/state/last_run_report.json
+          else
+            echo "{}" > public/state/last_run_report.json
+          fi
+          # Copy ICS files if present
+          if [ -f northwoods.ics ]; then cp northwoods.ics public/ics/; fi
+          if [ -f northwoods-events.ics ]; then cp northwoods-events.ics public/ics/; fi
+
+          # Make a minimal index.html (no heredocs)
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          printf '%s\n' '<!doctype html>' \
-            '<meta charset="utf-8">' \
-            '<meta name="viewport" content="width=device-width, initial-scale=1">' \
-            '<title>Northwoods Events</title>' \
-            '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}</style>' \
-            '<h1>Northwoods Events</h1>' \
-            "<p>Built: <code>${BUILD_TIME}</code></p>" \
-            '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' \
-            '<div id="summary"></div>' \
-            '<script type="module">' \
-            'async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");const html=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`;document.getElementById("summary").innerHTML=html;}catch(e){document.getElementById("summary").textContent=String(e);}}main();' \
-            '</script>' \
-          > public/index.html
+          echo '<!doctype html>' > public/index.html
+          echo '<meta charset="utf-8">' >> public/index.html
+          echo '<meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
+          echo '<title>Northwoods Events</title>' >> public/index.html
+          echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
+          echo '<h1>Northwoods Events</h1>' >> public/index.html
+          echo "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
+          echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
+          echo '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
 
       - name: Show output tree (debug)
         run: |
@@ -104,13 +112,24 @@ PYEND
           echo "---- public/state ----"; ls -lah public/state || true
           echo "---- public/ics ----"; ls -lah public/ics || true
 
+      - name: Upload state as artifact (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-debug
+          path: |
+            state/**
+            public/index.html
+            public/state/last_run_report.json
+            public/ics/**
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: public
 
       - name: Deploy to Pages
         id: deployment

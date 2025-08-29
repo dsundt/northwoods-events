@@ -61,7 +61,7 @@ jobs:
 # PY
           # If heredocs are disallowed in your repo policy, comment the block above
           # and use the one-liner below instead:
-            python -c "import sys,io,yaml; from src.main import main; sys.stdin = io.StringIO(io.open('sources.yml','r',encoding='utf-8').read()); main()"
+          python -c "import sys,io,yaml; from src.main import main; sys.stdin = io.StringIO(io.open('sources.yml','r',encoding='utf-8').read()); main()"
           test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
           POST_MTIME="$(stat -c %Y state/last_run_report.json)"
           echo "POST_MTIME=${POST_MTIME}"

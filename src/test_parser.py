@@ -3,83 +3,72 @@
 Utility to test individual event parsers against snapshot HTML/ICS files.
 
 Usage:
-  python test_parser.py state/snapshots/vilas_county_(modern_tribe).html modern_tribe
-  python test_parser.py state/snapshots/town_of_arbor_vitae_(municipal_calendar).html ai1ec
-  python test_parser.py some.ics ics
+  python -m src.test_parser state/snapshots/vilas_county_(modern_tribe).html modern_tribe
+  python -m src.test_parser state/snapshots/town_of_arbor_vitae_(municipal_calendar).html ai1ec
+  python -m src.test_parser some.ics ics
 """
 
 import sys
 import json
 from pathlib import Path
 
-# Ensure local src/ is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+# Make the package (src/) importable when running from repo root
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-from src.parse_ai1ec import parse_ai1ec
-from src.main import parse_modern_tribe_html, parse_growthzone_html, ingest_ics
-
-
-def usage():
-    print(__doc__)
-    sys.exit(1)
-
+from parse_ai1ec import parse_ai1ec
+from parse_modern_tribe import parse_modern_tribe
+from parse_growthzone import parse_growthzone
+from parse_ics import parse_ics
 
 def main():
-   def main():
     if len(sys.argv) < 3:
-        print("❌ Not enough arguments. Usage: python test_parser.py <snapshot-path> <parser-type>")
-        usage()
+        print("Usage: python -m src.test_parser <snapshot.html|.ics> <kind>")
+        sys.exit(2)
 
-    file_path = Path(sys.argv[1])
-    kind = sys.argv[2].lower()
+    path = Path(sys.argv[1])
+    kind = sys.argv[2].strip().lower()
 
-    if not file_path.exists():
-        print(f"❌ File not found: {file_path}")
-        print("Tip: run `ls state/snapshots` in Actions to see exact filenames.")
-        sys.exit(1)
-
-    valid_kinds = {"modern_tribe", "tribe", "growthzone", "chambermaster", "ai1ec", "all_in_one", "all-in-one", "ics"}
-    if kind not in valid_kinds:
-        print(f"❌ Unknown parser kind: {kind}")
-        print("Valid kinds: modern_tribe, ai1ec, growthzone, ics")
-        sys.exit(1)
-
-    text = file_path.read_text(encoding="utf-8", errors="ignore")
+    text = path.read_text(encoding="utf-8")
     events = []
 
-    if kind in ("modern_tribe", "tribe"):
-        events = parse_modern_tribe_html(text)
-    elif kind in ("growthzone", "chambermaster"):
-        events = parse_growthzone_html(text)
-    elif kind in ("ai1ec", "all_in_one", "all-in-one"):
-        events = parse_ai1ec(text)
+    def add_event(e): events.append(e)
+
+    if kind == "modern_tribe":
+        import parse_modern_tribe as mt
+        real_fetch = mt.fetch_html
+        try:
+            mt.fetch_html = lambda *_a, **_k: text
+            parse_modern_tribe({"url": "file://"+str(path), "tzname": "America/Chicago"}, add_event)
+        finally:
+            mt.fetch_html = real_fetch
+    elif kind == "growthzone":
+        import parse_growthzone as gz
+        real_fetch = getattr(gz, "fetch_html", None)
+        try:
+            if real_fetch:
+                gz.fetch_html = lambda *_a, **_k: text
+            parse_growthzone({"url": "file://"+str(path), "tzname": "America/Chicago"}, add_event)
+        finally:
+            if real_fetch:
+                gz.fetch_html = real_fetch
+    elif kind == "ai1ec":
+        import parse_ai1ec as a
+        real_fetch = a.fetch_html
+        try:
+            a.fetch_html = lambda *_a, **_k: text
+            parse_ai1ec({"url": "file://"+str(path), "tzname": "America/Chicago"}, add_event)
+        finally:
+            a.fetch_html = real_fetch
     elif kind == "ics":
-        events = ingest_ics(text)
+        parse_ics({"url": "file://"+str(path), "tzname": "America/Chicago"}, add_event)
     else:
-        print(f"Unknown parser kind: {kind}")
-        sys.exit(1)
+        print(f"Unknown kind: {kind}")
+        sys.exit(2)
 
-    print(f"\nParsed {len(events)} events from {file_path} using {kind} parser:\n")
-
-    # Pretty-print all events to log
-    for i, ev in enumerate(events, 1):
-        title = ev.get("title", "")
-        start = ev.get("iso_datetime") or ev.get("date_text", "")
-        loc = ev.get("venue_text") or ev.get("location", "")
-        url = ev.get("url", "")
-        print(f"{i:02d}. {title}")
-        print(f"    Start: {start}")
-        if loc:
-            print(f"    Location: {loc}")
-        if url:
-            print(f"    URL: {url}")
-        print("")
-
-    # Write all events to JSON for artifact upload
-    out_file = Path("parsed_events.json")
-    out_file.write_text(json.dumps(events, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\n✅ Wrote all {len(events)} events to {out_file}\n")
-
+    Path("parsed_events.json").write_text(json.dumps(events, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Parsed {len(events)} events; wrote parsed_events.json")
 
 if __name__ == "__main__":
     main()

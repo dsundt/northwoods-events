@@ -1,45 +1,38 @@
+# parse_micronet_ajax.py
 from __future__ import annotations
+
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 
-def parse_micronet_ajax(html: str, base_url: str):
+from .fetch import fetch_html
+from .normalize import normalize_event
+
+
+def parse_micronet_ajax(source, add_event):
+    """
+    Very light parser for Micronet/ChamberMaster calendars that render via AJAX.
+    We primarily needed to ensure we wait for the list container to render.
+    """
+    url = source["url"]
+    html = fetch_html(url, source=source)  # <-- wait hints respected
     soup = BeautifulSoup(html, "lxml")
-    out = []
 
-    # Try common containers Micronet injects (varies by site theme)
-    containers = soup.select(".event-list, .events-list, #events-list, .mn-event-list, .micronet-events, .event-calendar, #event-calendar")
-    if not containers:
-        # fall back to scan links that look like event detail pages
-        for a in soup.select('a[href*="/event/"], a[href*="EventDetails"]'):
-            title = (a.get_text(" ", strip=True) or "").strip()
-            href = urljoin(base_url, a.get("href", ""))
-            if title:
-                out.append({"title": title, "start": "", "url": href, "location": ""})
-        # return early; DOM likely not hydrated without Playwright
-        return out[:200]
-
-    for root in containers:
-        for a in root.select('a[href]'):
-            title = (a.get_text(" ", strip=True) or "").strip()
-            href = urljoin(base_url, a.get("href", ""))
-            if not title or not href:
-                continue
-            # Avoid nav/placeholder
-            if title.lower() in ("events", "events |", "learn more", "read more", "details"):
-                continue
-            out.append({
-                "title": title,
-                "start": "",
-                "url": href,
-                "location": "",
-            })
-
-    # Dedup
-    seen = set(); uniq = []
-    for ev in out:
-        if ev["url"] in seen: 
+    # A few common containers/selectors seen in Micronet skins:
+    # - .cm-event-list .cm-event
+    # - .eventList .event
+    # - .cm-events-list .event
+    items = soup.select(".cm-event-list .cm-event, .eventList .event, .cm-events-list .event")
+    for el in items:
+        title = (el.get_text(" ", strip=True) or "").strip()
+        if not title:
             continue
-        seen.add(ev["url"])
-        uniq.append(ev)
-
-    return uniq[:200]
+        # Defer to your existing normalizer (dates are typically embedded or linked)
+        evt = normalize_event(
+            title=title,
+            url=url,
+            where=None,
+            start=None,
+            end=None,
+            tzname=source.get("tzname"),
+        )
+        if evt:
+            add_event(evt)

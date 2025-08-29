@@ -27,18 +27,14 @@ def _first_href(el, selectors):
 
 
 def _first_datetime(el, selectors):
-    # Prefer <time datetime="...">
     t = el.select_one("time[datetime]")
     if t and t.has_attr("datetime"):
         return t["datetime"].strip()
 
-    # Squarespace sometimes sticks timestamps on attributes
-    # (leave very defensive—ignore if missing or empty)
     for sel in selectors:
         node = el.select_one(sel)
         if not node:
             continue
-        # If we find a time tag without datetime, fall back to its text
         t2 = node.get_text(" ", strip=True)
         if t2:
             return t2
@@ -46,16 +42,10 @@ def _first_datetime(el, selectors):
 
 
 def parse_squarespace_calendar(source, add_event):
-    """
-    Generic Squarespace calendar/event-list parser.
-    Works best when fetch_html waits for one of:
-      ul.eventlist, section.eventlist, .sqs-block-calendar, .events, .events-list
-    """
     url = source["url"]
     html = fetch_html(url, source=source)
     soup = BeautifulSoup(html, "lxml")
 
-    # Common containers/items used by Squarespace themes/blocks
     items = soup.select(
         "li.eventlist-item, article.eventlist-event, "
         ".eventlist .eventlist-item, .events .event-item, "
@@ -65,15 +55,7 @@ def parse_squarespace_calendar(source, add_event):
     for el in items:
         title = _first_text(
             el,
-            [
-                ".eventlist-title",
-                ".event-title",
-                "h3 a",
-                "h3",
-                "h2 a",
-                "h2",
-                "a",
-            ],
+            [".eventlist-title", ".event-title", "h3 a", "h3", "h2 a", "h2", "a"],
         )
         if not title:
             continue
@@ -81,16 +63,9 @@ def parse_squarespace_calendar(source, add_event):
         href = _first_href(el, ["a.eventlist-title-link", ".eventlist-title a", "h3 a", "h2 a", "a"])
         link = urljoin(url, href) if href else url
 
-        # Date/time (ISO in <time datetime> if we’re lucky; else parse the text)
         dt_raw = _first_datetime(
             el,
-            [
-                ".eventlist-datetime",
-                ".event-date",
-                ".event-time",
-                ".event-meta",
-                ".eventlist-meta",
-            ],
+            [".eventlist-datetime", ".event-date", ".event-time", ".event-meta", ".eventlist-meta"],
         )
         start = parse_dt(dt_raw, source.get("tzname")) if dt_raw else None
 

@@ -25,54 +25,63 @@ def _to_local(dt: datetime, tz: pytz.BaseTzInfo) -> datetime:
 def clean_text(s: Optional[str]) -> str:
     return re.sub(r"\s+", " ", (s or "").strip())
 
-def parse_dt(text: str, tzname: Optional[str]) -> datetime:
-    """Parse an ISO-ish or human datetime string and return aware local time."""
-    tz = _safe_timezone(tzname)
+def parse_dt(text: str, tzname: Optional[str]) -> Optional[datetime]:
+    """Parse a datetime-ish string into a timezone-aware local datetime.
+       Returns None if we cannot parse a plausible datetime."""
     t = clean_text(text)
-    # Handle simple date only -> midnight local
+    if not t:
+        return None
+    tz = _safe_timezone(tzname)
     try:
         dt = duparser.parse(t, fuzzy=True)
-        if dt.tzinfo is None:
-            dt = tz.localize(dt)
-        else:
-            dt = dt.astimezone(tz)
-        return dt
     except Exception:
-        # last resort: today at midnight
-        today = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
-        return today
-
-def parse_datetime_range(text: str, tzname: Optional[str], default_minutes: int = 120) -> Tuple[datetime, datetime, bool]:
-    """Very forgiving text range parser; returns (start, end, all_day)."""
-    tz = _safe_timezone(tzname)
-    s = clean_text(text)
-
-    # ISO-like ranges first
-    iso_times = re.findall(r"\d{4}-\d{2}-\d{2}[^,\sT]*T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})?", s)
-    if len(iso_times) >= 1:
-        start = parse_dt(iso_times[0], tzname)
-        end = start + timedelta(minutes=default_minutes)
-        if len(iso_times) >= 2:
-            end = parse_dt(iso_times[1], tzname)
-            if end <= start:
-                end = start + timedelta(minutes=default_minutes)
-        return start, end, False
-
-    # Fallback: one datetime in the string
+        return None
     try:
-        start = duparser.parse(s, fuzzy=True)
-        start = _to_local(start, tz)
-        end = start + timedelta(minutes=default_minutes)
-        return start, end, False
+        return _to_local(dt, tz)
     except Exception:
-        now = datetime.now(tz)
-        return now, now + timedelta(minutes=default_minutes), False
+        return None
 
-def _sid_for(title: str, start_iso: str, url: str, where: str) -> str:
-    base = f"{clean_text(title)}|{start_iso}|{clean_text(url)}|{clean_text(where)}"
-    return hashlib.md5(base.encode("utf-8")).hexdigest()
+def parse_datetime_range(
+    text: str,
+    tzname: Optional[str],
+    default_minutes: int = 120
+) -> Tuple[Optional[datetime], Optional[datetime], bool]:
+    """Forgiving range parser; returns (start, end, all_day). All may be None if unparseable."""
+    s = clean_text(text)
+    tz = _safe_timezone(tzname)
+
+    # Detect 'all day' hints
+    all_day = bool(re.search(r"\ball[- ]?day\b", s, flags=re.I))
+
+    # Try ISO-like ranges embedded in text
+    iso_times = re.findall(
+        r"\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2})?(?:Z|[+-]\d{2}:\d{2})?",
+        s
+    )
+    if iso_times:
+        start = parse_dt(iso_times[0], tzname)
+        end = parse_dt(iso_times[1], tzname) if len(iso_times) > 1 else None
+        if start and end and end <= start:
+            end = start + timedelta(minutes=default_minutes)
+        if start and not end:
+            end = start + (timedelta(days=1) if all_day else timedelta(minutes=default_minutes))
+        return start, end, all_day
+
+    # One timestamp case
+    one = parse_dt(s, tzname)
+    if one:
+        end = one + (timedelta(days=1) if all_day else timedelta(minutes=default_minutes))
+        return one, end, all_day
+
+    # Give up
+    return None, None, all_day
+
+def _sid_for(title: str, start_iso: str, url: str, location: str) -> str:
+    base = f"{title}|{start_iso}|{url}|{location}"
+    return hashlib.sha256(base.encode("utf-8")).hexdigest()[:16]
 
 def normalize_event(
+    *,
     title: str,
     url: Optional[str],
     where: Optional[str],
@@ -87,12 +96,16 @@ def normalize_event(
     title = clean_text(title)
     if not title:
         return None
+
     tz = _safe_timezone(tzname)
+
+    # Strict: if start isn't parseable, drop the event
     if start is None:
-        # cannot proceed without start; try to set to now
-        start = datetime.now(tz)
-    if end is None or end <= start:
-        end = start + timedelta(minutes=120)
+        return None
+
+    # Ensure end is sane
+    if end is None or (end and end <= start):
+        end = start + (timedelta(days=1) if all_day else timedelta(minutes=120))
 
     start_iso = _to_local(start, tz).isoformat()
     end_iso = _to_local(end, tz).isoformat()

@@ -1,12 +1,12 @@
-name: Scrape, Build & Deploy
+name: Scrape, Build and Deploy
 
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"  # every 3 hours at :07
+    - cron: "7 */3 * * *"
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -18,110 +18,76 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      USE_PLAYWRIGHT: "1"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Show repo tree (debug)
-        run: |
-          echo "---- repo root ----"; ls -lah
-          echo "---- src ----"; ls -lah src || true
-          echo "---- state ----"; ls -lah state || true
+        with:
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Python deps and Playwright browser
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python -m playwright install --with-deps chromium
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-      - name: Ensure src is a package (avoids relative-import errors)
-        run: |
-          if [ ! -f src/__init__.py ]; then
-            touch src/__init__.py
-          fi
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Ensure src is a package
+        run: test -f src/__init__.py || printf "" > src/__init__.py
+
+      - name: Prepare state directory
+        run: mkdir -p state/snapshots
+
+      - name: Extract sources list (scraper expects a list on stdin)
+        run: python -c "import io,yaml; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); s=d.get('sources', d); io.open('.tmp.sources.yaml','w',encoding='utf-8').write(yaml.safe_dump(s,sort_keys=False))"
 
       - name: Run scraper
-        run: |
-          set -euo pipefail
-          mkdir -p state/snapshots
-          PRE_MTIME="0"
-          if [ -f state/last_run_report.json ]; then
-            PRE_MTIME="$(stat -c %Y state/last_run_report.json || echo 0)"
-          fi
-          python -m src.main < sources.yml || {
-            echo "Scraper failed; will fall back later if needed."
-          }
-          if [ -f state/last_run_report.json ]; then
-            POST_MTIME="$(stat -c %Y state/last_run_report.json || echo 0)"
-            if [ "$POST_MTIME" -gt "$PRE_MTIME" ]; then
-              echo "Scrape updated state/last_run_report.json"
-            else
-              echo "Scrape did not update state/last_run_report.json"
-            fi
-          else
-            echo "state/last_run_report.json not found after scrape."
-          fi
+        env:
+          USE_PLAYWRIGHT: "1"
+        run: python -m src.main < .tmp.sources.yaml || echo SCRAPE_FAILED=1 >> $GITHUB_ENV
 
-      - name: Quick report (debug)
-        run: |
-          if [ -f state/last_run_report.json ]; then
-            python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
-          else
-            echo "No state/last_run_report.json to summarize."
-          fi
+      - name: Ensure last_run_report.json exists (fallback to repo or empty)
+        run: if [ -s state/last_run_report.json ]; then echo ok; elif [ -f last_run_report.json ]; then cp last_run_report.json state/last_run_report.json; else echo "{}" > state/last_run_report.json; fi
 
-      - name: Build static site
-        run: |
-          set -euo pipefail
-          mkdir -p public/state public/ics
-          # Prefer freshly scraped report, else fallback to repo root, else empty
-          if [ -f state/last_run_report.json ]; then
-            cp state/last_run_report.json public/state/last_run_report.json
-          elif [ -f last_run_report.json ]; then
-            cp last_run_report.json public/state/last_run_report.json
-          else
-            echo "{}" > public/state/last_run_report.json
-          fi
-          # Copy ICS files if present
-          if [ -f northwoods.ics ]; then cp northwoods.ics public/ics/; fi
-          if [ -f northwoods-events.ics ]; then cp northwoods-events.ics public/ics/; fi
+      - name: Brief summary
+        run: python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]" || true
 
-          # Make a minimal index.html (no heredocs)
-          BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          echo '<!doctype html>' > public/index.html
-          echo '<meta charset="utf-8">' >> public/index.html
-          echo '<meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
-          echo '<title>Northwoods Events</title>' >> public/index.html
-          echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
-          echo '<h1>Northwoods Events</h1>' >> public/index.html
-          echo "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
-          echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
-          echo '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
+      - name: Build public directory
+        run: mkdir -p public/state public/ics
 
-      - name: Show output tree (debug)
-        run: |
-          echo "---- public ----"; ls -lah public || true
-          echo "---- public/state ----"; ls -lah public/state || true
-          echo "---- public/ics ----"; ls -lah public/ics || true
+      - name: Copy report to public
+        run: cp state/last_run_report.json public/state/last_run_report.json
 
-      - name: Upload state as artifact (debug)
-        if: always()
+      - name: Copy ICS to public (if present)
+        run: if [ -f northwoods.ics ]; then cp northwoods.ics public/ics/; fi; if [ -f northwoods-events.ics ]; then cp northwoods-events.ics public/ics/; fi
+
+      - name: Write index.html (no heredocs)
+        run: BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ) && echo '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Northwoods Events</title><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style><h1>Northwoods Events</h1>' > public/index.html && echo "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html && echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p><p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
+
+      - name: Show public tree
+        run: echo "---- public ----" && ls -lah public && echo "---- public/state ----" && ls -lah public/state && echo "---- public/ics ----" && ls -lah public/ics
+
+      - name: Upload state artifact
         uses: actions/upload-artifact@v4
         with:
           name: state-debug
-          path: |
-            state/**
-            public/index.html
-            public/state/last_run_report.json
-            public/ics/**
+          path: state
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Upload public artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-preview
+          path: public
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -131,6 +97,15 @@ jobs:
         with:
           path: public
 
-      - name: Deploy to Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Commit updated state back to repo (only on main)
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: git add state || true && git diff --staged --quiet || git commit -m "Update state (CI)" && git push || echo "No changes or push not permitted"

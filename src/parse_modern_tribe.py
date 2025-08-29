@@ -1,104 +1,44 @@
-import json
+# parse_modern_tribe.py
+from __future__ import annotations
+
 from bs4 import BeautifulSoup
 
-def _jsonld_events(soup):
-    out = []
-    for tag in soup.find_all("script", {"type": "application/ld+json"}):
-        try:
-            data = json.loads(tag.string or "")
-        except Exception:
-            continue
-        # sometimes it's a dict with @graph, sometimes a list
-        candidates = []
-        if isinstance(data, dict):
-            if "@graph" in data and isinstance(data["@graph"], list):
-                candidates = data["@graph"]
-            else:
-                candidates = [data]
-        elif isinstance(data, list):
-            candidates = data
-        for node in candidates:
-            if not isinstance(node, dict):
-                continue
-            if node.get("@type") in ("Event", ["Event"]):
-                name = (node.get("name") or "").strip()
-                url = (node.get("url") or "").strip()
-                startDate = node.get("startDate") or node.get("startTime")
-                endDate = node.get("endDate") or node.get("endTime")
-                venue = ""
-                loc = node.get("location")
-                if isinstance(loc, dict):
-                    venue = (loc.get("name") or "") or (loc.get("address") or "")
-                out.append({
-                    "title": name,
-                    "url": url,
-                    "date_text": "",             # not needed if iso present
-                    "venue_text": venue.strip(),
-                    "iso_datetime": startDate or None,
-                    "iso_end": endDate or None
-                })
-    return out
+from .fetch import fetch_html
+from .normalize import parse_dt, normalize_event
 
-def parse(html):
-    """
-    Return list of dicts:
-      {title, url, date_text, venue_text, iso_datetime?, iso_end?}
-    Supports The Events Calendar (Modern Tribe) list and newer views.
-    """
+
+def parse_modern_tribe(source, add_event):
+    url = source["url"]
+    # pass source for wait hints like ".tec-events"
+    html = fetch_html(url, source=source)
     soup = BeautifulSoup(html, "lxml")
-    items = []
 
-    # 1) Try known list selectors (multiple generations)
-    selectors = [
-        ".tribe-events-calendar-list__event",
-        "article.tribe_events",
-        ".type-tribe_events",
-        ".tribe-events-calendar__list-item",
-        ".tribe-events-calendar-day__event",
-        ".tribe-common-g-row .tribe-events-calendar-latest__event"
-    ]
-    containers = []
-    for sel in selectors:
-        containers = soup.select(sel)
-        if containers:
-            break
-
-    for el in containers:
-        a = el.select_one(".tribe-events-calendar-list__event-title a, .tribe-event-title a, a.tribe-events-calendar-list__event-title-link, a.tribe-events-calendar-event-title")
-        if not a:
-            a = el.find("a")
-        if not a:
+    # Your existing Modern Tribe parsing logic (kept minimal here)
+    # Common item: article or li with event classes
+    cards = soup.select(".tec-events .tec-event, .tribe-events .type-tribe_events, article.tribe-events-calendar-list__event")
+    for card in cards:
+        title_el = card.select_one("a, h3, .tribe-events-calendar-list__event-title")
+        title = (title_el.get_text(" ", strip=True) if title_el else "").strip()
+        if not title:
             continue
-        title = (a.get_text() or "").strip()
-        url = (a.get("href") or "").strip()
 
-        # Prefer <time datetime="..."> if present
-        start_iso = None
-        end_iso = None
-        time_els = el.select("time[datetime]")
-        if time_els:
-            start_iso = time_els[0].get("datetime") or None
-            if len(time_els) > 1:
-                end_iso = time_els[-1].get("datetime") or None
+        link_el = card.select_one("a[href]")
+        link = link_el["href"].strip() if link_el and link_el.has_attr("href") else url
 
-        # Visible date text (fallback)
-        dt_el = el.select_one(".tribe-events-calendar-list__event-datetime, .tribe-events-c-small-cta__date, .tribe-event-date-start, .tribe-event-time, .tribe-events-calendar-event-datetime")
-        date_text = (dt_el.get_text() if dt_el else "").strip()
+        # Dates vary wildly; keep defensive
+        start = None
+        end = None
+        dt_el = card.select_one("time[datetime]")
+        if dt_el and dt_el.has_attr("datetime"):
+            start = parse_dt(dt_el["datetime"], source.get("tzname"))
 
-        venue_el = el.select_one(".tribe-events-calendar-list__event-venue, .tribe-events-venue, .tribe-venue, .tribe-address, .tribe-events-calendar-event-venue")
-        venue_text = (venue_el.get_text() if venue_el else "").strip()
-
-        items.append({
-            "title": title,
-            "url": url,
-            "date_text": date_text,
-            "venue_text": venue_text,
-            "iso_datetime": start_iso,
-            "iso_end": end_iso
-        })
-
-    # 2) If nothing found, try JSON-LD embedded events (very common)
-    if not items:
-        items = _jsonld_events(soup)
-
-    return items
+        evt = normalize_event(
+            title=title,
+            url=link,
+            where=None,
+            start=start,
+            end=end,
+            tzname=source.get("tzname"),
+        )
+        if evt:
+            add_event(evt)

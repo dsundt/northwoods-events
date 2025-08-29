@@ -50,7 +50,8 @@ sources:
 
   # --- Municipal Squarespace calendar (client-rendered) ---
   - name: Town of Arbor Vitae (Municipal Calendar)
-    url: https://www.townofarborvitae.org/calendar/
-    kind: municipal
-    wait_selector: "ul.eventlist, section.eventlist, .sqs-block-calendar"
-    wait_ms: 1000
+  url: https://www.townofarborvitae.org/calendar/
+  kind: squarespace
+  wait_selector: "ul.eventlist, section.eventlist, .sqs-block-calendar, .events, .events-list"
+  wait_ms: 1500
+

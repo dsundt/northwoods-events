@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
 
@@ -43,19 +43,19 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          # Run WITHOUT stdin so main.py can read sources.json
+          # Run without stdin; main.py will read sources.json or sources.yml
           python src/main.py
           # Normalize report location
           if [ -f state/last_run_report.json ]; then
-            echo "Found report at state/last_run_report.json"
+            echo "OK: state/last_run_report.json exists."
           elif [ -f last_run_report.json ]; then
-            echo "Found report at repo root; moving into state/"
+            echo "Moving last_run_report.json → state/"
             mkdir -p state
             mv last_run_report.json state/last_run_report.json
           fi
           test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
 
-      - name: Build static site
+      - name: Build static site (no heredocs)
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
@@ -64,20 +64,16 @@ jobs:
             [ -f "$f" ] && cp "$f" public/ics/ || true
           done
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          {
-            echo '<!doctype html>'
-            echo '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-            echo '<title>Northwoods Events</title>'
-            echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>'
-            echo '<h1>Northwoods Events</h1>'
-            echo "<p>Built: <code>${BUILD_TIME}</code></p>"
-            echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>'
-            echo '<p><a href="./ics/">ICS files</a> (if present)</p>'
-            echo '<div id="summary"></div>'
-            echo '<script type="module">'
-            echo 'async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();'
-            echo '</script>'
-          } > public/index.html
+          echo '<!doctype html>' > public/index.html
+          echo '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
+          echo '<title>Northwoods Events</title>' >> public/index.html
+          echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
+          echo '<h1>Northwoods Events</h1>' >> public/index.html
+          echo "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
+          echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
+          echo '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
+          echo '<div id="summary"></div>' >> public/index.html
+          echo '<script type="module">async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();</script>' >> public/index.html
 
       - name: Show output tree (debug)
         run: |

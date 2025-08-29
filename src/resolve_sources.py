@@ -1,37 +1,32 @@
-# resolve_sources.py
+# src/resolve_sources.py
 from __future__ import annotations
 
 from .parse_modern_tribe import parse_modern_tribe
 from .parse_simpleview import parse_simpleview
 from .parse_growthzone import parse_growthzone
-from .parse_micronet_ajax import parse_micronet_ajax
 from .parse_ai1ec import parse_ai1ec
-from .parse_travelwi import parse_travelwi
 from .parse_ics import parse_ics
-from .parse_squarespace_calendar import parse_squarespace_calendar
 
 _ALIASES = {
-    # Treat legacy alias as Modern Tribe (site migrated)
+    # Legacy aliases that should resolve cleanly
     "st_germain_ajax": "modern_tribe",
-    "squarespace_calendar": "squarespace",
+    "micronet_ajax": "growthzone",  # Micronet/ChamberMaster typically = GrowthZone
+    "municipal": "ai1ec",
+    "squarespace_calendar": "ai1ec",
 }
 
 _HANDLERS = {
     "modern_tribe": parse_modern_tribe,
     "simpleview": parse_simpleview,
     "growthzone": parse_growthzone,
-    "micronet_ajax": parse_micronet_ajax,
     "ai1ec": parse_ai1ec,
-    "travelwi": parse_travelwi,
     "ics": parse_ics,
-    "municipal": parse_ai1ec,  # legacy fallback for some WP sites
-    "squarespace": parse_squarespace_calendar,
 }
 
 def get_parser(kind: str):
-    kind = (kind or "").strip().lower()
-    kind = _ALIASES.get(kind, kind)
-    fn = _HANDLERS.get(kind)
+    k = (kind or "").strip().lower()
+    k = _ALIASES.get(k, k)
+    fn = _HANDLERS.get(k)
     if not fn:
         raise ValueError(f"Unknown source kind: {kind}")
     return fn

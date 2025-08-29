@@ -32,30 +32,35 @@ jobs:
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Scrape & Parse
+      - name: Show repo layout (debug)
+        run: |
+          echo "---- repo root ----"; ls -lah
+          echo "---- src ----"; ls -lah src || true
+          echo "---- state ----"; ls -lah state || true
+
+      - name: Scrape & Parse (run as module)
         shell: bash
         env:
           USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          if [ -f state/last_run_report.json ]; then
-            PRE_MTIME="$(stat -c %Y state/last_run_report.json)"
-          else
-            PRE_MTIME=0
-          fi
-          # Run your scraper (reads sources from stdin). No heredocs used.
-          python src/main.py < sources.yml
+          # Run as a module so relative imports in src/main.py work
+          python -m src.main < sources.yml
           test -s state/last_run_report.json
-          POST_MTIME="$(stat -c %Y state/last_run_report.json)"
-          echo "PRE_MTIME=${PRE_MTIME}"
-          echo "POST_MTIME=${POST_MTIME}"
 
       - name: Quick report to logs
         run: |
-          python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
+          python - <<'PY'
+import json, io
+with io.open('state/last_run_report.json','r',encoding='utf-8') as f:
+    d = json.load(f)
+print('Sources:', len(d.get('sources',[])))
+for s in (d.get('sources',[])[:10]):
+    print('-', s.get('name',''), 'parsed:', s.get('parsed',0), 'added:', s.get('added',0))
+PY
 
-      - name: Build static site (no heredocs)
+      - name: Build static site (no heredocs in YAML)
         shell: bash
         run: |
           set -euo pipefail

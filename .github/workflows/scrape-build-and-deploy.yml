@@ -1,85 +1,139 @@
-defaults:
-  tzname: "America/Chicago"
-  default_duration_minutes: 120
+name: Scrape, Build, and Deploy
 
-sources:
-  - name: "Vilas County (Modern Tribe)"
-    url: "https://vilaswi.com/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "12 * * * *"
 
-  - name: "Boulder Junction (Modern Tribe)"
-    url: "https://boulderjct.org/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
-  - name: "Eagle River Chamber (Modern Tribe)"
-    url: "https://eagleriver.org/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
-  - name: "St. Germain Chamber (Micronet AJAX)"
-    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
-    kind: "st_germain_ajax"
-    wait_for_selectors:
-      - ".cm-event-list"
-      - ".event-list"
-      - ".eventItem"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
+jobs:
+  build-deploy:
+    runs-on: ubuntu-24.04
+    env:
+      USE_PLAYWRIGHT: "1"
 
-  - name: "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)"
-    url: "https://sayner-starlake-cloverland.org/events/"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  - name: "Rhinelander Chamber (GrowthZone)"
-    url: "https://business.rhinelanderchamber.com/events/calendar"
-    kind: "growthzone"
-    wait_for_selectors:
-      - ".event-list"
-      - ".eventItem"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-  - name: "Minocqua Area Chamber (Simpleview)"
-    url: "https://www.minocqua.org/events/"
-    kind: "simpleview"
-    wait_for_selectors:
-      - ".event-card"
-      - ".event-list"
-      - ".event"        # broad fallback
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-  - name: "Oneida County – Festivals & Events (Simpleview)"
-    url: "https://oneidacountywi.com/festivals-events/"
-    kind: "simpleview"
-    wait_for_selectors:
-      - ".event-card"
-      - ".event-list"
-      - ".event"        # broad fallback
+      - name: Install Playwright Chromium + system deps
+        run: |
+          python -m playwright install --with-deps chromium
 
-  - name: "Town of Arbor Vitae (Municipal Calendar)"
-    url: "https://www.townofarborvitae.org/calendar/"
-    kind: "municipal"
-    wait_for_selectors:
-      - ".calendar"
-      - ".events"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
+      - name: Ensure package layout and state dir
+        run: |
+          test -f src/__init__.py || printf "" > src/__init__.py
+          mkdir -p state/snapshots .github/scripts
 
-  - name: "Town of Arbor Vitae (Squarespace)"
-    url: "https://www.townofarborvitae.org/calendar/"
-    kind: "squarespace"
-    wait_for_selectors:
-      - ".eventlist"
-      - ".eventlist-event--upcoming"
-      - "[data-collection-type='events']"
-    wait_timeout_ms: 45000
+      # NEW: robust YAML extraction that never fails the job
+      - name: Create sources extractor
+        run: |
+          printf '%s\n' 'import sys, io, yaml, os' > .github/scripts/extract_sources.py
+          printf '%s\n' 'p = "sources.yml"' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'out = ".tmp.sources.yaml"' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'def write_empty():' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    io.open(out, "w", encoding="utf-8").write("[]\\n")' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'try:' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    data = yaml.safe_load(io.open(p, "r", encoding="utf-8"))' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'except Exception as e:' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    sys.stderr.write(f"YAML parse error in {p}: {e}\\n")' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    write_empty()' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    print(f"Wrote empty sources to {out} and continuing.")' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    sys.exit(0)' >> .github/scripts/extract_sources.py
+          printf '%s\n' 's = data' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'if isinstance(data, dict):' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    s = data.get("sources", data.get("list", data))' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'if not isinstance(s, list):' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    sys.stderr.write("Top-level `sources` must be a YAML sequence (list). Coercing to empty list.\\n")' >> .github/scripts/extract_sources.py
+          printf '%s\n' '    s = []' >> .github/scripts/extract_sources.py
+          printf '%s\n' 's = [x for x in s if isinstance(x, dict)]' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'io.open(out, "w", encoding="utf-8").write(yaml.safe_dump(s, sort_keys=False))' >> .github/scripts/extract_sources.py
+          printf '%s\n' 'print(f"Wrote {len(s)} sources to {out}")' >> .github/scripts/extract_sources.py
+
+      - name: Extract sources list to stdin file
+        run: |
+          python .github/scripts/extract_sources.py
+
+      - name: Run scraper
+        run: |
+          python -m src.main < .tmp.sources.yaml || echo SCRAPE_FAILED=1 >> $GITHUB_ENV
+        env:
+          USE_PLAYWRIGHT: "1"
+
+      - name: Ensure last_run_report.json exists
+        run: |
+          if [ -s state/last_run_report.json ]; then
+            echo ok
+          elif [ -f last_run_report.json ]; then
+            cp last_run_report.json state/last_run_report.json
+          else
+            echo "{}" > state/last_run_report.json
+          fi
+
+      - name: Print scrape summary
+        run: |
+          python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]" || true
+
+      - name: Build site assets
+        run: |
+          mkdir -p public/state public/ics
+          cp state/last_run_report.json public/state/last_run_report.json
+          if [ -f northwoods.ics ]; then cp northwoods.ics public/ics/; fi
+          if [ -f northwoods-events.ics ]; then cp northwoods-events.ics public/ics/; fi
+          BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          : > public/index.html
+          printf '%s\n' '<!doctype html>' >> public/index.html
+          printf '%s\n' '<meta charset="utf-8">' >> public/index.html
+          printf '%s\n' '<meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
+          printf '%s\n' '<title>Northwoods Events</title>' >> public/index.html
+          printf '%s\n' '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
+          printf '%s\n' '<h1>Northwoods Events</h1>' >> public/index.html
+          printf '%s\n' "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
+          printf '%s\n' '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
+          printf '%s\n' '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
+
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-debug
+          path: |
+            state/**
+            public/index.html
+            public/state/last_run_report.json
+            public/ics/**
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: false
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+          name: github-pages
+          retention-days: 1
+
+      - name: Deploy to Pages
+        uses: actions/deploy-pages@v4

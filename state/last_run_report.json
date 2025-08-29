@@ -1,276 +1,83 @@
 {
-  "when": "",
-  "timezone": "",
+  "when": "2025-08-29T22:04:20.173288+00:00",
+  "timezone": "UTC",
   "sources": [
     {
       "name": "Vilas County (Modern Tribe)",
       "url": "https://vilaswi.com/events/?eventDisplay=list",
       "parser_kind": "modern_tribe",
-      "fetched": 1,
-      "parsed": 190,
-      "added": 190,
-      "samples": [
-        {
-          "title": "St. Germain Flea Market",
-          "start": "2025-07-28T08:00:00",
-          "url": "https://vilaswi.com/event/st-germain-flea-market/2025-07-28/",
-          "location": ""
-        },
-        {
-          "title": "Manitowish Waters Lions Club Bingo",
-          "start": "2025-07-28T18:00:00",
-          "url": "https://vilaswi.com/event/manitowish-waters-lions-club-bingo/2025-07-28/",
-          "location": ""
-        },
-        {
-          "title": "Monday Night Bingo",
-          "start": "2025-07-28T18:15:00",
-          "url": "https://vilaswi.com/event/monday-night-bingo/2025-07-28/",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/vilas_county_(modern_tribe)__modern_tribe.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 822,
+      "added": 565,
+      "error": null
     },
     {
       "name": "Boulder Junction (Modern Tribe)",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
       "parser_kind": "modern_tribe",
-      "fetched": 1,
-      "parsed": 142,
-      "added": 142,
-      "samples": [
-        {
-          "title": "Northwoods Children’s Museum Nature Education Classes",
-          "start": "2025-07-28T10:30:00",
-          "url": "https://boulderjct.org/events/northwoods-childrens-museum-nature-education-classes/2025-07-28/",
-          "location": ""
-        },
-        {
-          "title": "Mah Jongg at the Boulder Junction Public Library",
-          "start": "2025-07-28T13:00:00",
-          "url": "https://boulderjct.org/events/mah-jongg-at-the-boulder-junction-public-library/2025-07-28/",
-          "location": ""
-        },
-        {
-          "title": "Boulder Junction Lions Club Flea Market",
-          "start": "2025-07-29T08:00:00",
-          "url": "https://boulderjct.org/events/boulder-junction-lions-club-flea-market/2025-07-29/",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/boulder_junction_(modern_tribe)__modern_tribe.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 887,
+      "added": 610,
+      "error": null
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
       "parser_kind": "modern_tribe",
-      "fetched": 1,
-      "parsed": 316,
-      "added": 316,
-      "samples": [
-        {
-          "title": "Labor Day Arts and Crafts Show",
-          "start": "2025-08-31T10:00:00",
-          "url": "https://eagleriver.org/events/labor-day-arts-and-crafts-show/",
-          "location": ""
-        },
-        {
-          "title": "SepTimber Ride",
-          "start": "2025-09-13T07:00:00",
-          "url": "https://eagleriver.org/events/septimber-ride/",
-          "location": ""
-        },
-        {
-          "title": "Cranberry Fest",
-          "start": "2025-10-04T00:00:00",
-          "url": "https://eagleriver.org/events/cranberry-fest/",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/eagle_river_chamber_(modern_tribe)__modern_tribe.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 1701,
+      "added": 1169,
+      "error": null
     },
     {
-      "name": "St. Germain Chamber (Micronet AJAX)",
+      "name": "St. Germain Chamber (Modern Tribe)",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
-      "parser_kind": "st_germain_ajax",
-      "fetched": 1,
-      "parsed": 0,
-      "added": 0,
-      "samples": [],
-      "http_status": 200,
-      "snapshot": "state/snapshots/st._germain_chamber_(micronet_ajax)__st_germain_ajax.html",
-      "notes": {},
-      "error": "Error(\"BrowserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium-1134/chrome-linux/chrome\\n╔════════════════════════════════════════════════════════════╗\\n║ Looks like Playwright was just installed or updated.       ║\\n║ Please run the following command to download new browsers: ║\\n║                                                            ║\\n║     playwright install                                     ║\\n║                                                            ║\\n║ <3 Playwright Team                                         ║\\n╚════════════════════════════════════════════════════════════╝\")",
-      "traceback": null
+      "parser_kind": "modern_tribe",
+      "parsed": 169,
+      "added": 116,
+      "error": null
     },
     {
-      "name": "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
+      "name": "Sayner-Star Lake-Cloverland Chamber (Modern Tribe)",
       "url": "https://sayner-starlake-cloverland.org/events/",
       "parser_kind": "modern_tribe",
-      "fetched": 1,
       "parsed": 10,
-      "added": 10,
-      "samples": [
-        {
-          "title": "Plum Ski-ters Water Ski Show",
-          "start": "2025-08-30T18:30:00",
-          "url": "https://sayner-starlake-cloverland.org/event/plum-ski-ters-water-ski-show-2/2025-08-30/",
-          "location": "Plum Lake 3230 State House Point Road, Sayner, WI, United States"
-        },
-        {
-          "title": "23rd Annual Stillwaters Star Lake Mayor’s Race",
-          "start": "2025-08-31T15:00:00",
-          "url": "https://sayner-starlake-cloverland.org/event/23rd-annual-stillwaters-star-lake-mayors-race/",
-          "location": "Stillwaters 7914 Co. Rd K, Star Lake, WI"
-        },
-        {
-          "title": "Barnstormers Snowmobile Club Annual Meat Raffle",
-          "start": "2025-09-01T14:00:00",
-          "url": "https://sayner-starlake-cloverland.org/event/barnstormers-snowmobile-club-annual-meat-raffle/",
-          "location": "Weber's 2649 Co. Rd C, Sayner, WI"
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/sayner-star_lake-cloverland_chamber_(modern_tribe)__modern_tribe.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "added": 7,
+      "error": null
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
       "parser_kind": "growthzone",
-      "fetched": 1,
-      "parsed": 84,
-      "added": 84,
-      "samples": [
-        {
-          "title": "Oneida County Fair",
-          "start": "2025-08-01T00:00:00",
-          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-01-2025-17402",
-          "location": ""
-        },
-        {
-          "title": "ArtStart Gallery Exhibitions",
-          "start": "2025-08-01T00:00:00",
-          "url": "https://business.rhinelanderchamber.com/events/details/artstart-gallery-exhibitions-08-01-2025-13027",
-          "location": ""
-        },
-        {
-          "title": "Oneida County Fair",
-          "start": "2025-08-02T00:00:00",
-          "url": "https://business.rhinelanderchamber.com/events/details/oneida-county-fair-08-02-2025-17403",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/rhinelander_chamber_(growthzone)__growthzone.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 283,
+      "added": 195,
+      "error": null
     },
     {
       "name": "Minocqua Area Chamber (Simpleview)",
       "url": "https://www.minocqua.org/events/",
       "parser_kind": "simpleview",
-      "fetched": 1,
-      "parsed": 1,
-      "added": 1,
-      "samples": [
-        {
-          "title": "Events |",
-          "start": "",
-          "url": "https://www.minocqua.org/events/",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/minocqua_area_chamber_(simpleview)__simpleview.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 114,
+      "added": 78,
+      "error": null
     },
     {
-      "name": "Oneida County – Festivals & Events (Simpleview)",
+      "name": "Oneida County Festivals and Events (Simpleview)",
       "url": "https://oneidacountywi.com/festivals-events/",
       "parser_kind": "simpleview",
-      "fetched": 1,
-      "parsed": 3,
-      "added": 3,
-      "samples": [
-        {
-          "title": "here",
-          "start": "",
-          "url": "https://www.minocqua.org/events/",
-          "location": ""
-        },
-        {
-          "title": "here",
-          "start": "",
-          "url": "https://explorerhinelander.com/events/",
-          "location": ""
-        },
-        {
-          "title": "here",
-          "start": "",
-          "url": "https://www.threelakes.com/events/",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/oneida_county_-_festivals_&_events_(simpleview)__simpleview.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parsed": 67,
+      "added": 46,
+      "error": null
     },
     {
       "name": "Town of Arbor Vitae (Municipal Calendar)",
       "url": "https://www.townofarborvitae.org/calendar/",
-      "parser_kind": "municipal",
-      "fetched": 1,
-      "parsed": 39,
-      "added": 39,
-      "samples": [
-        {
-          "title": "Minocqua Area Visitors Bureau",
-          "start": "2025-08-24T00:00:00",
-          "url": "https://www.minocqua.org/",
-          "location": ""
-        },
-        {
-          "title": "Board Meetings",
-          "start": "",
-          "url": "https://www.townofarborvitae.org/calendar?category=Board+Meetings",
-          "location": ""
-        },
-        {
-          "title": "Board of Review",
-          "start": "",
-          "url": "https://www.townofarborvitae.org/calendar?category=Board+of+Review",
-          "location": ""
-        }
-      ],
-      "http_status": 200,
-      "snapshot": "state/snapshots/town_of_arbor_vitae_(municipal_calendar)__municipal.html",
-      "notes": {},
-      "error": null,
-      "traceback": null
+      "parser_kind": "ai1ec",
+      "parsed": 184,
+      "added": 127,
+      "error": null
     }
   ],
-  "meta": {
-    "status": "ok",
-    "sources_file": "sources.yml"
+  "totals": {
+    "parsed": 4237,
+    "added": 2913,
+    "store_size": 3478
   }
 }

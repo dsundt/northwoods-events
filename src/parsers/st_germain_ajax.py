@@ -1,73 +1,47 @@
-from __future__ import annotations
-import os
-from typing import Any, Dict, List
+# -*- coding: utf-8 -*-
+"""
+St. Germain (Micronet/JS) parser:
+- Try rendered DOM for obvious event links.
+- Try ICS discovery if present.
+"""
+
+from typing import List, Dict
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
+from .parse_simpleview import _parse_ics  # reuse ICS helper
 
-def _try_playwright(url: str) -> str | None:
-    if os.getenv("USE_PLAYWRIGHT") != "1":
-        return None
-    try:
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            ctx = browser.new_context()
-            page = ctx.new_page()
-            page.goto(url, wait_until="networkidle", timeout=60000)
-            # Wait for any event list to appear
-            page.wait_for_timeout(1500)
-            html = page.content()
-            ctx.close()
-            browser.close()
-            return html
-    except Exception:
-        return None
+def _abs(base: str, href: str) -> str:
+    return urljoin(base, href)
 
-def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict[str, Any]]:
-    # If Playwright is enabled, re-render
-    rendered = _try_playwright(base_url)
-    if rendered:
-        html = rendered
+def parse_st_germain_ajax(html: str, base_url: str) -> List[Dict]:
+    soup = BeautifulSoup(html, "lxml")
 
-    soup = BeautifulSoup(html, "html.parser")
-    items: List[Dict[str, Any]] = []
+    items: List[Dict] = []
 
-    # St Germain site: event entries appear as links under their calendar listing
-    # Be conservative: pick content inside main and find anchors to /events/<slug>/
-    main = soup.find("main") or soup
-    for a in main.find_all("a", href=True):
-        href = a["href"]
-        if "/events/" not in href:
+    # 1) Try list/detail anchors on their domain that look like events
+    for a in soup.select('a[href*="/events/"], a[href*="/events-calendar/"]'):
+        href = a.get("href") or ""
+        text = (a.get_text(" ", strip=True) or "").strip()
+        if not href:
             continue
-        title = _text(a).strip()
-        if not title:
-            continue
-        # Try to find nearby date text
-        container = a.find_parent(["li", "article", "div"]) or a
-        date_bits = []
-        for cls in ("date", "time", "tribe-event-date", "tribe-event-date-start"):
-            el = container.find(class_=cls)
-            if el:
-                date_bits.append(_text(el))
-        start = " ".join(date_bits).strip()
-
         items.append({
-            "title": title,
-            "start": start,
-            "url": urljoin(base_url, href),
+            "title": text or "Event",
+            "start": "",
+            "url": _abs(base_url, href),
             "location": "",
         })
+    if items:
+        return items
 
-    # Deduplicate by URL
-    seen = set()
-    deduped = []
-    for it in items:
-        if it["url"] in seen:
+    # 2) Try ICS discovery
+    ics_links = soup.select('a[href$=".ics"], a[href*="ical"], link[type="text/calendar"]')
+    for link in ics_links:
+        href = link.get("href") or ""
+        if not href:
             continue
-        seen.add(it["url"])
-        deduped.append(it)
+        events = _parse_ics(_abs(base_url, href))
+        if events:
+            return events
 
-    return deduped[:200]
+    return []

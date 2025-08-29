@@ -1,45 +1,57 @@
-import os
-from contextlib import asynccontextmanager
-from playwright.sync_api import sync_playwright
+# -*- coding: utf-8 -*-
+"""
+Playwright HTML renderer (only used for JS-heavy sources).
+"""
 
-UA = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 "
-    "(compatible; NorthwoodsBot/1.0; +https://github.com/dsundt/northwoods-events)"
-)
+from contextlib import contextmanager
+from urllib.parse import urlparse
+from typing import Optional
 
-def render_url(url: str, wait_selector: str | None = None, timeout_ms: int = 20000) -> tuple[str, str]:
+def _bool_env(name: str, default: bool = False) -> bool:
+    import os
+    v = os.getenv(name)
+    if v is None:
+        return default
+    return v.strip() not in ("0", "false", "False", "")
+
+@contextmanager
+def _playwright():
+    # lazy import so non-JS runs don't require playwright installed
+    from playwright.sync_api import sync_playwright
+    pw = sync_playwright().start()
+    try:
+        yield pw
+    finally:
+        pw.stop()
+
+def render_html(url: str, wait_selector: Optional[str] = None, timeout_ms: int = 30000) -> str:
     """
-    Returns (html, final_url). Uses Chromium headless to render JS sites.
-    Optionally waits for a CSS selector before dumping HTML.
+    Returns fully-rendered HTML for a URL using Playwright/Chromium.
+    - Waits for network to go idle and (optionally) a `wait_selector`.
     """
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True, args=[
-            "--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox"
-        ])
-        ctx = browser.new_context(user_agent=UA, viewport={"width":1280,"height":2000})
-        page = ctx.new_page()
-        page.set_default_timeout(timeout_ms)
-        page.goto(url, wait_until="domcontentloaded")
-        # if page has a consent banner, try to accept common buttons quickly (best-effort)
-        for sel in ["button#onetrust-accept-btn-handler", "button[aria-label='Accept all']", "button:has-text('Accept')"]:
-            try:
-                page.locator(sel).click(timeout=1500)
-                break
-            except Exception:
-                pass
-        # wait for activity/network to settle
+    with _playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
         try:
+            ctx = browser.new_context(user_agent=(
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            ))
+            page = ctx.new_page()
+            page.goto(url, wait_until="domcontentloaded", timeout=timeout_ms)
             page.wait_for_load_state("networkidle", timeout=timeout_ms)
-        except Exception:
-            pass
-        if wait_selector:
+            if wait_selector:
+                try:
+                    page.wait_for_selector(wait_selector, timeout=timeout_ms)
+                except Exception:
+                    # If selector never appears, we still return what we have.
+                    pass
+            # Some Simpleview lists are infinite-scroll; try one scroll
             try:
-                page.wait_for_selector(wait_selector, timeout=4000)
+                page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                page.wait_for_load_state("networkidle", timeout=timeout_ms)
             except Exception:
                 pass
-        html = page.content()
-        final_url = page.url
-        ctx.close()
-        browser.close()
-    return html, final_url
+            html = page.content()
+            return html
+        finally:
+            browser.close()

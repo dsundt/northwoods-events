@@ -1,57 +1,85 @@
 defaults:
-  tzname: America/Chicago
+  tzname: "America/Chicago"
   default_duration_minutes: 120
 
 sources:
-  # --- Modern Tribe (The Events Calendar / WordPress) ---
-  - name: Vilas County (Modern Tribe)
-    url: https://vilaswi.com/events/?eventDisplay=list
-    kind: modern_tribe
-    wait_selector: ".tec-events, .tribe-events, .tribe-common"
+  - name: "Vilas County (Modern Tribe)"
+    url: "https://vilaswi.com/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-  - name: Boulder Junction (Modern Tribe)
-    url: https://boulderjct.org/events/?eventDisplay=list
-    kind: modern_tribe
-    wait_selector: ".tec-events, .tribe-events, .tribe-common"
+  - name: "Boulder Junction (Modern Tribe)"
+    url: "https://boulderjct.org/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-  - name: Eagle River Chamber (Modern Tribe)
-    url: https://eagleriver.org/events/?eventDisplay=list
-    kind: modern_tribe
-    wait_selector: ".tec-events, .tribe-events, .tribe-common"
+  - name: "Eagle River Chamber (Modern Tribe)"
+    url: "https://eagleriver.org/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-  # Micronet/ChamberMaster often renders via AJAX: wait for a list container
-  - name: St. Germain Chamber (Micronet AJAX)
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    kind: micronet_ajax
-    wait_selector: ".cm-event-list, #cm-calendar, .calendar-container, .cm-events-list"
-    wait_ms: 1500
+  - name: "St. Germain Chamber (Micronet AJAX)"
+    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
+    kind: "st_germain_ajax"
+    wait_for_selectors:
+      - ".cm-event-list"
+      - ".event-list"
+      - ".eventItem"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
-    url: https://sayner-starlake-cloverland.org/events/
-    kind: modern_tribe
-    wait_selector: ".tec-events, .tribe-events, .tribe-common"
+  - name: "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)"
+    url: "https://sayner-starlake-cloverland.org/events/"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-  # --- GrowthZone (ChamberMaster / GrowthZone platform) ---
-  - name: Rhinelander Chamber (GrowthZone)
-    url: https://business.rhinelanderchamber.com/events/calendar
-    kind: growthzone
-    wait_selector: ".gz-events, .eventList, .calendar"
+  - name: "Rhinelander Chamber (GrowthZone)"
+    url: "https://business.rhinelanderchamber.com/events/calendar"
+    kind: "growthzone"
+    wait_for_selectors:
+      - ".event-list"
+      - ".eventItem"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
-  # --- Simpleview (DMO sites) ---
-  - name: Minocqua Area Chamber (Simpleview)
-    url: https://www.minocqua.org/events/
-    kind: simpleview
-    wait_selector: ".sv-events, .event-listing, #events-listing"
+  - name: "Minocqua Area Chamber (Simpleview)"
+    url: "https://www.minocqua.org/events/"
+    kind: "simpleview"
+    wait_for_selectors:
+      - ".event-card"
+      - ".event-list"
+      - ".event"        # broad fallback
 
-  - name: Oneida County – Festivals & Events (Simpleview)
-    url: https://oneidacountywi.com/festivals-events/
-    kind: simpleview
-    wait_selector: ".sv-events, .event-listing, #events-listing"
+  - name: "Oneida County – Festivals & Events (Simpleview)"
+    url: "https://oneidacountywi.com/festivals-events/"
+    kind: "simpleview"
+    wait_for_selectors:
+      - ".event-card"
+      - ".event-list"
+      - ".event"        # broad fallback
 
-  # --- Municipal Squarespace calendar (client-rendered) ---
-  - name: Town of Arbor Vitae (Municipal Calendar)
-  url: https://www.townofarborvitae.org/calendar/
-  kind: squarespace
-  wait_selector: "ul.eventlist, section.eventlist, .sqs-block-calendar, .events, .events-list"
-  wait_ms: 1500
+  - name: "Town of Arbor Vitae (Municipal Calendar)"
+    url: "https://www.townofarborvitae.org/calendar/"
+    kind: "municipal"
+    wait_for_selectors:
+      - ".calendar"
+      - ".events"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
+  - name: "Town of Arbor Vitae (Squarespace)"
+    url: "https://www.townofarborvitae.org/calendar/"
+    kind: "squarespace"
+    wait_for_selectors:
+      - ".eventlist"
+      - ".eventlist-event--upcoming"
+      - "[data-collection-type='events']"
+    wait_timeout_ms: 45000

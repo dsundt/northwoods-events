@@ -3,7 +3,7 @@ name: Scrape, Build & Deploy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"  # every 3 hours at :07
+    - cron: '7 */3 * * *'
 
 permissions:
   contents: read
@@ -24,48 +24,40 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      - name: Install dependencies (pip + Playwright browsers)
+      - name: Install dependencies (pip + Playwright)
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Show repo layout (debug)
+      - name: Show layout (debug)
         run: |
-          echo "---- repo root ----"; ls -lah
-          echo "---- src ----"; ls -lah src || true
-          echo "---- state ----"; ls -lah state || true
+          set -euo pipefail
+          echo '---- repo root ----'; ls -lah
+          echo '---- src ----'; ls -lah src || true
+          echo '---- state ----'; ls -lah state || true
 
-      - name: Scrape & Parse (run as module)
-        shell: bash
+      - name: Scrape & Parse (module run)
         env:
-          USE_PLAYWRIGHT: "1"
+          USE_PLAYWRIGHT: '1'
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          # Run as a module so relative imports in src/main.py work
           python -m src.main < sources.yml
           test -s state/last_run_report.json
 
       - name: Quick report to logs
         run: |
-          python - <<'PY'
-import json, io
-with io.open('state/last_run_report.json','r',encoding='utf-8') as f:
-    d = json.load(f)
-print('Sources:', len(d.get('sources',[])))
-for s in (d.get('sources',[])[:10]):
-    print('-', s.get('name',''), 'parsed:', s.get('parsed',0), 'added:', s.get('added',0))
-PY
+          python -c "import json,io; d=json.load(io.open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
 
-      - name: Build static site (no heredocs in YAML)
-        shell: bash
+      - name: Build static site
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          cp state/last_run_report.json public/state/last_run_report.json
+          cp state/last_run_report.json public/state/last_run_report.json || true
           [ -f northwoods.ics ] && cp northwoods.ics public/ics/ || true
           [ -f northwoods-events.ics ] && cp northwoods-events.ics public/ics/ || true
           BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -85,7 +77,7 @@ PY
             '</script>' \
             > public/index.html
 
-      - name: Upload state + site (debug)
+      - name: Upload state and site (debug)
         uses: actions/upload-artifact@v4
         with:
           name: state-debug

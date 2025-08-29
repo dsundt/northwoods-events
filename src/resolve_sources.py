@@ -1,45 +1,32 @@
-# File: src/resolve_sources.py
-from __future__ import annotations
-from pathlib import Path
-import os
-import sys
+# -*- coding: utf-8 -*-
+"""
+Map `parser_kind` from sources.yml to callables.
+"""
 
-def resolve_sources_path(default_name: str = "sources.yaml") -> Path:
-    """
-    Resolve the path to sources.yaml in a robust way:
-    priority:
-      1) --sources CLI arg (if you wire it up in main)
-      2) ENV var SOURCES_YAML
-      3) Next to this file (src/)
-      4) Repo root (parent of src/)
-      5) Current working directory
-    Raises FileNotFoundError with a helpful message if not found.
-    """
-    # 1) CLI arg is intentionally handled by the caller (main) if you add it.
-    # 2) ENV
-    env_path = os.getenv("SOURCES_YAML")
-    if env_path:
-        p = Path(env_path).expanduser().resolve()
-        if p.is_file():
-            return p
+from typing import Callable, Dict
 
-    here = Path(__file__).resolve().parent
-    candidates = [
-        here / default_name,             # src/sources.yaml
-        here.parent / default_name,      # repo-root/sources.yaml (if src/main.py lives under src/)
-        Path.cwd() / default_name,       # current working directory
-    ]
+# Core
+from .parse_modern_tribe import parse_modern_tribe
+from .parse_growthzone import parse_growthzone
+from .parse_ai1ec import parse_ai1ec
+from .parse_travelwi import parse_travelwi
+from .parse_ics import parse_ics
+# New
+from .parse_simpleview import parse_simpleview
+from .parse_st_germain_ajax import parse_st_germain_ajax
 
-    for p in candidates:
-        if p.is_file():
-            return p.resolve()
+PARSERS: Dict[str, Callable] = {
+    "modern_tribe": parse_modern_tribe,
+    "growthzone": parse_growthzone,
+    "ai1ec": parse_ai1ec,
+    "travelwi": parse_travelwi,
+    "ics": parse_ics,
+    "simpleview": parse_simpleview,
+    "st_germain_ajax": parse_st_germain_ajax,
+}
 
-    # Helpful error
-    search_list = "\n".join(str(p) for p in candidates)
-    raise FileNotFoundError(
-        f"Could not find {default_name}. Looked in:\n{search_list}\n\n"
-        f"Tips:\n"
-        f"- Commit {default_name} to the repo root, or\n"
-        f"- Set env SOURCES_YAML=/absolute/path/to/{default_name}, or\n"
-        f"- Pass a --sources /path/to/{default_name} if you wire that up."
-    )
+def get_parser(kind: str) -> Callable:
+    fn = PARSERS.get(kind)
+    if not fn:
+        raise ValueError(f"Unknown parser_kind: {kind}")
+    return fn

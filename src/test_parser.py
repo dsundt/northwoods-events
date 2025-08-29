@@ -15,8 +15,8 @@ from pathlib import Path
 # Ensure local src/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
-from parse_ai1ec import parse_ai1ec
-from main import parse_modern_tribe_html, parse_growthzone_html, ingest_ics
+from src.parse_ai1ec import parse_ai1ec
+from src.main import parse_modern_tribe_html, parse_growthzone_html, ingest_ics
 
 
 def usage():

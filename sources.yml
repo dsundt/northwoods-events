@@ -24,15 +24,14 @@ sources:
       - "article.tribe-events-calendar-list__event"
       - ".tribe-events-calendar-list__event"
 
-  - name: "St. Germain Chamber (Micronet AJAX)"
-    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
-    kind: "st_germain_ajax"
-    wait_for_selectors:
-      - ".cm-event-list"
-      - ".event-list"
-      - ".eventItem"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
+  - name: St. Germain Chamber (Micronet AJAX)
+    url: https://st-germain.com/events-calendar/?eventDisplay=list
+    kind: micronet_ajax
+    wait_selector: ".cm-event, .event-item, #communityCalendar, .calendarEventList"
+    wait_ms: 1200
+    timeout_ms: 30000
+    scroll_steps: 2
+  s  croll_delay_ms: 450
 
   - name: "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)"
     url: "https://sayner-starlake-cloverland.org/events/"
@@ -66,20 +65,9 @@ sources:
       - ".event-list"
       - ".event"        # broad fallback
 
-  - name: "Town of Arbor Vitae (Municipal Calendar)"
-    url: "https://www.townofarborvitae.org/calendar/"
-    kind: "municipal"
-    wait_for_selectors:
-      - ".calendar"
-      - ".events"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
-
-  - name: "Town of Arbor Vitae (Squarespace)"
-    url: "https://www.townofarborvitae.org/calendar/"
-    kind: "squarespace"
-    wait_for_selectors:
-      - ".eventlist"
-      - ".eventlist-event--upcoming"
-      - "[data-collection-type='events']"
-    wait_timeout_ms: 45000
+  - name: Town of Arbor Vitae (Municipal Calendar)
+    url: https://www.townofarborvitae.org/calendar/
+    kind: squarespace
+    wait_selector: "ul.eventlist, section.eventlist, .sqs-block-calendar, .events, .events-list"
+    wait_ms: 1500
+    timeout_ms: 30000

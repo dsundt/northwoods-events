@@ -4,6 +4,7 @@ defaults:
 
 sources:
   # --- Modern Tribe (The Events Calendar / WordPress) ---
+  # These render server-side; no explicit wait needed.
   - name: Vilas County (Modern Tribe)
     url: https://vilaswi.com/events/?eventDisplay=list
     kind: modern_tribe
@@ -16,27 +17,34 @@ sources:
     url: https://eagleriver.org/events/?eventDisplay=list
     kind: modern_tribe
 
+  # --- Micronet (St. Germain uses AJAX to fill the calendar) ---
+  # Wait for the calendar container to be present (server) AND for event links (AJAX) to appear.
   - name: St. Germain Chamber (Micronet AJAX)
     url: https://st-germain.com/events-calendar/?eventDisplay=list
     kind: st_germain_ajax
+    wait_selector: ".event-calendar, a[href*=\"/event/\"]"
 
   - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
     url: https://sayner-starlake-cloverland.org/events/
     kind: modern_tribe
 
   # --- GrowthZone (ChamberMaster / GrowthZone platform) ---
+  # Typically renders server-side list/grid; no wait needed.
   - name: Rhinelander Chamber (GrowthZone)
     url: https://business.rhinelanderchamber.com/events/calendar
     kind: growthzone
 
   # --- Simpleview (Destination Marketing Organization sites) ---
+  # These lists populate via client-side JS. Wait for actual event links to show up.
   - name: Minocqua Area Chamber (Simpleview)
     url: https://www.minocqua.org/events/
     kind: simpleview
+    wait_selector: "a[href*=\"/event/\"]"
 
   - name: Oneida County – Festivals & Events (Simpleview)
     url: https://oneidacountywi.com/festivals-events/
     kind: simpleview
+    wait_selector: "a[href*=\"/event/\"]"
 
   # --- Municipal WordPress Calendar ---
   - name: Town of Arbor Vitae (Municipal Calendar)

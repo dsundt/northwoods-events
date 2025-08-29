@@ -1,34 +1,39 @@
-import time, random, requests
+# -*- coding: utf-8 -*-
+"""
+Fetch utilities with optional Playwright rendering.
+"""
 
-UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " \
-     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 " \
-     "(compatible; NorthwoodsBot/1.0; +https://github.com/dsundt/northwoods-events)"
+import os
+import time
+from typing import Tuple, Optional
+from urllib.parse import urljoin
+import requests
 
-COMMON_HEADERS = {
-    "User-Agent": UA,
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Cache-Control": "no-cache",
-    "Pragma": "no-cache",
-}
+from . import render
 
-def get(url, timeout=25, max_retries=4):
-    last_exc = None
-    for attempt in range(max_retries):
+UA = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+)
+
+def _bool_env(name: str, default: bool = False) -> bool:
+    v = os.getenv(name)
+    if v is None:
+        return default
+    return v.strip() not in ("0", "false", "False", "")
+
+def fetch(url: str, use_js: bool = False, wait_selector: Optional[str] = None, timeout: int = 30) -> Tuple[int, str]:
+    """
+    Returns (http_status, html_text). If `use_js` is True, uses Playwright to render.
+    """
+    if use_js:
         try:
-            r = requests.get(url, headers=COMMON_HEADERS, timeout=timeout, allow_redirects=True)
-            text = r.text or ""
-            # crude bot/challenge detection
-            if any(k in text.lower() for k in [
-                "cf-chl", "cloudflare", "attention required", "captcha", "enable cookies"
-            ]) and r.status_code != 200:
-                # try again with backoff
-                raise RuntimeError(f"Possible challenge page (status {r.status_code})")
-            r.raise_for_status()
-            return text, r.url, r.status_code
+            html = render.render_html(url, wait_selector=wait_selector, timeout_ms=timeout * 1000)
+            # We'll pretend status 200 when render succeeds.
+            return (200, html)
         except Exception as e:
-            last_exc = e
-            if attempt == max_retries - 1:
-                raise
-            time.sleep(2**attempt + random.random())
-    raise last_exc
+            return (0, f"__RENDER_ERROR__ {e}")
+
+    headers = {"User-Agent": UA, "Accept": "text/html,application/xhtml+xml"}
+    r = requests.get(url, headers=headers, timeout=timeout)
+    return (r.status_code, r.text)

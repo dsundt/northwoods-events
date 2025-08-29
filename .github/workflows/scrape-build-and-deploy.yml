@@ -1,9 +1,9 @@
-name: Build ICS & Deploy
+name: Build ICS and Deploy
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-  schedule:
-    - cron: "0 9 * * *"
 
 permissions:
   contents: read
@@ -16,7 +16,11 @@ concurrency:
 
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      USE_PLAYWRIGHT: "1"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,42 +30,25 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python -m playwright install --with-deps chromium
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-      - name: Ensure package init
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright Chromium (with system deps)
+        run: python -m playwright install --with-deps chromium
+
+      - name: Ensure src package exists
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
       - name: Run scraper
-        env:
-          USE_PLAYWRIGHT: "1"
         run: python -m src.main
 
-      - name: Stage site files
-        run: |
-          mkdir -p public/state public/ics
-          cp -f state/last_run_report.json public/state/last_run_report.json || true
-          cp -f state/events.json public/state/events.json || true
-          cp -f northwoods.ics public/ics/northwoods.ics || true
-          if [ ! -f public/index.html ]; then
-            echo '<!doctype html><meta charset="utf-8"><title>Northwoods Events</title><h1>Artifacts</h1><ul><li><a href="state/last_run_report.json">last_run_report.json</a></li><li><a href="state/events.json">events.json</a></li><li><a href="ics/northwoods.ics">northwoods.ics</a></li></ul>' > public/index.html
-          fi
-          if [ ! -f public/.nojekyll ]; then
-            : > public/.nojekyll
-          fi
+      - name: Create public folders
+        run: mkdir -p public/state public/ics
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Stage reports to public
+        run: cp -f state/last_run_report.json public/state/last_run_report.json || true
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public
-          name: github-pages
-          retention-days: 1
-
-      - name: Deploy to Pages
-        uses: actions/deploy-pages@v4
+      - name: Stage events to

@@ -1,73 +1,49 @@
 defaults:
-  tzname: "America/Chicago"
+  tzname: America/Chicago
   default_duration_minutes: 120
 
 sources:
-  - name: "Vilas County (Modern Tribe)"
-    url: "https://vilaswi.com/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+  - name: Vilas County (Modern Tribe)
+    url: https://vilaswi.com/events/?eventDisplay=list
+    kind: modern_tribe
+    wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: "Boulder Junction (Modern Tribe)"
-    url: "https://boulderjct.org/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+  - name: Boulder Junction (Modern Tribe)
+    url: https://boulderjct.org/events/?eventDisplay=list
+    kind: modern_tribe
+    wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: "Eagle River Chamber (Modern Tribe)"
-    url: "https://eagleriver.org/events/?eventDisplay=list"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+  - name: Eagle River Chamber (Modern Tribe)
+    url: https://eagleriver.org/events/?eventDisplay=list
+    kind: modern_tribe
+    wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: St. Germain Chamber (Micronet AJAX)
+  - name: St. Germain Chamber (Modern Tribe)
     url: https://st-germain.com/events-calendar/?eventDisplay=list
-    kind: micronet_ajax
-    wait_selector: ".cm-event, .event-item, #communityCalendar, .calendarEventList"
-    wait_ms: 1200
-    timeout_ms: 30000
-    scroll_steps: 2
-  s  croll_delay_ms: 450
+    kind: modern_tribe
+    wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)"
-    url: "https://sayner-starlake-cloverland.org/events/"
-    kind: "modern_tribe"
-    wait_for_selectors:
-      - "article.tribe-events-calendar-list__event"
-      - ".tribe-events-calendar-list__event"
+  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+    url: https://sayner-starlake-cloverland.org/events/
+    kind: modern_tribe
+    wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: "Rhinelander Chamber (GrowthZone)"
-    url: "https://business.rhinelanderchamber.com/events/calendar"
-    kind: "growthzone"
-    wait_for_selectors:
-      - ".event-list"
-      - ".eventItem"
-      - ".event"        # broad fallback
-    wait_timeout_ms: 45000
+  - name: Rhinelander Chamber (GrowthZone)
+    url: https://business.rhinelanderchamber.com/events/calendar
+    kind: growthzone
+    wait_selector: .listing, .mn-event, .mn-CalendarItem
 
-  - name: "Minocqua Area Chamber (Simpleview)"
-    url: "https://www.minocqua.org/events/"
-    kind: "simpleview"
-    wait_for_selectors:
-      - ".event-card"
-      - ".event-list"
-      - ".event"        # broad fallback
+  - name: Minocqua Area Chamber (Simpleview)
+    url: https://www.minocqua.org/events/
+    kind: simpleview
+    wait_selector: .event-listing, .lv-event, .event
 
-  - name: "Oneida County – Festivals & Events (Simpleview)"
-    url: "https://oneidacountywi.com/festivals-events/"
-    kind: "simpleview"
-    wait_for_selectors:
-      - ".event-card"
-      - ".event-list"
-      - ".event"        # broad fallback
+  - name: Oneida County – Festivals & Events (Simpleview)
+    url: https://oneidacountywi.com/festivals-events/
+    kind: simpleview
+    wait_selector: .event-card, .event-list, .event
 
   - name: Town of Arbor Vitae (Municipal Calendar)
     url: https://www.townofarborvitae.org/calendar/
-    kind: squarespace
-    wait_selector: "ul.eventlist, section.eventlist, .sqs-block-calendar, .events, .events-list"
-    wait_ms: 1500
-    timeout_ms: 30000
+    kind: municipal
+    wait_selector: .ai1ec-event, .eventlist, .events

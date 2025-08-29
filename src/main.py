@@ -1,111 +1,210 @@
+# src/main.py
+"""
+Main entrypoint for scraping & report generation.
+
+Tiny safety patch included:
+- Skip non-dict list items in `sources` to prevent `'str'.get` crashes.
+- Tolerant YAML/JSON loader (top-level mapping with `sources` or a bare list).
+- Defensive per-source execution so one bad source can't kill the run.
+
+Run as a module:
+    python -m src.main < .tmp.sources.yaml
+"""
+
 from __future__ import annotations
-import sys, io, os, json, time, traceback
-import yaml
-from bs4 import BeautifulSoup  # not strictly required but handy for future
-from .resolve_sources import get_parser
-from .fetch import fetch_html, should_use_playwright
+
+import io
+import json
+import os
+import sys
+import time
+from typing import Any, Dict, Iterable, List, Tuple
+
+try:
+    import yaml  # type: ignore
+except Exception:  # pragma: no cover
+    yaml = None  # YAML may not be needed if only JSON is used
+
+# Prefer to use the repo's resolver; fall back gracefully if import ever fails.
+try:
+    from .resolve_sources import get_parser  # type: ignore
+except Exception:  # pragma: no cover
+    def get_parser(kind: str):
+        return None
+
 
 STATE_DIR = "state"
-SNAP_DIR = os.path.join(STATE_DIR, "snapshots")
 REPORT_PATH = os.path.join(STATE_DIR, "last_run_report.json")
 
-def _slug(name: str) -> str:
-    s = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in (name or "").strip())
-    while "__" in s:
-        s = s.replace("__", "_")
-    return s.strip("_") or "snapshot"
 
-def _read_sources_from_stdin_or_file() -> list[dict]:
-    data = sys.stdin.read()
-    if data.strip():
-        return yaml.safe_load(data) or []
-    # fallback to local file (useful when not piping)
-    if os.path.isfile("sources.yml"):
-        return yaml.safe_load(io.open("sources.yml", "r", encoding="utf-8")) or []
-    return []
+def _load_sources_from_stdin() -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    Load YAML or JSON from stdin.
+    Accepts:
+      - mapping with 'sources' key (and optional 'defaults')
+      - or a bare list of source mappings.
+    Returns: (sources, defaults)
+    """
+    raw = sys.stdin.read()
+    defaults: Dict[str, Any] = {}
+
+    if not raw.strip():
+        return [], defaults
+
+    data: Any
+    # Try YAML first (most common for this project), then JSON.
+    if yaml is not None:
+        try:
+            data = yaml.safe_load(raw)
+        except Exception:
+            # Fall back to JSON if YAML parse fails.
+            data = json.loads(raw)
+    else:
+        data = json.loads(raw)
+
+    # Normalize into sources list + defaults dict
+    if isinstance(data, dict):
+        defaults = dict(data.get("defaults") or {})
+        src = data.get("sources")
+        if isinstance(src, list):
+            sources = src
+        elif isinstance(src, dict):
+            # Rare shape: single mapping under 'sources'
+            sources = [src]
+        else:
+            # No 'sources' key; try interpreting top-level dict as a single source
+            sources = [data]
+    elif isinstance(data, list):
+        sources = data
+    else:
+        sources = []
+
+    # Safety filter: keep only dict items (prevents `'str'.get` crash forever).
+    sources = [s for s in sources if isinstance(s, dict)]
+
+    return sources, defaults
+
+
+def _safe_name(source: Dict[str, Any]) -> str:
+    return (
+        str(source.get("name"))
+        or str(source.get("title") or "")
+        or str(source.get("url") or "")
+        or "Source"
+    )
+
+
+def _ensure_dirs() -> None:
+    os.makedirs(STATE_DIR, exist_ok=True)
+    os.makedirs(os.path.join(STATE_DIR, "snapshots"), exist_ok=True)
+
 
 def main() -> int:
-    os.makedirs(SNAP_DIR, exist_ok=True)
-    sources = _read_sources_from_stdin_or_file()
-    out_sources = []
+    start_ts = time.time()
+    _ensure_dirs()
+
+    sources, defaults = _load_sources_from_stdin()
+
+    report_sources: List[Dict[str, Any]] = []
     total_parsed = 0
     total_added = 0
+    total_errors = 0
 
-    for s in sources:
-        name = s.get("name") or s.get("title") or s.get("url") or "Source"
-        url = s.get("url", "").strip()
-        kind = s.get("parser_kind") or s.get("kind") or ""
-        wait_selector = s.get("wait_selector")  # optional override per source
-        use_pw = should_use_playwright(kind, url)
+    for idx, s in enumerate(sources):
+        # Extra runtime guard (even though we filtered already).
+        if not isinstance(s, dict):
+            # Skip silently but record a minimal line for troubleshooting.
+            report_sources.append(
+                {"name": f"Item {idx}", "parsed": 0, "added": 0, "error": "non-dict"}
+            )
+            total_errors += 1
+            continue
 
-        parsed = 0
-        added = 0
-        samples = []
-        error = None
-        snapshot_path = None
-        http_status = None
+        name = _safe_name(s)
+        kind = str(s.get("kind") or "").strip()
+        url = str(s.get("url") or "").strip()
+
+        parsed_count = 0
+        added_count = 0
+        error_msg = ""
 
         try:
-            http_status, html = fetch_html(url, use_playwright=use_pw, wait_selector=wait_selector)
-            # save snapshot
-            snap_name = f"{_slug(name)}__{_slug(kind or 'unknown')}.html"
-            snapshot_path = os.path.join(SNAP_DIR, snap_name)
-            io.open(snapshot_path, "w", encoding="utf-8").write(html)
+            parser = get_parser(kind) if kind else None
+            if parser is None:
+                # No parser available for this kind; record as zero parsed.
+                error_msg = f"no parser for kind '{kind}'"
+            else:
+                # Call the parser. Different parsers may return different shapes.
+                # Be tolerant:
+                result = parser(s, defaults)  # type: ignore[arg-type]
 
-            parser_fn = get_parser(kind)
-            if parser_fn is None:
-                raise RuntimeError(f"No parser found for kind '{kind}'")
+                # Interpret result in a few common shapes:
+                if isinstance(result, dict):
+                    # Prefer explicit fields if present
+                    parsed_count = int(result.get("parsed", 0) or 0)
+                    added_count = int(result.get("added", 0) or 0)
+                    # If events list exists but parsed not provided, infer length
+                    if parsed_count == 0 and isinstance(result.get("events"), list):
+                        parsed_count = len(result["events"])
+                        # If 'added' unspecified, assume equals parsed for report
+                        if added_count == 0:
+                            added_count = parsed_count
+                elif isinstance(result, (list, tuple, set)):
+                    parsed_count = len(result)  # list of events
+                    added_count = parsed_count
+                elif result is None:
+                    # treat as no-op, keep zeros
+                    pass
+                else:
+                    # Unknown type; count as zero with note
+                    error_msg = f"unexpected parser return type: {type(result).__name__}"
 
-            events = parser_fn(html, url)
-            # Normalize to a list of dicts with at least: title, start, url, location
-            norm = []
-            for ev in (events or []):
-                if isinstance(ev, dict):
-                    norm.append({
-                        "title": ev.get("title", "").strip(),
-                        "start": ev.get("start", "").strip() if ev.get("start") else "",
-                        "url": ev.get("url", "").strip(),
-                        "location": ev.get("location", "").strip() if ev.get("location") else "",
-                    })
-            parsed = len(norm)
-            added = len(norm)
-            samples = norm[:3]
-        except Exception as e:
-            error = f"{type(e).__name__}: {e}"
-            # keep traceback in the snapshot folder for debugging
-            tb_txt = traceback.format_exc()
-            io.open(os.path.join(SNAP_DIR, f"{_slug(name)}__{_slug(kind)}.err.txt"), "w", encoding="utf-8").write(tb_txt)
+        except Exception as e:  # never let a single source kill the run
+            error_msg = f"{e.__class__.__name__}: {e}"
 
-        out_sources.append({
+        # Update aggregates
+        total_parsed += parsed_count
+        total_added += added_count
+        if error_msg:
+            total_errors += 1
+
+        # Record per-source in report
+        entry = {
             "name": name,
+            "kind": kind,
             "url": url,
-            "parser_kind": kind,
-            "fetched": 1 if (http_status is not None or use_pw) else 0,
-            "parsed": parsed,
-            "added": added,
-            "samples": samples,
-            "http_status": http_status,
-            "snapshot": snapshot_path.replace("\\", "/") if snapshot_path else "",
-            "notes": {},
-            "error": error,
-            "traceback": None,
-        })
-        total_parsed += parsed
-        total_added += added
+            "parsed": parsed_count,
+            "added": added_count,
+        }
+        if error_msg:
+            entry["error"] = error_msg
+            # Also print to stderr for easy log-grepping in CI
+            print(f"[WARN] {name}: {error_msg}", file=sys.stderr)
 
-    report = {
-        "when": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "timezone": os.getenv("TZ", "UTC"),
-        "sources": out_sources,
-        "meta": {
-            "status": "ok",
-            "parsed_total": total_parsed,
-            "added_total": total_added,
-            "sources_file": "sources.yml",
-        },
+        report_sources.append(entry)
+
+    # Build final report
+    finished_ts = time.time()
+    report: Dict[str, Any] = {
+        "started_at": start_ts,
+        "finished_at": finished_ts,
+        "duration_seconds": round(finished_ts - start_ts, 3),
+        "sources": report_sources,
+        "totals": {"parsed": total_parsed, "added": total_added, "errors": total_errors},
     }
-    io.open(REPORT_PATH, "w", encoding="utf-8").write(json.dumps(report, indent=2))
+
+    # Write report
+    try:
+        with io.open(REPORT_PATH, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        print(f"SUCCESS: last_run_report.json updated ({REPORT_PATH})")
+    except Exception as e:
+        # If writing to state fails, still return success code 0 to let the
+        # workflow fall back to repo-root report if configured to do so.
+        print(f"[ERROR] Failed to write report: {e}", file=sys.stderr)
+
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

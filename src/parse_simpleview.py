@@ -1,36 +1,39 @@
+# parse_simpleview.py
 from __future__ import annotations
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
 
-def parse_simpleview(html: str, base_url: str):
+from bs4 import BeautifulSoup
+
+from .fetch import fetch_html
+from .normalize import normalize_event, parse_dt
+
+
+def parse_simpleview(source, add_event):
+    url = source["url"]
+    # pass source to honor wait_selector like ".event-listing"
+    html = fetch_html(url, source=source)
     soup = BeautifulSoup(html, "lxml")
 
-    out = []
-    # Common Simpleview patterns:
-    # 1) Cards with class names like "event-card", "listing", or within a grid/list
-    for a in soup.select('a[href*="/event/"], a[href*="/events/"]'):
-        title = (a.get_text(" ", strip=True) or "").strip()
-        href = urljoin(base_url, a.get("href", ""))
+    cards = soup.select(".event-listing .event, .results .event, .lv-event, .sv-events .event")
+    for el in cards:
+        title_el = el.select_one("a, h3, .title")
+        title = (title_el.get_text(" ", strip=True) if title_el else "").strip()
         if not title:
             continue
-        # Heuristics to avoid nav links
-        if title.lower() in ("events", "events |", "here", "learn more", "read more"):
-            continue
-        out.append({
-            "title": title,
-            "start": "",         # times are often on detail pages; leave empty
-            "url": href,
-            "location": "",
-        })
+        link = title_el["href"].strip() if title_el and title_el.has_attr("href") else url
 
-    # Deduplicate by URL
-    seen = set()
-    uniq = []
-    for ev in out:
-        u = ev["url"]
-        if u in seen: 
-            continue
-        seen.add(u)
-        uniq.append(ev)
+        start = None
+        dt_el = el.select_one("time[datetime], .date, .event-date")
+        if dt_el:
+            iso = dt_el.get("datetime") or dt_el.get_text(" ", strip=True)
+            start = parse_dt(iso, source.get("tzname"))
 
-    return uniq[:200]
+        evt = normalize_event(
+            title=title,
+            url=link,
+            where=None,
+            start=start,
+            end=None,
+            tzname=source.get("tzname"),
+        )
+        if evt:
+            add_event(evt)

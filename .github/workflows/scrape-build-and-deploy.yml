@@ -1,118 +1,85 @@
-name: Scrape, Build and Deploy
+defaults:
+  tzname: "America/Chicago"
+  default_duration_minutes: 120
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch: {}
+sources:
+  - name: "Vilas County (Modern Tribe)"
+    url: "https://vilaswi.com/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+  - name: "Boulder Junction (Modern Tribe)"
+    url: "https://boulderjct.org/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
+  - name: "Eagle River Chamber (Modern Tribe)"
+    url: "https://eagleriver.org/events/?eventDisplay=list"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-jobs:
-  build-deploy:
-    runs-on: ubuntu-latest
-    env:
-      USE_PLAYWRIGHT: "1"
+  - name: "St. Germain Chamber (Micronet AJAX)"
+    url: "https://st-germain.com/events-calendar/?eventDisplay=list"
+    kind: "st_germain_ajax"
+    wait_for_selectors:
+      - ".cm-event-list"
+      - ".event-list"
+      - ".eventItem"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  - name: "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)"
+    url: "https://sayner-starlake-cloverland.org/events/"
+    kind: "modern_tribe"
+    wait_for_selectors:
+      - "article.tribe-events-calendar-list__event"
+      - ".tribe-events-calendar-list__event"
 
-      - name: Show repo tree
-        run: |
-          echo "---- repo root ----"; ls -lah
-          echo "---- src ----"; ls -lah src || true
-          echo "---- state ----"; ls -lah state || true
+  - name: "Rhinelander Chamber (GrowthZone)"
+    url: "https://business.rhinelanderchamber.com/events/calendar"
+    kind: "growthzone"
+    wait_for_selectors:
+      - ".event-list"
+      - ".eventItem"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+  - name: "Minocqua Area Chamber (Simpleview)"
+    url: "https://www.minocqua.org/events/"
+    kind: "simpleview"
+    wait_for_selectors:
+      - ".event-card"
+      - ".event-list"
+      - ".event"        # broad fallback
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+  - name: "Oneida County – Festivals & Events (Simpleview)"
+    url: "https://oneidacountywi.com/festivals-events/"
+    kind: "simpleview"
+    wait_for_selectors:
+      - ".event-card"
+      - ".event-list"
+      - ".event"        # broad fallback
 
-      - name: Install Python deps
-        run: pip install -r requirements.txt
+  - name: "Town of Arbor Vitae (Municipal Calendar)"
+    url: "https://www.townofarborvitae.org/calendar/"
+    kind: "municipal"
+    wait_for_selectors:
+      - ".calendar"
+      - ".events"
+      - ".event"        # broad fallback
+    wait_timeout_ms: 45000
 
-      - name: Install Playwright Chromium (with deps)
-        run: python -m playwright install --with-deps chromium
-
-      - name: Ensure src is a package
-        run: test -f src/__init__.py || printf "" > src/__init__.py
-
-      - name: Prepare state dir
-        run: mkdir -p state/snapshots
-
-      - name: Normalize sources.yml to a flat list
-        run: |
-          python -c "import io,yaml; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); s=d.get('sources', d); io.open('.tmp.sources.yaml','w',encoding='utf-8').write(yaml.safe_dump(s,sort_keys=False))"
-
-      - name: Run scraper
-        env:
-          USE_PLAYWRIGHT: "1"
-        run: |
-          python -m src.main < .tmp.sources.yaml || echo SCRAPE_FAILED=1 >> $GITHUB_ENV
-
-      - name: Guarantee last_run_report.json exists
-        run: |
-          if [ -s state/last_run_report.json ]; then
-            echo ok
-          elif [ -f last_run_report.json ]; then
-            cp last_run_report.json state/last_run_report.json
-          else
-            echo "{}" > state/last_run_report.json
-          fi
-
-      - name: Quick scrape summary (best-effort)
-        run: |
-          python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]" || true
-
-      - name: Build static site
-        run: |
-          mkdir -p public/state public/ics
-          cp state/last_run_report.json public/state/last_run_report.json
-          if [ -f northwoods.ics ]; then cp northwoods.ics public/ics/; fi
-          if [ -f northwoods-events.ics ]; then cp northwoods-events.ics public/ics/; fi
-          BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          printf '%s\n' '<!doctype html>' > public/index.html
-          printf '%s\n' '<meta charset="utf-8">' >> public/index.html
-          printf '%s\n' '<meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
-          printf '%s\n' '<title>Northwoods Events</title>' >> public/index.html
-          printf '%s\n' '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
-          printf '%s\n' '<h1>Northwoods Events</h1>' >> public/index.html
-          printf '%s\n' "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
-          printf '%s\n' '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
-          printf '%s\n' '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
-
-      - name: Upload debug artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: state-debug
-          path: |
-            state/**
-            public/index.html
-            public/state/last_run_report.json
-            public/ics/**
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: public
-          name: github-pages
-          retention-days: 1
-
-      - name: Deploy to Pages
-        uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages
+  - name: "Town of Arbor Vitae (Squarespace)"
+    url: "https://www.townofarborvitae.org/calendar/"
+    kind: "squarespace"
+    wait_for_selectors:
+      - ".eventlist"
+      - ".eventlist-event--upcoming"
+      - "[data-collection-type='events']"
+    wait_timeout_ms: 45000

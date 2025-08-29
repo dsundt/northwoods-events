@@ -11,7 +11,8 @@ from .parse_ics import parse_ics
 from .parse_squarespace_calendar import parse_squarespace_calendar
 
 _ALIASES = {
-    "st_germain_ajax": "micronet_ajax",
+    # Treat legacy alias as Modern Tribe (site migrated)
+    "st_germain_ajax": "modern_tribe",
     "squarespace_calendar": "squarespace",
 }
 
@@ -28,6 +29,7 @@ _HANDLERS = {
 }
 
 def get_parser(kind: str):
+    kind = (kind or "").strip().lower()
     kind = _ALIASES.get(kind, kind)
     fn = _HANDLERS.get(kind)
     if not fn:

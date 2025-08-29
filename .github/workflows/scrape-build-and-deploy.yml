@@ -3,7 +3,7 @@ name: Scrape, Build & Deploy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "7 */3 * * *"  # every 3 hours at :07
+    - cron: "7 */3 * * *"
 
 permissions:
   contents: read
@@ -17,9 +17,15 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show repo tree (pre)
+        run: |
+          echo "---- repo root ----"; ls -lah
+          echo "---- src ----"; ls -lah src || true
+          echo "---- state ----"; ls -lah state || true
 
       - uses: actions/setup-python@v5
         with:
@@ -34,56 +40,79 @@ jobs:
 
       - name: Convert sources.yml → sources.json
         run: |
-          python -c "import yaml, json, io; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); json.dump(d, io.open('sources.json','w',encoding='utf-8'), indent=2); print('Wrote sources.json')"
+          python - <<'PY'
+import io, json, yaml
+with io.open("sources.yml","r",encoding="utf-8") as f:
+    data = yaml.safe_load(f)
+with io.open("sources.json","w",encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
+print("Wrote sources.json")
+PY
           test -s sources.json
 
-      - name: Scrape & parse
+      - name: Scrape & parse (force stdin)
         env:
           USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          # Run without stdin; main.py will read sources.json or sources.yml
-          python src/main.py
+          # Feed JSON via stdin so main.py can't miss it
+          cat sources.json | python src/main.py
           # Normalize report location
           if [ -f state/last_run_report.json ]; then
-            echo "OK: state/last_run_report.json exists."
+            echo "Found report at state/last_run_report.json"
           elif [ -f last_run_report.json ]; then
-            echo "Moving last_run_report.json → state/"
+            echo "Found report at repo root; moving into state/"
             mkdir -p state
             mv last_run_report.json state/last_run_report.json
           fi
           test -s state/last_run_report.json || (echo "ERROR: state/last_run_report.json not created" && exit 1)
 
-      - name: Build static site (no heredocs)
+      - name: Show report snippet (debug)
+        run: |
+          python - <<'PY'
+import json, sys
+data=json.load(open("state/last_run_report.json","r",encoding="utf-8"))
+print("Sources:", len(data.get("sources",[])))
+for s in data.get("sources",[])[:5]:
+    print("-", s.get("name"), "parsed:", s.get("parsed"), "added:", s.get("added"))
+PY
+
+      - name: Build static site
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          cp state/last_run_report.json public/state/last_run_report.json || true
+          cp state/last_run_report.json public/state/last_run_report.json
           for f in northwoods.ics northwoods-events.ics; do
             [ -f "$f" ] && cp "$f" public/ics/ || true
           done
           BUILD_TIME="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          echo '<!doctype html>' > public/index.html
-          echo '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">' >> public/index.html
-          echo '<title>Northwoods Events</title>' >> public/index.html
-          echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>' >> public/index.html
-          echo '<h1>Northwoods Events</h1>' >> public/index.html
-          echo "<p>Built: <code>${BUILD_TIME}</code></p>" >> public/index.html
-          echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>' >> public/index.html
-          echo '<p><a href="./ics/">ICS files</a> (if present)</p>' >> public/index.html
-          echo '<div id="summary"></div>' >> public/index.html
-          echo '<script type="module">async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();</script>' >> public/index.html
+          {
+            echo '<!doctype html>'
+            echo '<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '<title>Northwoods Events</title>'
+            echo '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}th{background:#f6f8fa}code{background:#f6f8fa;padding:.1rem .3rem;border-radius:.25rem}</style>'
+            echo '<h1>Northwoods Events</h1>'
+            echo "<p>Built: <code>${BUILD_TIME}</code></p>"
+            echo '<p><a href="./state/last_run_report.json">Download last_run_report.json</a></p>'
+            echo '<p><a href="./ics/">ICS files</a> (if present)</p>'
+            echo '<div id="summary"></div>'
+            echo '<script type="module">'
+            echo 'async function main(){try{const r=await fetch("./state/last_run_report.json");const d=await r.json();const s=(d.sources||[]).slice(0,50);const rows=s.map(x=>`<tr><td>${x.name||""}</td><td>${x.parser_kind||""}</td><td>${x.parsed||0}</td><td>${x.added||0}</td></tr>`).join("");document.getElementById("summary").innerHTML=`<h2>Latest sources (sample)</h2><table><thead><tr><th>Name</th><th>Parser</th><th>Parsed</th><th>Added</th></tr></thead><tbody>${rows||"<tr><td colspan=4><em>No data</em></td></tr>"}</tbody></table>`}catch(e){document.getElementById("summary").textContent=String(e)}}main();'
+            echo '</script>'
+          } > public/index.html
 
-      - name: Show output tree (debug)
+      - name: Show output tree (post)
         run: |
           echo "---- public ----"; ls -lah public || true
           echo "---- public/state ----"; ls -lah public/state || true
           echo "---- public/ics ----"; ls -lah public/ics || true
 
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
+
       - id: deployment
         uses: actions/deploy-pages@v4

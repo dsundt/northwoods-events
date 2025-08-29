@@ -4,41 +4,37 @@ from __future__ import annotations
 from bs4 import BeautifulSoup
 
 from .fetch import fetch_html
-from .normalize import normalize_event, parse_dt
+from .normalize import parse_datetime_range, normalize_event, clean_text
 
 def parse_ai1ec(source, add_event):
     url = source["url"]
     html = fetch_html(url, source=source)
     soup = BeautifulSoup(html, "lxml")
 
-    items = soup.select(".ai1ec-event, .ai1ec-event-instance, article.ai1ec_event, .event")
+    items = soup.select(".ai1ec-event, .ai1ec-event-container, article, li")
     if not items:
-        items = soup.select("article, li, div")
+        items = soup.select("div")
 
-    for el in items:
-        title = None
-        link = None
-        start = None
+    for it in items:
+        a = it.select_one("a[href]")
+        title = clean_text(a.get_text(" ", strip=True) if a else it.get_text(" ", strip=True))
+        link = a.get("href") if a and a.has_attr("href") else url
 
-        h = el.select_one(".ai1ec-event-title, h3, h2, a")
-        if h:
-            title = h.get_text(" ", strip=True)
-            a = h.find("a") or (h if h.name == "a" else None)
-            if a and a.has_attr("href"):
-                link = a["href"]
-
-        dt_el = el.select_one("time[datetime], .ai1ec-time, .ai1ec-date")
-        if dt_el:
-            iso = dt_el.get("datetime") or dt_el.get_text(" ", strip=True)
-            start = parse_dt(iso, source.get("tzname"))
+        date_el = it.select_one("time[datetime], .ai1ec-event-time, .ai1ec-event-time-range, .ai1ec-time")
+        date_text = date_el.get("datetime") if date_el and date_el.has_attr("datetime") else (
+            date_el.get_text(" ", strip=True) if date_el else it.get_text(" ", strip=True)
+        )
+        start, end, all_day = parse_datetime_range(date_text or "", source.get("tzname"))
 
         evt = normalize_event(
             title=title or "",
             url=link,
             where=None,
             start=start,
-            end=None,
+            end=end,
             tzname=source.get("tzname"),
+            description=None,
+            all_day=all_day,
             source_name=source.get("name"),
         )
         if evt:

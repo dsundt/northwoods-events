@@ -8,9 +8,12 @@ from .parse_micronet_ajax import parse_micronet_ajax
 from .parse_ai1ec import parse_ai1ec
 from .parse_travelwi import parse_travelwi
 from .parse_ics import parse_ics
+from .parse_squarespace_calendar import parse_squarespace_calendar  # <-- NEW
+
 
 _ALIASES = {
     "st_germain_ajax": "micronet_ajax",
+    "squarespace_calendar": "squarespace",  # allow either label
 }
 
 _HANDLERS = {
@@ -21,7 +24,8 @@ _HANDLERS = {
     "ai1ec": parse_ai1ec,
     "travelwi": parse_travelwi,
     "ics": parse_ics,
-    "municipal": parse_ai1ec,  # safe default; many municipal WP sites use AI1EC
+    "municipal": parse_ai1ec,           # unchanged fallback
+    "squarespace": parse_squarespace_calendar,  # <-- NEW
 }
 
 

@@ -20,15 +20,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -37,55 +35,17 @@ jobs:
       - name: Ensure src package
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
-      - name: Extract sources to temp YAML
-        run: |
-          printf '%s\n' 'import sys,io,yaml
-raw=open("sources.yml","r",encoding="utf-8").read()
-data=yaml.safe_load(raw)
-srcs=data.get("sources",[]) if isinstance(data,dict) else (data if isinstance(data,list) else [])
-yaml.safe_dump(srcs, open(".tmp.sources.yaml","w",encoding="utf-8"))' > .github_extract_sources.py
-          python .github_extract_sources.py
-
-      - name: Scrape
+      - name: Scrape and build ICS
         env:
           USE_PLAYWRIGHT: "1"
-        run: |
-          python -m src.main < .tmp.sources.yaml
-
-      - name: Print Scrape Summary
-        run: |
-          if [ -s state/last_run_report.json ]; then
-            python - <<'PY'
-import json
-d=json.load(open('state/last_run_report.json','r',encoding='utf-8'))
-print('Sources:',len(d.get('sources',[])))
-for s in d.get('sources',[]):
-  name=s.get('name','')
-  parsed=s.get('parsed',0)
-  added=s.get('added',0)
-  err=s.get('error') or ''
-  print(f"- {name} parsed:{parsed} added:{added}" + (f" ERR:{err}" if err else ""))
-PY
-          else
-            echo "ERROR: state/last_run_report.json missing"; exit 1
-          fi
+        run: python -m src.main
 
       - name: Stage outputs for Pages
         run: |
           mkdir -p public/state public/ics
-          cp -f state/last_run_report.json public/state/last_run_report.json
+          cp -f state/last_run_report.json public/state/last_run_report.json || true
           cp -f state/events.json public/state/events.json || true
           cp -f northwoods.ics public/ics/northwoods.ics || true
-          ls -l public/state || true
-          ls -l public/ics || true
-
-      - name: Upload debug artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: state-debug
-          path: |
-            state/**
-            northwoods.ics
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -96,5 +56,4 @@ PY
           path: public
 
       - name: Deploy to Pages
-        id: deployment
         uses: actions/deploy-pages@v4

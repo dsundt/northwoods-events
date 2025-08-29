@@ -1,81 +1,116 @@
-from __future__ import annotations
-import json
-from typing import Any, Dict, List
-from urllib.parse import urljoin
+# -*- coding: utf-8 -*-
+"""
+Simpleview parser:
+- First tries rendered DOM (event cards/links).
+- Then tries to discover an ICS feed in-page.
+- Finally tries common ICS URLs or falls back to obvious anchors.
+"""
+
+from typing import List, Dict
+from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
+import re
+import requests
 
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
+def _abs(base: str, href: str) -> str:
+    return urljoin(base, href)
 
-def _as_items_from_jsonld(soup, base_url: str) -> List[Dict[str, Any]]:
-    out: List[Dict[str, Any]] = []
-    for s in soup.find_all("script", type="application/ld+json"):
-        try:
-            data = json.loads(s.string or "{}")
-        except Exception:
-            continue
-        objs = data if isinstance(data, list) else [data]
-        for obj in objs:
-            if (obj or {}).get("@type") in ("Event",):
-                name = obj.get("name", "")
-                start = obj.get("startDate", "") or obj.get("startTime", "")
-                url = obj.get("url", base_url)
-                loc = ""
-                loc_obj = obj.get("location")
-                if isinstance(loc_obj, dict):
-                    loc = loc_obj.get("name") or _text(loc_obj.get("address"))
-                out.append({"title": name, "start": start, "url": url, "location": loc})
-    return out
+def _ics_candidates(base_url: str) -> List[str]:
+    u = base_url.rstrip("/")
+    return [
+        f"{u}?format=ical",
+        f"{u}?format=ics",
+        f"{u}?ical=1",
+        f"{u}?ical=true",
+        f"{u}/?format=ical",
+        f"{u}/?format=ics",
+        f"{u}/?ical=1",
+        f"{u}/?ical=true",
+    ]
 
-def _as_items_from_cards(soup, base_url: str) -> List[Dict[str, Any]]:
-    out: List[Dict[str, Any]] = []
-    # Typical Simpleview listing cards
-    cards = soup.select("[class*=event] a, .teaser a, .listing a")
-    if not cards:
-        cards = soup.find_all("a", href=True)
-    for a in cards:
-        href = a.get("href", "")
+def _parse_ics(url: str) -> List[Dict]:
+    try:
+        from ics import Calendar
+        import requests
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        cal = Calendar(r.text)
+        out = []
+        for e in cal.events:
+            start = ""
+            try:
+                # Prefer naive ISO (UTC or local naive acceptable for your pipeline)
+                start = e.begin.datetime.isoformat(timespec="seconds")
+            except Exception:
+                pass
+            out.append({
+                "title": (e.name or "").strip(),
+                "start": start,
+                "url": (e.url or url).strip(),
+                "location": (e.location or "").strip(),
+            })
+        return out
+    except Exception:
+        return []
+
+def parse_simpleview(html: str, base_url: str) -> List[Dict]:
+    soup = BeautifulSoup(html, "lxml")
+
+    # Strategy 1: rendered DOM – find event anchors that look like /event/... pages
+    anchors = soup.select('a[href*="/event/"]')
+    items: List[Dict] = []
+    seen = set()
+    for a in anchors:
+        href = a.get("href") or ""
+        text = (a.get_text(" ", strip=True) or "").strip()
         if not href:
             continue
-        # Prefer event detail pages when obvious
-        if "/event/" not in href and "/events/" not in href:
+        href_abs = _abs(base_url, href)
+        # Guard against nav/crumbs: require some non-trivial title text
+        if len(text) < 3:
             continue
-        title = _text(a).strip()
-        if not title:
-            # look up to parent heading
-            h = a.find_parent().find(["h3","h2"]) if a.find_parent() else None
-            title = _text(h)
-        if not title:
+        key = (text.lower(), href_abs)
+        if key in seen:
             continue
-        out.append({"title": title, "start": "", "url": urljoin(base_url, href), "location": ""})
-    return out
+        seen.add(key)
+        items.append({
+            "title": text,
+            "start": "",           # date extraction differs by theme; leave blank if not obvious
+            "url": href_abs,
+            "location": "",
+        })
 
-def _as_items_from_hub_links(soup, base_url: str) -> List[Dict[str, Any]]:
-    """When a page is just a hub with 'See more events here' links, return those."""
-    out: List[Dict[str, Any]] = []
-    for a in soup.find_all("a", href=True):
-        txt = _text(a).lower()
-        if "events" in txt and ("here" in txt or "calendar" in txt):
-            out.append({"title": _text(a), "start": "", "url": urljoin(base_url, a["href"]), "location": ""})
-    return out
+    if items:
+        return items
 
-def parse_simpleview(html: str, base_url: str) -> List[Dict[str, Any]]:
-    soup = BeautifulSoup(html, "html.parser")
-    items = []
-
-    items.extend(_as_items_from_jsonld(soup, base_url))
-    if not items:
-        items.extend(_as_items_from_cards(soup, base_url))
-    if not items:
-        items.extend(_as_items_from_hub_links(soup, base_url))
-
-    # Deduplicate by URL
-    seen = set()
-    deduped = []
-    for it in items:
-        if it["url"] in seen:
+    # Strategy 2: discover ICS feed in page
+    ics_links = soup.select('a[href$=".ics"], a[href*="ical"], a[href*="ICS"], link[type="text/calendar"]')
+    for link in ics_links:
+        href = link.get("href") or ""
+        if not href:
             continue
-        seen.add(it["url"])
-        deduped.append(it)
+        ics_url = _abs(base_url, href)
+        events = _parse_ics(ics_url)
+        if events:
+            return events
 
-    return deduped[:200]
+    # Strategy 3: try common ICS URLs
+    for guess in _ics_candidates(base_url):
+        events = _parse_ics(guess)
+        if events:
+            return events
+
+    # Strategy 4: last resort – any on-page links that look like “events” section
+    more = soup.select('a[href*="/events/"]')
+    for a in more:
+        href = a.get("href") or ""
+        text = (a.get_text(" ", strip=True) or "").strip() or "Events |"
+        if not href:
+            continue
+        items.append({
+            "title": text,
+            "start": "",
+            "url": _abs(base_url, href),
+            "location": "",
+        })
+    return items

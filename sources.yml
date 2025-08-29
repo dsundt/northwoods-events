@@ -23,7 +23,7 @@ sources:
     kind: modern_tribe
     wait_selector: .tribe-events, .tec-events, .tribe-common
 
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+  - name: Sayner-Star Lake-Cloverland Chamber (Modern Tribe)
     url: https://sayner-starlake-cloverland.org/events/
     kind: modern_tribe
     wait_selector: .tribe-events, .tec-events, .tribe-common
@@ -38,12 +38,12 @@ sources:
     kind: simpleview
     wait_selector: .event-listing, .lv-event, .event
 
-  - name: Oneida County – Festivals & Events (Simpleview)
+  - name: Oneida County Festivals and Events (Simpleview)
     url: https://oneidacountywi.com/festivals-events/
     kind: simpleview
     wait_selector: .event-card, .event-list, .event
 
   - name: Town of Arbor Vitae (Municipal Calendar)
     url: https://www.townofarborvitae.org/calendar/
-    kind: municipal
+    kind: ai1ec
     wait_selector: .ai1ec-event, .eventlist, .events

@@ -4,232 +4,283 @@
   <meta charset="utf-8">
   <title>Northwoods Events – Parse Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <style>
-    :root { --fg:#111; --muted:#666; --bg:#fff; --line:#ddd; }
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;}
-    header{padding:16px 12px;border-bottom:1px solid var(--line);}
-    header h1{margin:0 0 6px 0;font-size:18px;}
-    header .links a{margin-right:12px}
-    .wrap{padding:12px;max-width:1200px;margin:0 auto;}
-    .panel{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-    .panel label{font-size:12px;color:var(--muted);display:block}
-    .panel input,.panel select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;min-width:160px}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid var(--line);padding:8px 6px;vertical-align:top}
-    th{font-size:12px;text-align:left;color:var(--muted)}
-    tbody tr:hover{background:#fafafa}
-    .muted{color:var(--muted)}
-    .nowrap{white-space:nowrap}
-    .right{margin-left:auto}
-    .bad{color:#b20000}
-    .pill{display:inline-block;border:1px solid var(--line);padding:1px 6px;border-radius:999px;font-size:12px}
-    .pager{display:flex;align-items:center;gap:8px;margin-top:10px}
-    button{padding:6px 10px;border:1px solid var(--line);background:#f6f6f6;border-radius:6px;cursor:pointer}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    details summary{cursor:pointer}
-    code{background:#f6f6f6;padding:1px 4px;border-radius:4px}
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 1.25rem; margin: 0 0 8px; }
+    .links a { margin-right: 12px; }
+    .note { color:#555; margin: 4px 0 16px; }
+    .status { padding:8px; border:1px solid #ddd; border-radius:8px; background:#f9f9f9; margin-bottom:12px; }
+    .status b { display:inline-block; min-width: 110px; }
+    .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin: 12px 0; }
+    label { font-size: 0.9rem; }
+    input, select { padding:6px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #e2e2e2; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #fafafa; position: sticky; top: 0; }
+    tfoot td { color:#555; font-size:0.9rem; }
+    .muted { color:#888; }
+    .error { color:#b00020; white-space:pre-wrap; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef; }
+    .tight { margin:0; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Northwoods Events – Parse Viewer</h1>
-    <div class="links">
-      <a id="lnk-report" href="#">last_run_report.json</a>
-      <a id="lnk-events" href="#">events.json</a>
-      <a id="lnk-ics" href="#">northwoods.ics</a>
-    </div>
-    <div id="summary" class="muted">Loading summary…</div>
-  </header>
+  <h1>Northwoods Events – Parse Viewer</h1>
+  <div class="links">
+    <a id="lnkLastRun" href="#">last_run_report.json</a>
+    <a id="lnkEvents" href="#">events.json</a>
+    <a id="lnkIcs" href="#">northwoods.ics</a>
+  </div>
+  <p class="note">This page reads <code>state/last_run_report.json</code> and <code>state/events.json</code> from the Pages artifact and renders a simple table. Times show in your browser’s local timezone.</p>
 
-  <div class="wrap">
-    <div class="panel">
-      <div>
-        <label for="q">Search (title/location)</label>
-        <input id="q" type="search" placeholder="eg. craft fair, st. germain">
-      </div>
-      <div>
-        <label for="srcSel">Source</label>
-        <select id="srcSel"><option value="">All sources</option></select>
-      </div>
-      <div>
-        <label for="from">From (start)</label>
-        <input id="from" type="date">
-      </div>
-      <div>
-        <label for="to">To (start)</label>
-        <input id="to" type="date">
-      </div>
-      <div>
-        <label for="pageSize">Rows per page</label>
-        <select id="pageSize">
-          <option>25</option>
-          <option selected>50</option>
-          <option>100</option>
-          <option>200</option>
-        </select>
-      </div>
-      <div class="right">
-        <label>&nbsp;</label>
-        <button id="resetBtn" type="button">Reset filters</button>
-      </div>
-    </div>
-
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th class="nowrap">Start</th>
-          <th class="nowrap">End</th>
-          <th>All-day</th>
-          <th>Location</th>
-          <th>Source</th>
-        </tr>
-      </thead>
-      <tbody><tr><td colspan="6" class="muted">Loading events…</td></tr></tbody>
-    </table>
-
-    <div class="pager">
-      <button id="prevBtn" disabled>Prev</button>
-      <span id="pageInfo" class="muted"></span>
-      <button id="nextBtn" disabled>Next</button>
-      <span id="counts" class="pill"></span>
-    </div>
-
-    <details style="margin-top:12px">
-      <summary>What am I seeing?</summary>
-      <div class="muted" style="margin-top:6px">
-        This page reads <code>state/last_run_report.json</code> and <code>state/events.json</code> from the Pages artifact and renders a simple table.
-        Times are shown in your browser’s local timezone; the raw ISO timestamps are in tooltips.
-      </div>
-    </details>
-
-    <div id="errorBox" class="bad" style="margin-top:10px"></div>
+  <div id="status" class="status">
+    <div><b>Report:</b> <span id="status-report">Loading…</span></div>
+    <div><b>Events:</b> <span id="status-events">Loading…</span></div>
+    <div><b>Debug:</b> <span id="status-debug" class="muted">–</span></div>
   </div>
 
+  <div class="controls">
+    <label>Search (title/location) <input id="q" type="search" placeholder="type to filter"></label>
+    <label>Source
+      <select id="source">
+        <option value="">All sources</option>
+      </select>
+    </label>
+    <label>From <input id="from" type="date"></label>
+    <label>To <input id="to" type="date"></label>
+    <label>Rows per page
+      <select id="pageSize">
+        <option>25</option>
+        <option>50</option>
+        <option selected>100</option>
+        <option>200</option>
+      </select>
+    </label>
+    <button id="reset">Reset filters</button>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>All-day</th>
+        <th>Location</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody id="rows"><tr><td colspan="6">Loading events…</td></tr></tbody>
+    <tfoot>
+      <tr><td colspan="6" id="pager" class="muted">–</td></tr>
+    </tfoot>
+  </table>
+
+  <p class="tight"><small class="muted">What am I seeing? This validates what the scraper emitted, not the live sites.</small></p>
+
+  <noscript><p class="error">This page needs JavaScript enabled.</p></noscript>
+
   <script>
-    (function(){
-      // Robust base path for GitHub Project Pages:
-      // "/northwoods-events", "/northwoods-events/", or "/northwoods-events/anything"
-      // -> "/northwoods-events/"
-      // User/Org Pages (root "/") -> "/"
-      const parts = location.pathname.split('/').filter(Boolean);
-      const BASE = parts.length ? ('/' + parts[0] + '/') : '/';
+  (function () {
+    // Compute repo base, then build URLs like /northwoods-events/state/events.json
+    var base = location.pathname.replace(/\/+$/, '') + '/';
+    var reportUrl = base + 'state/last_run_report.json?v=' + Date.now();
+    var eventsUrl = base + 'state/events.json?v=' + Date.now();
+    var icsUrl = base + 'ics/northwoods.ics?v=' + Date.now();
 
-      const urls = {
-        report: BASE + 'state/last_run_report.json',
-        events: BASE + 'state/events.json',
-        ics:    BASE + 'ics/northwoods.ics'
-      };
+    // Link targets
+    document.getElementById('lnkLastRun').href = reportUrl.replace(/\?v=.*/, '');
+    document.getElementById('lnkEvents').href  = eventsUrl.replace(/\?v=.*/, '');
+    document.getElementById('lnkIcs').href     = icsUrl.replace(/\?v=.*/, '');
 
-      // Wire top links
-      document.getElementById('lnk-report').href = urls.report;
-      document.getElementById('lnk-events').href = urls.events;
-      document.getElementById('lnk-ics').href = urls.ics;
+    var S = function(id){ return document.getElementById(id); };
+    var statusReport = S('status-report');
+    var statusEvents = S('status-events');
+    var statusDebug  = S('status-debug');
+    var rowsEl = S('rows');
+    var pagerEl = S('pager');
 
-      const els = {
-        summary: document.getElementById('summary'),
-        q: document.getElementById('q'),
-        srcSel: document.getElementById('srcSel'),
-        from: document.getElementById('from'),
-        to: document.getElementById('to'),
-        pageSize: document.getElementById('pageSize'),
-        resetBtn: document.getElementById('resetBtn'),
-        tblBody: document.querySelector('#tbl tbody'),
-        prevBtn: document.getElementById('prevBtn'),
-        nextBtn: document.getElementById('nextBtn'),
-        pageInfo: document.getElementById('pageInfo'),
-        counts: document.getElementById('counts'),
-        error: document.getElementById('errorBox'),
-      };
-
-      let all = [];
-      let view = [];
-      let page = 1;
-
-      function fmt(dtIso){
-        if(!dtIso) return '';
-        const d = new Date(dtIso);
+    function fmt(dt) {
+      if (!dt) return '';
+      try {
+        var d = new Date(dt);
+        if (String(d) === 'Invalid Date') return String(dt);
         return d.toLocaleString();
+      } catch (e) { return String(dt); }
+    }
+    function safe(v, fallback) {
+      return (v === null || v === undefined) ? (fallback || '') : v;
+    }
+
+    function parseFlexible(text) {
+      // Try strict JSON first
+      try {
+        var j = JSON.parse(text);
+        // If array
+        if (Array.isArray(j)) return j;
+        // Common wrappers
+        if (j && Array.isArray(j.events)) return j.events;
+        if (j && Array.isArray(j.data)) return j.data;
+        // Keyed object -> values
+        if (j && typeof j === 'object') return Object.keys(j).map(function(k){ return j[k]; });
+      } catch (e) {
+        // Try NDJSON (one JSON per line)
+        var lines = text.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
+        var out = [];
+        var ndjsonErrs = 0;
+        for (var i=0;i<lines.length;i++){
+          try { out.push(JSON.parse(lines[i])); }
+          catch (e2) { ndjsonErrs++; }
+        }
+        if (out.length && ndjsonErrs === 0) return out;
+        // If nothing worked, bubble up
+        throw e;
+      }
+      // Fallback empty
+      return [];
+    }
+
+    function setStatus(el, text, ok) {
+      el.textContent = text;
+      if (!ok) el.classList.add('error'); else el.classList.remove('error');
+    }
+
+    function renderTable(data) {
+      if (!data || !data.length) {
+        rowsEl.innerHTML = '<tr><td colspan="6">No events found.</td></tr>';
+        pagerEl.textContent = '0 rows';
+        return;
       }
 
-      function setSummary(r){
-        if(!r || !r.totals){ els.summary.textContent = 'No summary available.'; return; }
-        const when = r.when ? new Date(r.when).toLocaleString() : '';
-        els.summary.innerHTML =
-          'Run time: <b>'+when+'</b> '+
-          '• Total parsed: <b>'+r.totals.parsed+'</b> '+
-          '• Added: <b>'+r.totals.added+'</b> '+
-          '• Store size: <b>'+r.totals.store_size+'</b>';
-      }
-
-      function uniqueSources(items){
-        const s = new Set();
-        for(const e of items){ if(e && e.source) s.add(e.source); }
-        return Array.from(s).sort((a,b)=>a.localeCompare(b));
-      }
-
-      function normalize(e){
-        return {
-          title: e.title || e.name || '',
-          start_iso: e.start_iso || e.start || e.startTime || '',
-          end_iso: e.end_iso || e.end || e.endTime || '',
-          all_day: !!(e.all_day ?? e.allDay),
-          location: e.location || e.venue || '',
-          source: e.source || e.source_name || '',
-          url: e.url || e.link || ''
-        };
-      }
-
-      function applyFilters(){
-        const q = els.q.value.trim().toLowerCase();
-        const src = els.srcSel.value;
-        const from = els.from.value ? new Date(els.from.value+'T00:00:00') : null;
-        const to = els.to.value ? new Date(els.to.value+'T23:59:59') : null;
-
-        view = all.filter(e=>{
-          if(src && e.source !== src) return false;
-          const starts = e.start_iso ? new Date(e.start_iso) : null;
-          if(from && starts && starts < from) return false;
-          if(to && starts && starts > to) return false;
-          if(q){
-            const hay = ((e.title||'')+' '+(e.location||'')).toLowerCase();
-            if(!hay.includes(q)) return false;
-          }
-          return true;
-        }).sort((a,b)=>{
-          const da = a.start_iso ? Date.parse(a.start_iso) : 0;
-          const db = b.start_iso ? Date.parse(b.start_iso) : 0;
-          return da - db;
+      // Collect list of sources for filter
+      var sources = {};
+      data.forEach(function(ev){
+        var s = safe(ev.source && (ev.source.name || ev.source), '');
+        if (s) sources[s] = true;
+      });
+      var sourceSel = S('source');
+      var current = sourceSel.value;
+      // Keep existing selection if possible; otherwise rebuild
+      if (sourceSel.options.length <= 1) {
+        Object.keys(sources).sort().forEach(function(name){
+          var opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          sourceSel.appendChild(opt);
         });
-
-        page = 1;
-        render();
       }
 
-      function render(){
-        const size = parseInt(els.pageSize.value,10) || 50;
-        const total = view.length;
-        const pages = Math.max(1, Math.ceil(total / size));
-        if(page > pages) page = pages;
+      function applyFilters(list) {
+        var q = S('q').value.toLowerCase().trim();
+        var src = S('source').value;
+        var dFrom = S('from').value ? new Date(S('from').value) : null;
+        var dTo   = S('to').value ? new Date(S('to').value) : null;
 
-        const startIdx = (page - 1) * size;
-        const endIdx = Math.min(startIdx + size, total);
-        const slice = view.slice(startIdx, endIdx);
+        return list.filter(function(ev){
+          var t = (safe(ev.title,'') + ' ' + safe(ev.location,'')).toLowerCase();
+          if (q && t.indexOf(q) === -1) return false;
 
-        els.tblBody.innerHTML = slice.map(e=>{
-          const title = e.title ? e.title.replace(/</g,'&lt;') : '';
-          const url = e.url ? e.url : null;
-          const startT = e.start_iso ? fmt(e.start_iso) : '';
-          const endT = e.end_iso ? fmt(e.end_iso) : '';
-          const allDay = e.all_day ? 'Yes' : '';
-          const where = e.location ? e.location.replace(/</g,'&lt;') : '';
-          const source = e.source ? e.source.replace(/</g,'&lt;') : '';
+          var sName = safe(ev.source && (ev.source.name || ev.source), '');
+          if (src && sName !== src) return false;
 
-          const titleHtml = url ? '<a href="'+url+'">'+title+'</a>' : title;
-          const startHtml = e.start_iso ? '<span title="'+e.start_iso+'">'+startT+'</span>' : '';
-          const endHtml = e.end_iso ? '<span title="'+e.end_iso+'">'+endT+'</span>' : '';
+          var start = ev.start ? new Date(ev.start) : null;
+          if (dFrom && start && start < dFrom) return false;
+          if (dTo && start && start > new Date(dTo.getTime() + 24*3600*1000 - 1)) return false;
+
+          return true;
+        });
+      }
+
+      function pageAndRender(list) {
+        var pageSize = parseInt(S('pageSize').value, 10) || 100;
+        var out = list.slice(0, pageSize);
+        rowsEl.innerHTML = out.map(function(ev){
+          var title = safe(ev.title, '(untitled)');
+          var loc = safe(ev.location, '');
+          var src = safe(ev.source && (ev.source.name || ev.source), '');
+          var allDay = ev.all_day === true || ev.allDay === true ? 'Yes' : '';
+          var start = fmt(ev.start);
+          var end   = fmt(ev.end);
 
           return '<tr>'
-            + '<td>'+titleHtml+'</td>'
-            + '<td class="nowrap">'+startHtml+'</td>'
-            + '<td class="nowrap">'
+            + '<td>' + escapeHtml(title) + '</td>'
+            + '<td title="' + escapeAttr(safe(ev.start,'')) + '">' + start + '</td>'
+            + '<td title="' + escapeAttr(safe(ev.end,''))   + '">' + end   + '</td>'
+            + '<td>' + allDay + '</td>'
+            + '<td>' + escapeHtml(loc) + '</td>'
+            + '<td>' + (src ? ('<span class="pill">' + escapeHtml(src) + '</span>') : '') + '</td>'
+            + '</tr>';
+        }).join('');
+        pagerEl.textContent = list.length + ' rows (showing up to ' + pageSize + ')';
+      }
+
+      function refresh() { pageAndRender(applyFilters(data)); }
+
+      ['q','source','from','to','pageSize'].forEach(function(id){
+        S(id).addEventListener('input', refresh);
+        S(id).addEventListener('change', refresh);
+      });
+      S('reset').addEventListener('click', function(){
+        S('q').value = ''; S('source').value = ''; S('from').value = ''; S('to').value = '';
+        refresh();
+      });
+
+      refresh();
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]); }); }
+    function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+    function loadReport() {
+      var t0 = Date.now();
+      return fetch(reportUrl, {cache:'no-store'}).then(function(r){
+        var ok = r.ok;
+        return r.text().then(function(txt){
+          var len = (txt || '').length;
+          if (!ok) throw new Error('HTTP ' + r.status + ' reading last_run_report.json');
+          var j = {};
+          try { j = JSON.parse(txt); } catch(e){ throw new Error('Invalid JSON in last_run_report.json: ' + e.message); }
+          var parsed = (j.totals && j.totals.parsed) || 0;
+          var added  = (j.totals && j.totals.added)  || 0;
+          setStatus(statusReport, 'OK — parsed ' + parsed + ', added ' + added, true);
+          return j;
+        });
+      }).catch(function(e){
+        setStatus(statusReport, e.message, false);
+        statusDebug.textContent = 'Report fetch failed in ' + (Date.now()-t0) + 'ms';
+      });
+    }
+
+    function loadEvents() {
+      var t0 = Date.now();
+      return fetch(eventsUrl, {cache:'no-store'}).then(function(r){
+        var ok = r.ok;
+        return r.text().then(function(txt){
+          var len = (txt || '').length;
+          if (!ok) throw new Error('HTTP ' + r.status + ' reading events.json (bytes: ' + len + ')');
+          var data = [];
+          try {
+            data = parseFlexible(txt);
+          } catch (e) {
+            throw new Error('Could not parse events.json: ' + e.message + ' (first 200 chars: ' + (txt || '').slice(0,200).replace(/\s+/g,' ') + ' )');
+          }
+          setStatus(statusEvents, 'OK — ' + data.length + ' events', true);
+          statusDebug.textContent = 'Fetched ' + len + ' bytes in ' + (Date.now()-t0) + 'ms';
+          return data;
+        });
+      }).catch(function(e){
+        setStatus(statusEvents, e.message, false);
+      });
+    }
+
+    // Kick off
+    loadReport();
+    loadEvents().then(function(data){ renderTable(data); }).catch(function(){ /* handled in setStatus */ });
+
+  })();
+  </script>
+</body>
+</html>

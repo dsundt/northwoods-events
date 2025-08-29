@@ -108,18 +108,20 @@
 
   <script>
     (function(){
-      // Compute the project root path (works on user.github.io/<repo>/…)
-      const ROOT = (function(){
-        const p = location.pathname;
-        return p.endsWith('/') ? p : p.replace(/\/[^\/]*$/, '/');
-      })();
+      // Robust base path for GitHub Project Pages:
+      // "/northwoods-events", "/northwoods-events/", or "/northwoods-events/anything"
+      // -> "/northwoods-events/"
+      // User/Org Pages (root "/") -> "/"
+      const parts = location.pathname.split('/').filter(Boolean);
+      const BASE = parts.length ? ('/' + parts[0] + '/') : '/';
+
       const urls = {
-        report: ROOT + 'state/last_run_report.json',
-        events: ROOT + 'state/events.json',
-        ics:    ROOT + 'ics/northwoods.ics'
+        report: BASE + 'state/last_run_report.json',
+        events: BASE + 'state/events.json',
+        ics:    BASE + 'ics/northwoods.ics'
       };
 
-      // Wire the top links to absolute repo paths
+      // Wire top links
       document.getElementById('lnk-report').href = urls.report;
       document.getElementById('lnk-events').href = urls.events;
       document.getElementById('lnk-ics').href = urls.ics;
@@ -167,7 +169,6 @@
       }
 
       function normalize(e){
-        // tolerate slightly different shapes
         return {
           title: e.title || e.name || '',
           start_iso: e.start_iso || e.start || e.startTime || '',
@@ -231,57 +232,4 @@
           return '<tr>'
             + '<td>'+titleHtml+'</td>'
             + '<td class="nowrap">'+startHtml+'</td>'
-            + '<td class="nowrap">'+endHtml+'</td>'
-            + '<td>'+allDay+'</td>'
-            + '<td>'+where+'</td>'
-            + '<td>'+source+'</td>'
-            + '</tr>';
-        }).join('') || '<tr><td colspan="6" class="muted">No events match your filters.</td></tr>';
-
-        els.prevBtn.disabled = (page<=1);
-        els.nextBtn.disabled = (page>=pages);
-        els.pageInfo.textContent = 'Page '+page+' of '+pages;
-        els.counts.textContent = total+' event(s)';
-      }
-
-      function resetFilters(){
-        els.q.value='';
-        els.srcSel.value='';
-        els.from.value='';
-        els.to.value='';
-        page = 1;
-        applyFilters();
-      }
-
-      els.q.addEventListener('input', applyFilters);
-      els.srcSel.addEventListener('change', applyFilters);
-      els.from.addEventListener('change', applyFilters);
-      els.to.addEventListener('change', applyFilters);
-      els.pageSize.addEventListener('change', render);
-      els.resetBtn.addEventListener('click', resetFilters);
-      els.prevBtn.addEventListener('click', ()=>{ page=Math.max(1,page-1); render(); });
-      els.nextBtn.addEventListener('click', ()=>{ page=page+1; render(); });
-
-      function bust(u){ return u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(); }
-
-      Promise.all([
-        fetch(bust(urls.report), {cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
-        fetch(bust(urls.events), {cache:'no-store'}).then(async r=>{
-          if(!r.ok) throw new Error('HTTP '+r.status+' '+r.statusText);
-          const j = await r.json();
-          return Array.isArray(j) ? j : (Array.isArray(j.events) ? j.events : []);
-        })
-      ]).then(([report, events])=>{
-        setSummary(report);
-        all = (events || []).map(normalize);
-        const opts = uniqueSources(all).map(s=>'<option>'+s.replace(/</g,'&lt;')+'</option>').join('');
-        els.srcSel.insertAdjacentHTML('beforeend', opts);
-        applyFilters();
-      }).catch(err=>{
-        els.tblBody.innerHTML = '<tr><td colspan="6" class="bad">Failed to load events.json</td></tr>';
-        els.error.textContent = 'Error loading events.json: ' + (err && err.message ? err.message : err);
-      });
-    })();
-  </script>
-</body>
-</html>
+            + '<td class="nowrap">'

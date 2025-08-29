@@ -18,6 +18,9 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      PYTHONUNBUFFERED: "1"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -38,36 +41,63 @@ jobs:
           pip install pyyaml
           python -m playwright install --with-deps chromium
 
-      - name: Convert sources.yml → sources.json (no heredoc)
+      - name: Convert sources.yml → sources.json
         run: |
           python -c "import json,yaml,io; d=yaml.safe_load(io.open('sources.yml','r',encoding='utf-8')); io.open('sources.json','w',encoding='utf-8').write(json.dumps(d,indent=2))"
           test -s sources.json
 
-      - name: Scrape & parse (force stdin; no heredoc)
+      - name: Scrape & parse (robust attempts; require fresh report)
         env:
           USE_PLAYWRIGHT: "1"
         run: |
           set -euo pipefail
           mkdir -p state/snapshots
-          cat sources.json | python src/main.py
-          if [ -f state/last_run_report.json ]; then
-            echo "Found report at state/last_run_report.json"
-          elif [ -f last_run_report.json ]; then
-            echo "Found report at repo root; moving into state/"
-            mkdir -p state
-            mv last_run_report.json state/last_run_report.json
+
+          # record pre-modification time (0 if file doesn't exist)
+          PRE_MTIME="$( [ -f state/last_run_report.json ] && stat -c %Y state/last_run_report.json || echo 0 )"
+          echo "PRE_MTIME=${PRE_MTIME}"
+
+          run_and_check () {
+            echo "::group::Attempt: $1"
+            set +e
+            bash -c "$2"
+            CODE=$?
+            set -e
+            sleep 1
+            POST_MTIME="$( [ -f state/last_run_report.json ] && stat -c %Y state/last_run_report.json || echo 0 )"
+            echo "POST_MTIME=${POST_MTIME} (code ${CODE})"
+            echo "::endgroup::"
+            if [ "${POST_MTIME}" -gt "${PRE_MTIME}" ]; then
+              echo "SUCCESS: last_run_report.json updated by: $1"
+              return 0
+            fi
+            return 1
+          }
+
+          # Try YAML via stdin
+          if run_and_check "YAML stdin" "python -u src/main.py < sources.yml"; then
+            :
+          # Try JSON via stdin
+          elif run_and_check "JSON stdin" "python -u src/main.py < sources.json"; then
+            :
+          # Try plain invocation (some mains read their own file)
+          elif run_and_check "plain invocation" "python -u src/main.py"; then
+            :
+          else
+            echo "ERROR: last_run_report.json was not updated by any attempt."
+            echo "If your main.py expects a *file* path or flag, wire it up here."
+            exit 1
           fi
-          test -s state/last_run_report.json
 
-      - name: Show report snippet (no heredoc)
+      - name: Show report snippet
         run: |
-          python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:5]]"
+          python -c "import json; d=json.load(open('state/last_run_report.json','r',encoding='utf-8')); print('Sources:',len(d.get('sources',[]))); [print('-',s.get('name',''), 'parsed:',s.get('parsed',0),'added:',s.get('added',0)) for s in d.get('sources',[])[:10]]"
 
-      - name: Build static site (no heredoc)
+      - name: Build static site (no heredocs)
         run: |
           set -euo pipefail
           mkdir -p public/state public/ics
-          cp state/last_run_report.json public/state/last_run_report.json
+          cp state/last_run_report.json public/state/last_run_report.json || true
           for f in northwoods.ics northwoods-events.ics; do
             [ -f "$f" ] && cp "$f" public/ics/ || true
           done
@@ -88,11 +118,19 @@ jobs:
           echo "---- public/state ----"; ls -lah public/state || true
           echo "---- public/ics ----"; ls -lah public/ics || true
 
-      - uses: actions/configure-pages@v5
+      # Upload state for debugging (handy if something fails upstream)
+      - name: Upload state/ as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-debug
+          path: |
+            state
+          if-no-files-found: ignore
+          retention-days: 3
 
+      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
-
       - id: deployment
         uses: actions/deploy-pages@v4

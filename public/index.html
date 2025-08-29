@@ -2,284 +2,171 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Northwoods Events – Parse Viewer</title>
+  <title>Northwoods Events – Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
-    h1 { font-size: 1.25rem; margin: 0 0 8px; }
-    .links a { margin-right: 12px; }
-    .note { color:#555; margin: 4px 0 16px; }
-    .status { padding:8px; border:1px solid #ddd; border-radius:8px; background:#f9f9f9; margin-bottom:12px; }
-    .status b { display:inline-block; min-width: 110px; }
-    .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin: 12px 0; }
-    label { font-size: 0.9rem; }
-    input, select { padding:6px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #e2e2e2; padding: 6px 8px; text-align: left; vertical-align: top; }
-    th { background: #fafafa; position: sticky; top: 0; }
-    tfoot td { color:#555; font-size:0.9rem; }
-    .muted { color:#888; }
-    .error { color:#b00020; white-space:pre-wrap; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef; }
-    .tight { margin:0; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:16px}
+    h1{margin:0 0 8px}
+    .muted{color:#666}
+    table{border-collapse:collapse;width:100%;margin-top:12px}
+    th,td{border:1px solid #e2e2e2;padding:6px 8px;text-align:left;vertical-align:top}
+    th{background:#fafafa}
+    pre{background:#f7f7f7;border:1px solid #e2e2e2;padding:8px;overflow:auto}
+    .pill{display:inline-block;padding:2px 6px;border-radius:999px;background:#eef}
   </style>
 </head>
 <body>
-  <h1>Northwoods Events – Parse Viewer</h1>
-  <div class="links">
-    <a id="lnkLastRun" href="#">last_run_report.json</a>
-    <a id="lnkEvents" href="#">events.json</a>
-    <a id="lnkIcs" href="#">northwoods.ics</a>
-  </div>
-  <p class="note">This page reads <code>state/last_run_report.json</code> and <code>state/events.json</code> from the Pages artifact and renders a simple table. Times show in your browser’s local timezone.</p>
+  <h1>Northwoods Events – Viewer</h1>
+  <p class="muted">Reads <code>state/last_run_report.json</code> and <code>state/events.json</code> from the Pages artifact.</p>
 
-  <div id="status" class="status">
-    <div><b>Report:</b> <span id="status-report">Loading…</span></div>
-    <div><b>Events:</b> <span id="status-events">Loading…</span></div>
-    <div><b>Debug:</b> <span id="status-debug" class="muted">–</span></div>
+  <div id="status">
+    <p><b>Report:</b> <span id="sReport">Loading…</span></p>
+    <p><b>Events:</b> <span id="sEvents">Loading…</span></p>
+    <p><b>Base path:</b> <code id="sBase">–</code></p>
+    <details>
+      <summary>Debug URLs</summary>
+      <pre id="debugUrls"></pre>
+    </details>
   </div>
+
+  <p>
+    <a id="lnkReport" href="#">last_run_report.json</a> ·
+    <a id="lnkEvents" href="#">events.json</a> ·
+    <a id="lnkIcs" href="#">northwoods.ics</a>
+  </p>
 
   <div class="controls">
-    <label>Search (title/location) <input id="q" type="search" placeholder="type to filter"></label>
-    <label>Source
-      <select id="source">
-        <option value="">All sources</option>
-      </select>
+    <label>Search: <input id="q" type="search" placeholder="title or location"></label>
+    <label>Source:
+      <select id="src"><option value="">All</option></select>
     </label>
-    <label>From <input id="from" type="date"></label>
-    <label>To <input id="to" type="date"></label>
-    <label>Rows per page
-      <select id="pageSize">
-        <option>25</option>
-        <option>50</option>
-        <option selected>100</option>
-        <option>200</option>
-      </select>
-    </label>
-    <button id="reset">Reset filters</button>
   </div>
 
-  <table id="tbl">
+  <table>
     <thead>
-      <tr>
-        <th>Title</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>All-day</th>
-        <th>Location</th>
-        <th>Source</th>
-      </tr>
+      <tr><th>Title</th><th>Start</th><th>End</th><th>All-day</th><th>Location</th><th>Source</th></tr>
     </thead>
-    <tbody id="rows"><tr><td colspan="6">Loading events…</td></tr></tbody>
-    <tfoot>
-      <tr><td colspan="6" id="pager" class="muted">–</td></tr>
-    </tfoot>
+    <tbody id="rows"><tr><td colspan="6">Waiting…</td></tr></tbody>
   </table>
 
-  <p class="tight"><small class="muted">What am I seeing? This validates what the scraper emitted, not the live sites.</small></p>
-
-  <noscript><p class="error">This page needs JavaScript enabled.</p></noscript>
+  <p class="muted"><span id="counts"></span></p>
 
   <script>
-  (function () {
-    // Compute repo base, then build URLs like /northwoods-events/state/events.json
-    var base = location.pathname.replace(/\/+$/, '') + '/';
-    var reportUrl = base + 'state/last_run_report.json?v=' + Date.now();
-    var eventsUrl = base + 'state/events.json?v=' + Date.now();
-    var icsUrl = base + 'ics/northwoods.ics?v=' + Date.now();
+  (function(){
+    // Robust base for project pages like /northwoods-events or /northwoods-events/
+    var parts = location.pathname.split('/').filter(Boolean);
+    var BASE = parts.length ? ('/' + parts[0] + '/') : '/';
+    document.getElementById('sBase').textContent = BASE;
 
-    // Link targets
-    document.getElementById('lnkLastRun').href = reportUrl.replace(/\?v=.*/, '');
-    document.getElementById('lnkEvents').href  = eventsUrl.replace(/\?v=.*/, '');
-    document.getElementById('lnkIcs').href     = icsUrl.replace(/\?v=.*/, '');
+    var urls = {
+      report: BASE + 'state/last_run_report.json',
+      events: BASE + 'state/events.json',
+      ics:    BASE + 'ics/northwoods.ics'
+    };
+    document.getElementById('lnkReport').href = urls.report;
+    document.getElementById('lnkEvents').href = urls.events;
+    document.getElementById('lnkIcs').href    = urls.ics;
 
-    var S = function(id){ return document.getElementById(id); };
-    var statusReport = S('status-report');
-    var statusEvents = S('status-events');
-    var statusDebug  = S('status-debug');
-    var rowsEl = S('rows');
-    var pagerEl = S('pager');
+    document.getElementById('debugUrls').textContent =
+      'report: ' + urls.report + '\n' +
+      'events: ' + urls.events + '\n' +
+      'ics:    ' + urls.ics;
 
-    function fmt(dt) {
-      if (!dt) return '';
-      try {
-        var d = new Date(dt);
-        if (String(d) === 'Invalid Date') return String(dt);
-        return d.toLocaleString();
-      } catch (e) { return String(dt); }
-    }
-    function safe(v, fallback) {
-      return (v === null || v === undefined) ? (fallback || '') : v;
-    }
+    var sReport = document.getElementById('sReport');
+    var sEvents = document.getElementById('sEvents');
+    var rowsEl  = document.getElementById('rows');
+    var counts  = document.getElementById('counts');
+    var srcSel  = document.getElementById('src');
+    var qInput  = document.getElementById('q');
 
-    function parseFlexible(text) {
-      // Try strict JSON first
-      try {
+    function fmt(dt){ if(!dt) return ''; var d=new Date(dt); return isNaN(d)? String(dt) : d.toLocaleString(); }
+    function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+    function parseFlexible(text){
+      try{
         var j = JSON.parse(text);
-        // If array
-        if (Array.isArray(j)) return j;
-        // Common wrappers
-        if (j && Array.isArray(j.events)) return j.events;
-        if (j && Array.isArray(j.data)) return j.data;
-        // Keyed object -> values
-        if (j && typeof j === 'object') return Object.keys(j).map(function(k){ return j[k]; });
-      } catch (e) {
-        // Try NDJSON (one JSON per line)
-        var lines = text.split(/\r?\n/).map(function(s){ return s.trim(); }).filter(Boolean);
-        var out = [];
-        var ndjsonErrs = 0;
-        for (var i=0;i<lines.length;i++){
-          try { out.push(JSON.parse(lines[i])); }
-          catch (e2) { ndjsonErrs++; }
-        }
-        if (out.length && ndjsonErrs === 0) return out;
-        // If nothing worked, bubble up
+        if(Array.isArray(j)) return j;
+        if(j && Array.isArray(j.events)) return j.events;
+        if(j && Array.isArray(j.data)) return j.data;
+        if(j && typeof j==='object') return Object.keys(j).map(k=>j[k]);
+      }catch(e){
+        var lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+        var out=[], ok=true;
+        for(var i=0;i<lines.length;i++){ try{ out.push(JSON.parse(lines[i])); }catch(_){ ok=false; break; } }
+        if(ok && out.length) return out;
         throw e;
       }
-      // Fallback empty
       return [];
     }
 
-    function setStatus(el, text, ok) {
-      el.textContent = text;
-      if (!ok) el.classList.add('error'); else el.classList.remove('error');
+    function loadReport(){
+      return fetch(urls.report + '?t=' + Date.now(), {cache:'no-store'})
+        .then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)))
+        .then(j=>{
+          var parsed = j && j.totals ? j.totals.parsed : 0;
+          var added  = j && j.totals ? j.totals.added : 0;
+          sReport.textContent = 'OK — parsed ' + parsed + ', added ' + added;
+        })
+        .catch(e=>{ sReport.textContent = 'Error: ' + e.message; sReport.style.color = '#b00'; });
     }
 
-    function renderTable(data) {
-      if (!data || !data.length) {
-        rowsEl.innerHTML = '<tr><td colspan="6">No events found.</td></tr>';
-        pagerEl.textContent = '0 rows';
-        return;
-      }
-
-      // Collect list of sources for filter
-      var sources = {};
-      data.forEach(function(ev){
-        var s = safe(ev.source && (ev.source.name || ev.source), '');
-        if (s) sources[s] = true;
-      });
-      var sourceSel = S('source');
-      var current = sourceSel.value;
-      // Keep existing selection if possible; otherwise rebuild
-      if (sourceSel.options.length <= 1) {
-        Object.keys(sources).sort().forEach(function(name){
-          var opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          sourceSel.appendChild(opt);
-        });
-      }
-
-      function applyFilters(list) {
-        var q = S('q').value.toLowerCase().trim();
-        var src = S('source').value;
-        var dFrom = S('from').value ? new Date(S('from').value) : null;
-        var dTo   = S('to').value ? new Date(S('to').value) : null;
-
-        return list.filter(function(ev){
-          var t = (safe(ev.title,'') + ' ' + safe(ev.location,'')).toLowerCase();
-          if (q && t.indexOf(q) === -1) return false;
-
-          var sName = safe(ev.source && (ev.source.name || ev.source), '');
-          if (src && sName !== src) return false;
-
-          var start = ev.start ? new Date(ev.start) : null;
-          if (dFrom && start && start < dFrom) return false;
-          if (dTo && start && start > new Date(dTo.getTime() + 24*3600*1000 - 1)) return false;
-
-          return true;
-        });
-      }
-
-      function pageAndRender(list) {
-        var pageSize = parseInt(S('pageSize').value, 10) || 100;
-        var out = list.slice(0, pageSize);
-        rowsEl.innerHTML = out.map(function(ev){
-          var title = safe(ev.title, '(untitled)');
-          var loc = safe(ev.location, '');
-          var src = safe(ev.source && (ev.source.name || ev.source), '');
-          var allDay = ev.all_day === true || ev.allDay === true ? 'Yes' : '';
-          var start = fmt(ev.start);
-          var end   = fmt(ev.end);
-
-          return '<tr>'
-            + '<td>' + escapeHtml(title) + '</td>'
-            + '<td title="' + escapeAttr(safe(ev.start,'')) + '">' + start + '</td>'
-            + '<td title="' + escapeAttr(safe(ev.end,''))   + '">' + end   + '</td>'
-            + '<td>' + allDay + '</td>'
-            + '<td>' + escapeHtml(loc) + '</td>'
-            + '<td>' + (src ? ('<span class="pill">' + escapeHtml(src) + '</span>') : '') + '</td>'
-            + '</tr>';
-        }).join('');
-        pagerEl.textContent = list.length + ' rows (showing up to ' + pageSize + ')';
-      }
-
-      function refresh() { pageAndRender(applyFilters(data)); }
-
-      ['q','source','from','to','pageSize'].forEach(function(id){
-        S(id).addEventListener('input', refresh);
-        S(id).addEventListener('change', refresh);
-      });
-      S('reset').addEventListener('click', function(){
-        S('q').value = ''; S('source').value = ''; S('from').value = ''; S('to').value = '';
-        refresh();
-      });
-
-      refresh();
+    var all=[];
+    function loadEvents(){
+      return fetch(urls.events + '?t=' + Date.now(), {cache:'no-store'})
+        .then(r => r.text().then(t => ({ ok:r.ok, t:t, status:r.status })))
+        .then(({ok,t,status})=>{
+          if(!ok) throw new Error('HTTP '+status+' fetching events.json (bytes '+(t||'').length+')');
+          try{ all = parseFlexible(t); }
+          catch(e){ throw new Error('Parse error: '+e.message+' (first 200 chars: '+(t||'').slice(0,200).replace(/\s+/g,' ')+')'); }
+          sEvents.textContent = 'OK — ' + all.length + ' events';
+          populateSources();
+          render();
+        })
+        .catch(e=>{ sEvents.textContent = 'Error: ' + e.message; sEvents.style.color = '#b00'; rowsEl.innerHTML = '<tr><td colspan="6">Failed to load events.</td></tr>'; });
     }
 
-    function escapeHtml(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]); }); }
-    function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
-
-    function loadReport() {
-      var t0 = Date.now();
-      return fetch(reportUrl, {cache:'no-store'}).then(function(r){
-        var ok = r.ok;
-        return r.text().then(function(txt){
-          var len = (txt || '').length;
-          if (!ok) throw new Error('HTTP ' + r.status + ' reading last_run_report.json');
-          var j = {};
-          try { j = JSON.parse(txt); } catch(e){ throw new Error('Invalid JSON in last_run_report.json: ' + e.message); }
-          var parsed = (j.totals && j.totals.parsed) || 0;
-          var added  = (j.totals && j.totals.added)  || 0;
-          setStatus(statusReport, 'OK — parsed ' + parsed + ', added ' + added, true);
-          return j;
-        });
-      }).catch(function(e){
-        setStatus(statusReport, e.message, false);
-        statusDebug.textContent = 'Report fetch failed in ' + (Date.now()-t0) + 'ms';
+    function populateSources(){
+      var seen = {};
+      all.forEach(e=>{
+        var s = e && (e.source && (e.source.name || e.source) || '');
+        if(s) seen[s]=true;
       });
+      var names = Object.keys(seen).sort();
+      srcSel.innerHTML = '<option value="">All</option>' + names.map(n=>'<option>'+esc(n)+'</option>').join('');
     }
 
-    function loadEvents() {
-      var t0 = Date.now();
-      return fetch(eventsUrl, {cache:'no-store'}).then(function(r){
-        var ok = r.ok;
-        return r.text().then(function(txt){
-          var len = (txt || '').length;
-          if (!ok) throw new Error('HTTP ' + r.status + ' reading events.json (bytes: ' + len + ')');
-          var data = [];
-          try {
-            data = parseFlexible(txt);
-          } catch (e) {
-            throw new Error('Could not parse events.json: ' + e.message + ' (first 200 chars: ' + (txt || '').slice(0,200).replace(/\s+/g,' ') + ' )');
-          }
-          setStatus(statusEvents, 'OK — ' + data.length + ' events', true);
-          statusDebug.textContent = 'Fetched ' + len + ' bytes in ' + (Date.now()-t0) + 'ms';
-          return data;
-        });
-      }).catch(function(e){
-        setStatus(statusEvents, e.message, false);
+    function render(){
+      var q = (qInput.value||'').toLowerCase();
+      var src = srcSel.value;
+      var list = all.filter(e=>{
+        var title = (e.title||'') + ' ' + (e.location||'');
+        if(q && title.toLowerCase().indexOf(q)===-1) return false;
+        var s = e && (e.source && (e.source.name || e.source) || '');
+        if(src && s !== src) return false;
+        return true;
       });
+      counts.textContent = list.length + ' row(s)';
+      rowsEl.innerHTML = list.slice(0,200).map(e=>{
+        var allDay = (e.all_day===true || e.allDay===true) ? 'Yes' : '';
+        return '<tr>'
+          + '<td>'+esc(e.title||'(untitled)')+'</td>'
+          + '<td title="'+esc(e.start||'')+'">'+esc(fmt(e.start))+'</td>'
+          + '<td title="'+esc(e.end||'')  +'">'+esc(fmt(e.end))  +'</td>'
+          + '<td>'+allDay+'</td>'
+          + '<td>'+esc(e.location||'')+'</td>'
+          + '<td>'+(e.source?('<span class="pill">'+esc(e.source.name||e.source)+'</span>'):'')+'</td>'
+          + '</tr>';
+      }).join('') || '<tr><td colspan="6">No events match your filter.</td></tr>';
     }
 
-    // Kick off
+    qInput.addEventListener('input', render);
+    srcSel.addEventListener('change', render);
+
     loadReport();
-    loadEvents().then(function(data){ renderTable(data); }).catch(function(){ /* handled in setStatus */ });
-
+    loadEvents();
   })();
   </script>
 </body>

@@ -8,12 +8,11 @@ from .parse_micronet_ajax import parse_micronet_ajax
 from .parse_ai1ec import parse_ai1ec
 from .parse_travelwi import parse_travelwi
 from .parse_ics import parse_ics
-from .parse_squarespace_calendar import parse_squarespace_calendar  # <-- NEW
-
+from .parse_squarespace_calendar import parse_squarespace_calendar
 
 _ALIASES = {
     "st_germain_ajax": "micronet_ajax",
-    "squarespace_calendar": "squarespace",  # allow either label
+    "squarespace_calendar": "squarespace",
 }
 
 _HANDLERS = {
@@ -24,10 +23,9 @@ _HANDLERS = {
     "ai1ec": parse_ai1ec,
     "travelwi": parse_travelwi,
     "ics": parse_ics,
-    "municipal": parse_ai1ec,           # unchanged fallback
-    "squarespace": parse_squarespace_calendar,  # <-- NEW
+    "municipal": parse_ai1ec,  # legacy fallback for some WP sites
+    "squarespace": parse_squarespace_calendar,
 }
-
 
 def get_parser(kind: str):
     kind = _ALIASES.get(kind, kind)

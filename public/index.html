@@ -91,13 +91,30 @@
     return list;
   }
 
+  function deriveTitleFromUrl(url) {
+    if (!url) return "";
+    var parts = url.split("?")[0].split("#")[0].split("/").filter(Boolean);
+    if (!parts.length) return "";
+    var slug = parts[parts.length - 1];
+    slug = slug.replace(/[-_]+/g, " ").replace(/\b(all|series|category|tag)\b/ig, "").trim();
+    return slug ? slug.replace(/\b\w/g, function(m){ return m.toUpperCase(); }) : "";
+    // simple Title Case
+  }
+
+  function getTitle(ev) {
+    // Prefer 'title', then 'name' (common in JSON-LD), then derive from URL, else 'Untitled'
+    var t = (ev.title || "").trim();
+    if (!t) t = (ev.name || "").trim();
+    if (!t) t = deriveTitleFromUrl(ev.url || "");
+    return t || "Untitled";
+  }
+
   function applyFilters() {
     var sel = sourceSelect.value;
     var q = qInput.value.trim().toLowerCase();
     var rows = [];
     var shown = 0;
 
-    // Filter + sort by start date (missing dates sorted last)
     var data = allEvents.slice().sort(function(a, b) {
       var A = a.start_iso ? Date.parse(a.start_iso) : Infinity;
       var B = b.start_iso ? Date.parse(b.start_iso) : Infinity;
@@ -108,14 +125,14 @@
       var ev = data[i];
       if (sel !== "*" && (ev.source || "") !== sel) continue;
 
+      var titleText = getTitle(ev);
       if (q) {
-        var hay = ((ev.title || "") + " " + (ev.location || "")).toLowerCase();
+        var hay = (titleText + " " + (ev.location || "")).toLowerCase();
         if (hay.indexOf(q) === -1) continue;
       }
 
-      var title = ev.title || "Untitled";
       var url = ev.url || "";
-      var titleHtml = url ? '<a href="' + url + '">' + escapeHtml(title) + '</a>' : escapeHtml(title);
+      var titleHtml = url ? '<a href="' + url + '">' + escapeHtml(titleText) + '</a>' : escapeHtml(titleText);
 
       rows.push(
         "<tr>" +
@@ -131,19 +148,23 @@
 
     tableBody.innerHTML = rows.join("");
     setStatus("Events shown: " + shown + " of " + allEvents.length);
+    // reflect selected source in the document title for clarity
+    if (sourceSelect.value === "*") {
+      document.title = "Northwoods Events";
+    } else {
+      document.title = "Northwoods Events – " + sourceSelect.value;
+    }
   }
 
   function populateSources() {
     var sources = uniqueSources(allEvents);
-    // Clear (keep the first "All sources")
-    sourceSelect.options.length = 1;
+    sourceSelect.options.length = 1; // keep "All sources"
     for (var i = 0; i < sources.length; i++) {
       var opt = document.createElement("option");
       opt.value = sources[i];
       opt.textContent = sources[i];
       sourceSelect.appendChild(opt);
     }
-    // If ?source=... present in URL, select it if available
     var params = new URLSearchParams(location.search);
     var s = params.get("source");
     if (s) {
@@ -162,27 +183,17 @@
     });
   }
 
-  // Try to fetch from a few safe, repo-aware paths
   function guessPaths() {
-    // index.html is at /<repo>/index.html, so relative "state/events.json" is normally enough.
     var candidates = ["state/events.json"];
-
-    // Add an absolute path based on first path segment (the repo name on GitHub Pages)
     try {
       var parts = location.pathname.split("/").filter(Boolean);
       if (parts.length > 0) {
         var repo = "/" + parts[0];
         candidates.push(repo + "/state/events.json");
       }
-    } catch (e) { /* no-op */ }
-
-    // Ensure uniqueness
-    var u = {};
-    var out = [];
-    for (var i = 0; i < candidates.length; i++) {
-      var p = candidates[i];
-      if (!u[p]) { u[p] = true; out.push(p); }
-    }
+    } catch (e) {}
+    var u = {}, out = [];
+    for (var i = 0; i < candidates.length; i++) if (!u[candidates[i]]) { u[candidates[i]] = true; out.push(candidates[i]); }
     return out;
   }
 
@@ -200,13 +211,8 @@
   }
 
   function normalizeStoreToArray(storeObj) {
-    // store is an object keyed by composite key; use values
     var arr = [];
-    for (var k in storeObj) {
-      if (Object.prototype.hasOwnProperty.call(storeObj, k)) {
-        arr.push(storeObj[k]);
-      }
-    }
+    for (var k in storeObj) if (Object.prototype.hasOwnProperty.call(storeObj, k)) arr.push(storeObj[k]);
     return arr;
   }
 
@@ -216,7 +222,7 @@
     fetchFirst(paths, function (err, json, usedPath) {
       if (err) {
         setStatus("Failed to load events.json (" + err.message + ")");
-        tableBody.innerHTML = "<tr><td colspan='5'>Could not load <code>state/events.json</code>. Check that your GitHub Pages artifact includes the <code>state</code> folder and that paths are correct.</td></tr>";
+        tableBody.innerHTML = "<tr><td colspan='5'>Could not load <code>state/events.json</code>. Ensure the Pages artifact includes <code>public/state/events.json</code>.</td></tr>";
         return;
       }
       try {
@@ -227,7 +233,6 @@
       }
       populateSources();
       applyFilters();
-      // keep user params in sync when they change the selector
       sourceSelect.addEventListener("change", function () {
         var params = new URLSearchParams(location.search);
         if (sourceSelect.value === "*" ) { params.delete("source"); }

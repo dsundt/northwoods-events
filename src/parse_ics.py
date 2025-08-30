@@ -1,37 +1,37 @@
 # src/parse_ics.py
 from __future__ import annotations
 
-from dateutil import parser as dp
 from ics import Calendar
-
+from .normalize import normalize_event, parse_dt, clean_text
 from .fetch import fetch_text
-from .normalize import normalize_event
 
 def parse_ics(source, add_event):
     url = source["url"]
-    text = fetch_text(url)
-    cal = Calendar(text)
+    tzname = source.get("tzname")
+    ics_text = fetch_text(url, source=source)
+    if not ics_text:
+        return
+    try:
+        cal = Calendar(ics_text)
+    except Exception:
+        return
 
-    for e in cal.events:
-        title = (e.name or "").strip()
-        link = (e.url or "").strip()
-        loc = (e.location or "").strip()
-        desc = (e.description or "").strip()
-
-        start = e.begin.datetime if e.begin else None
-        end = e.end.datetime if e.end else None
-        all_day = bool(getattr(e, "all_day", False))
+    for ve in cal.events:
+        title = clean_text(ve.name or "")
+        if not title:
+            continue
+        # ics Event.begin/end may be arrow objects; normalize via parse_dt for consistency
+        start_iso = (ve.begin.to('UTC').isoformat() if getattr(ve, "begin", None) else "") or ""
+        end_iso   = (ve.end.to('UTC').isoformat()   if getattr(ve, "end", None)   else "") or ""
 
         evt = normalize_event(
             title=title,
-            url=link,
-            where=loc,
-            start=start,
-            end=end,
-            tzname=source.get("tzname"),
-            description=desc,
-            all_day=all_day,
-            source_name=source.get("name"),
+            url=getattr(ve, "url", None) or url,
+            where=clean_text(getattr(ve, "location", "") or ""),
+            start=parse_dt(start_iso, tzname),
+            end=parse_dt(end_iso, tzname) if end_iso else None,
+            tzname=tzname,
+            description=clean_text(getattr(ve, "description", "") or "")
         )
         if evt:
             add_event(evt)

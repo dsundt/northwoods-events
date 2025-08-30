@@ -39,10 +39,79 @@ jobs:
       - name: Ensure package init
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
-      - name: Verify helper scripts exist
+      - name: Create helper scripts (no heredocs)
         run: |
-          test -f .github/scripts/extract_sources.py || (echo "Missing .github/scripts/extract_sources.py" && exit 1)
-          test -f .github/scripts/verify_freshness.py || (echo "Missing .github/scripts/verify_freshness.py" && exit 1)
+          mkdir -p .github/scripts
+          printf '%s\n' \
+            'import sys, os, yaml' \
+            'SRC_FILE_CANDIDATES = ["sources.yml","sources.yaml"]' \
+            'OUT_PATH = ".tmp.sources.yaml"' \
+            'src_file = None' \
+            'for cand in SRC_FILE_CANDIDATES:' \
+            '    if os.path.isfile(cand):' \
+            '        src_file = cand' \
+            '        break' \
+            'if not src_file:' \
+            '    print("ERROR: sources.yml not found at repo root.", file=sys.stderr)' \
+            '    with open(OUT_PATH, "w", encoding="utf-8") as w:' \
+            '        yaml.safe_dump({"sources":[]}, w, sort_keys=False)' \
+            '    sys.exit(1)' \
+            'with open(src_file, "r", encoding="utf-8") as f:' \
+            '    raw = yaml.safe_load(f) or {}' \
+            'sources = raw.get("sources", [])' \
+            'if not isinstance(sources, list):' \
+            '    print("ERROR: '\''sources'\'' must be a list in sources.yml.", file=sys.stderr)' \
+            '    sys.exit(1)' \
+            'clean=[]' \
+            'for s in sources:' \
+            '    if not isinstance(s, dict):' \
+            '        continue' \
+            '    name=s.get("name")' \
+            '    kind=s.get("kind")' \
+            '    url=s.get("url")' \
+            '    tz=s.get("tzname")' \
+            '    if not name or not kind or not url:' \
+            '        continue' \
+            '    clean.append({"name":name,"kind":kind,"url":url,"tzname":tz})' \
+            'if not clean:' \
+            '    print("ERROR: no valid sources found in sources.yml.", file=sys.stderr)' \
+            '    sys.exit(1)' \
+            'with open(OUT_PATH, "w", encoding="utf-8") as w:' \
+            '    yaml.safe_dump({"sources":clean}, w, sort_keys=False)' \
+            'print(f"Wrote {len(clean)} sources to {OUT_PATH}")' \
+            > .github/scripts/extract_sources.py
+
+          printf '%s\n' \
+            'import json, os, sys, datetime' \
+            'P="state/last_run_report.json"' \
+            'if not os.path.isfile(P):' \
+            '    print("ERROR: state/last_run_report.json not found.", file=sys.stderr)' \
+            '    sys.exit(2)' \
+            'try:' \
+            '    d=json.load(open(P,"r",encoding="utf-8"))' \
+            'except Exception as e:' \
+            '    print(f"ERROR: cannot parse {P}: {e}", file=sys.stderr)' \
+            '    sys.exit(3)' \
+            'when=d.get("when")' \
+            'if not when:' \
+            '    print("ERROR: last_run_report.json missing '\''when'\''.", file=sys.stderr)' \
+            '    sys.exit(4)' \
+            'try:' \
+            '    ts=datetime.datetime.fromisoformat(when.replace("Z","+00:00"))' \
+            'except Exception:' \
+            '    print(f"ERROR: could not parse '\''when'\'': {when}", file=sys.stderr)' \
+            '    sys.exit(5)' \
+            'now=datetime.datetime.now(datetime.timezone.utc)' \
+            'age=(now-ts).total_seconds()' \
+            'print(f"Report time (UTC): {ts.isoformat()} | Age seconds: {int(age)}")' \
+            'if ts.date()!=now.date():' \
+            '    print("ERROR: Report is not from today (UTC).", file=sys.stderr)' \
+            '    sys.exit(6)' \
+            'if age>7200:' \
+            '    print("ERROR: Report older than 2 hours.", file=sys.stderr)' \
+            '    sys.exit(7)' \
+            'print("Freshness OK.")' \
+            > .github/scripts/verify_freshness.py
 
       - name: Clean state/output
         run: |

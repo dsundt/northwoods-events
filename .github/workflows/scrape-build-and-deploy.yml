@@ -39,12 +39,10 @@ jobs:
       - name: Ensure package init
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
-      - name: Add scripts
+      - name: Verify helper scripts exist
         run: |
-          mkdir -p .github/scripts
-          cp .github/scripts/extract_sources.py .github/scripts/extract_sources.py || true
-          cp .github/scripts/verify_freshness.py .github/scripts/verify_freshness.py || true
-        shell: bash
+          test -f .github/scripts/extract_sources.py || (echo "Missing .github/scripts/extract_sources.py" && exit 1)
+          test -f .github/scripts/verify_freshness.py || (echo "Missing .github/scripts/verify_freshness.py" && exit 1)
 
       - name: Clean state/output
         run: |

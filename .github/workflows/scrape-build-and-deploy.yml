@@ -43,6 +43,11 @@ jobs:
         run: python -m src.main
 
       - name: Postprocess normalize + build ICS
+        env:
+          JSONLD_ENABLE: "1"         # set "0" to completely disable enrichment
+          JSONLD_MAX: "80"           # hard cap on fetches per run
+          JSONLD_PER_DOMAIN: "15"    # per-domain cap
+          JSONLD_TIMEOUT: "4"        # seconds
         run: python src/postprocess.py
 
       - name: Stage site artifacts

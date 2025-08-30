@@ -1,18 +1,24 @@
-name: scrape-build-and-deploy
+name: Scrape, Build, and Deploy
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
   schedule:
-    - cron: '0 9 * * *'
+    - cron: "13 6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,7 +26,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+            python-version: "3.11"
 
       - name: Install deps
         run: |
@@ -28,7 +34,7 @@ jobs:
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Ensure package init
+      - name: Ensure src package init
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
       - name: Scrape
@@ -36,11 +42,14 @@ jobs:
           USE_PLAYWRIGHT: 1
         run: python -m src.main
 
-      - name: Postprocess and stage
+      - name: Postprocess normalize + build ICS
+        run: python src/postprocess.py
+
+      - name: Stage site artifacts
         run: |
-          python -m src.postprocess
           mkdir -p public/state public/ics
           cp -f state/last_run_report.json public/state/last_run_report.json || true
+          cp -f state/validation.json public/state/validation.json || true
           cp -f state/events.json public/state/events.json || true
           cp -f northwoods.ics public/ics/northwoods.ics || true
 
@@ -54,5 +63,5 @@ jobs:
           name: github-pages
           retention-days: 1
 
-      - name: Deploy to Pages
+      - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4

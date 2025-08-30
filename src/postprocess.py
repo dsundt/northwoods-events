@@ -4,37 +4,45 @@ import json
 import re
 import sys
 from datetime import datetime
+from urllib.parse import urlparse
 from dateutil import parser as duparser
 import pytz
 
 CT = pytz.timezone("America/Chicago")
 
-# ---- configuration ----
+# --- Tuning via env vars (safe defaults) ---
+JSONLD_ENABLE = os.environ.get("JSONLD_ENABLE", "1") == "1"
+JSONLD_MAX = int(os.environ.get("JSONLD_MAX", "60"))               # hard cap on total fetches
+JSONLD_PER_DOMAIN = int(os.environ.get("JSONLD_PER_DOMAIN", "12")) # per-domain cap
+JSONLD_TIMEOUT = float(os.environ.get("JSONLD_TIMEOUT", "4.0"))    # seconds
 
-# Completely drop these sources from the feed (you asked to keep ICS-only for some)
-DROP_SOURCES = {
-    # Oneida Simpleview – remove
-    "Oneida County Festivals and Events (Simpleview)",
-    # Sayner Modern Tribe – remove (keep ICS, see below)
+# Only enrich if the source is likely to have JSON-LD and we need it
+JSONLD_ALLOW_SOURCES = {
+    # Modern Tribe (common across many of your sites)
+    "Vilas County (Modern Tribe)",
+    "Boulder Junction (Modern Tribe)",
+    "Eagle River Chamber (Modern Tribe)",
+    "St. Germain Chamber (Modern Tribe)",
     "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
     "Sayner-Star Lake-Cloverland Chamber (Modern Tribe)",
-    # Presque Isle Modern Tribe – remove (keep ICS)
+    "Oneida County – Festivals & Events (Modern Tribe)",
+    "Oneida County Festivals and Events (Modern Tribe)",
+    # Simpleview that you’re keeping (Minocqua)
+    "Minocqua Area Chamber (Simpleview)",
+    # AI1EC / municipal sometimes has JSON-LD
+    "Town of Arbor Vitae (Municipal Calendar)",
+}
+
+# Drop these sources outright (per your earlier requests)
+DROP_SOURCES = {
+    "Oneida County Festivals and Events (Simpleview)",
+    "Sayner–Star Lake–Cloverland Chamber (Modern Tribe)",
+    "Sayner-Star Lake-Cloverland Chamber (Modern Tribe)",
     "Presque Isle (Modern Tribe)",
 }
 
-# URLs to treat as *not* individual events (aggregators, series, category pages, tools, etc.)
-BAD_URL_SNIPPETS = (
-    "/series/",
-    "/category/",
-    "/tag/",
-    "/all/",
-    "/tools",
-)
-
-# Titles that are clearly not an event title
+BAD_URL_SNIPPETS = ("/series/", "/category/", "/tag/", "/all/", "/tools")
 BAD_TITLE_RX = re.compile(r"^(events\s+for|calendar\s+of\s+events|find\s+events)\b", re.I)
-
-# ---- helpers ----
 
 def to_local_iso(dt_str: str) -> str | None:
     if not dt_str:
@@ -64,155 +72,189 @@ def derive_title_from_url(url: str) -> str | None:
         return slug.title()
     return None
 
-def enrich_from_jsonld(ev: dict) -> dict:
-    """
-    Fetch JSON-LD from the event URL and copy in name, startDate, endDate, and location if present.
-    This is a best-effort enrichment only; failures are silent.
-    """
-    url = ev.get("url") or ""
-    if not url or any(s in url for s in BAD_URL_SNIPPETS):
-        return ev
-    try:
-        import requests
-        from bs4 import BeautifulSoup
-    except Exception:
-        # If dependencies unavailable for any reason, skip enrichment safely.
-        return ev
-
-    try:
-        r = requests.get(url, timeout=15, headers={"User-Agent": "northwoods-events-normalizer"})
-        if r.status_code != 200 or not r.text:
-            return ev
-        soup = BeautifulSoup(r.text, "lxml")
-        # find all JSON-LD blocks
-        for tag in soup.find_all("script", {"type": "application/ld+json"}):
+class JsonLdFetcher:
+    def __init__(self, max_total: int, per_domain: int, timeout: float, enabled: bool):
+        self.max_total = max_total
+        self.per_domain = per_domain
+        self.timeout = timeout
+        self.enabled = enabled
+        self.total = 0
+        self.per_domain_count = {}
+        self.cache_path = os.path.join(os.getcwd(), "state", "jsonld_cache.json")
+        self.cache = {}
+        if os.path.exists(self.cache_path):
             try:
+                self.cache = json.load(open(self.cache_path, "r", encoding="utf-8"))
+            except Exception:
+                self.cache = {}
+
+    def _can_fetch(self, url: str) -> bool:
+        if not self.enabled or not url or any(s in url for s in BAD_URL_SNIPPETS):
+            return False
+        if url in self.cache:
+            return True  # cached ok
+        if self.total >= self.max_total:
+            return False
+        host = urlparse(url).netloc.lower()
+        if not host:
+            return False
+        if self.per_domain_count.get(host, 0) >= self.per_domain:
+            return False
+        return True
+
+    def _record_fetch(self, url: str):
+        self.total += 1
+        host = urlparse(url).netloc.lower()
+        self.per_domain_count[host] = self.per_domain_count.get(host, 0) + 1
+
+    def fetch(self, url: str) -> dict | None:
+        # Return cached result if present
+        if url in self.cache:
+            return self.cache[url]
+        if not self._can_fetch(url):
+            return None
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+        except Exception:
+            return None
+        self._record_fetch(url)
+        try:
+            r = requests.get(url, timeout=self.timeout, headers={"User-Agent": "northwoods-events-normalizer"})
+            if r.status_code != 200 or not r.text:
+                return None
+            soup = BeautifulSoup(r.text, "lxml")
+            for tag in soup.find_all("script", {"type": "application/ld+json"}):
                 raw = tag.string or tag.text
                 if not raw:
                     continue
-                data = json.loads(raw)
-            except Exception:
-                continue
-
-            nodes = data if isinstance(data, list) else [data]
-            # find an Event node
-            for node in nodes:
-                types = node.get("@type")
-                if isinstance(types, list):
-                    is_event = any(t.lower() == "event" for t in types if isinstance(t, str))
-                else:
-                    is_event = isinstance(types, str) and types.lower() == "event"
-                if not is_event:
+                try:
+                    data = json.loads(raw)
+                except Exception:
                     continue
-
-                # Copy what we can
-                if not (ev.get("title") or "").strip():
-                    name = node.get("name")
-                    if isinstance(name, str) and name.strip():
-                        ev["title"] = name.strip()
-
-                if not ev.get("start_iso"):
-                    sd = node.get("startDate")
-                    if isinstance(sd, str):
-                        iso = to_local_iso(sd)
-                        if iso:
-                            ev["start_iso"] = iso
-
-                if not ev.get("end_iso"):
-                    ed = node.get("endDate")
-                    if isinstance(ed, str):
-                        iso = to_local_iso(ed)
-                        if iso:
-                            ev["end_iso"] = iso
-
-                if not ev.get("location"):
+                nodes = data if isinstance(data, list) else [data]
+                for node in nodes:
+                    types = node.get("@type")
+                    if isinstance(types, list):
+                        is_event = any(isinstance(t, str) and t.lower() == "event" for t in types)
+                    else:
+                        is_event = isinstance(types, str) and types.lower() == "event"
+                    if not is_event:
+                        continue
+                    out = {}
+                    if isinstance(node.get("name"), str):
+                        out["name"] = node["name"]
+                    if isinstance(node.get("startDate"), str):
+                        out["startDate"] = node["startDate"]
+                    if isinstance(node.get("endDate"), str):
+                        out["endDate"] = node["endDate"]
                     loc = node.get("location")
                     if isinstance(loc, dict):
-                        # Accept either "name" or a compact address
-                        name = loc.get("name")
-                        if name:
-                            ev["location"] = str(name)
-                        else:
-                            addr = loc.get("address")
-                            if isinstance(addr, dict):
-                                parts = [addr.get(k, "") for k in ("streetAddress", "addressLocality", "addressRegion")]
-                                parts = [p for p in parts if p]
-                                if parts:
-                                    ev["location"] = ", ".join(parts)
-                # If we enriched *anything* from the first Event node, we're done.
-                return ev
+                        if isinstance(loc.get("name"), str) and loc["name"].strip():
+                            out["locationName"] = loc["name"].strip()
+                        addr = loc.get("address")
+                        if isinstance(addr, dict):
+                            parts = [addr.get(k, "") for k in ("streetAddress", "addressLocality", "addressRegion")]
+                            parts = [p for p in parts if p]
+                            if parts:
+                                out["locationAddr"] = ", ".join(parts)
+                    if out:
+                        self.cache[url] = out
+                        # Persist cache as we go (best effort; ignore errors)
+                        try:
+                            os.makedirs(os.path.join(os.getcwd(), "state"), exist_ok=True)
+                            json.dump(self.cache, open(self.cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                        except Exception:
+                            pass
+                        return out
+        except Exception:
+            return None
+        return None
 
-    except Exception:
+def enrich_from_jsonld(ev: dict, fetcher: JsonLdFetcher) -> dict:
+    url = ev.get("url") or ""
+    if not url:
+        return ev
+    source = (ev.get("source") or "").strip()
+    # only enrich if allowed AND we actually need data
+    need_start = not ev.get("start_iso")
+    need_title = not (ev.get("title") or "").strip()
+    need_location = not (ev.get("location") or "").strip()
+    if source not in JSONLD_ALLOW_SOURCES or not (need_start or need_title or need_location):
         return ev
 
+    info = fetcher.fetch(url)
+    if not info:
+        return ev
+
+    if need_title and isinstance(info.get("name"), str) and info["name"].strip():
+        ev["title"] = info["name"].strip()
+
+    if need_start and isinstance(info.get("startDate"), str):
+        iso = to_local_iso(info["startDate"])
+        if iso:
+            ev["start_iso"] = iso
+
+    if not ev.get("end_iso") and isinstance(info.get("endDate"), str):
+        iso = to_local_iso(info["endDate"])
+        if iso:
+            ev["end_iso"] = iso
+
+    if need_location:
+        loc = info.get("locationName") or info.get("locationAddr")
+        if loc:
+            ev["location"] = loc
     return ev
 
-def normalize_one(ev: dict) -> tuple[bool, dict]:
-    """
-    Returns (keep, normalized_event_or_reason)
-    If keep is False, second item is a string drop reason.
-    If keep is True, second item is the normalized event dict.
-    """
+def normalize_one(ev: dict, fetcher: JsonLdFetcher) -> tuple[bool, dict | str]:
     source = (ev.get("source") or "").strip()
 
-    # 1) filter sources we must remove completely
+    # 1) drop unwanted sources
     if source in DROP_SOURCES:
         return False, f"dropped_by_source:{source}"
 
-    # 2) convert legacy 'start'/'end' fields used by some scrapers
-    if not ev.get("start_iso"):
-        if ev.get("start"):
-            iso = to_local_iso(ev.get("start"))
-            if iso:
-                ev["start_iso"] = iso
-    if not ev.get("end_iso"):
-        if ev.get("end"):
-            iso = to_local_iso(ev.get("end"))
-            if iso:
-                ev["end_iso"] = iso
+    # 2) convert legacy 'start'/'end' fields to iso
+    if not ev.get("start_iso") and ev.get("start"):
+        iso = to_local_iso(ev.get("start"))
+        if iso: ev["start_iso"] = iso
+    if not ev.get("end_iso") and ev.get("end"):
+        iso = to_local_iso(ev.get("end"))
+        if iso: ev["end_iso"] = iso
 
-    # 3) drop clearly non-event URLs (series/category/tools/etc.)
+    # 3) filter non-event pages
     url = (ev.get("url") or "")
     if any(s in url for s in BAD_URL_SNIPPETS):
         return False, "listing_or_series_url"
 
-    # 4) fill missing title from URL slug (many “Untitled” / “Recurring”)
+    # 4) title fallback
     title = (ev.get("title") or "").strip()
     if not title or title.lower() in {"recurring", "untitled", ""}:
         derived = derive_title_from_url(url)
         if derived:
             ev["title"] = derived
 
-    # 5) JSON-LD enrichment (for pages that expose proper machine data)
-    if not ev.get("start_iso") or not ev.get("title") or not ev.get("location"):
-        ev = enrich_from_jsonld(ev)
+    # 5) JSON-LD enrichment (strictly capped)
+    ev = enrich_from_jsonld(ev, fetcher)
 
     # 6) drop garbage titles
     if BAD_TITLE_RX.search(ev.get("title") or ""):
         return False, "garbage_title"
 
-    # 7) must have a start date at this point
+    # 7) must have start date
     if not ev.get("start_iso"):
         return False, "no_start_after_enrichment"
 
-    # 8) normalize booleans and keep expected keys
+    # 8) finalize flags
     ev["all_day"] = bool(ev.get("all_day", False))
-
     return True, ev
 
 def main():
     root = os.getcwd()
-    # Prefer state/events.json (created by your scrape) but fall back to events.json
     candidates = [
         os.path.join(root, "state", "events.json"),
         os.path.join(root, "events.json"),
     ]
-    src_path = None
-    for p in candidates:
-        if os.path.isfile(p):
-            src_path = p
-            break
-
+    src_path = next((p for p in candidates if os.path.isfile(p)), None)
     if not src_path:
         print("No events store found. Skipping postprocess.")
         return 0
@@ -220,26 +262,22 @@ def main():
     with open(src_path, "r", encoding="utf-8") as f:
         store = json.load(f)
 
+    fetcher = JsonLdFetcher(JSONLD_MAX, JSONLD_PER_DOMAIN, JSONLD_TIMEOUT, JSONLD_ENABLE)
+
     kept = {}
     dropped = {}
-    fixed = 0
-
     for key, ev in store.items():
-        keep, result = normalize_one(dict(ev))
+        keep, result = normalize_one(dict(ev), fetcher)
         if not keep:
             dropped[result] = dropped.get(result, 0) + 1
             continue
-        # re-key with a stable key (source + title + start)
         nk = f"{result.get('source','')}|{result.get('title','')}|{result.get('start_iso','')}"
         kept[nk] = result
-        fixed += 1
 
-    # Ensure output dirs exist
     os.makedirs(os.path.join(root, "state"), exist_ok=True)
     os.makedirs(os.path.join(root, "public", "state"), exist_ok=True)
     os.makedirs(os.path.join(root, "public", "ics"), exist_ok=True)
 
-    # 1) Write normalized store side-by-side (and replace the canonical events.json so site uses it)
     normalized_path = os.path.join(root, "state", "events.normalized.json")
     with open(normalized_path, "w", encoding="utf-8") as f:
         json.dump(kept, f, ensure_ascii=False, indent=2)
@@ -248,28 +286,31 @@ def main():
     with open(canonical, "w", encoding="utf-8") as f:
         json.dump(kept, f, ensure_ascii=False, indent=2)
 
-    # 2) Validation summary (for debugging on the page)
     validation = {
         "input_events": len(store),
         "output_events": len(kept),
         "dropped_by_reason": dropped,
-        "note": "Dates normalized to America/Chicago; sources filtered per requirements; JSON-LD enrichment applied when available.",
+        "jsonld": {
+            "enabled": JSONLD_ENABLE,
+            "max_total": JSONLD_MAX,
+            "per_domain": JSONLD_PER_DOMAIN,
+            "timeout_sec": JSONLD_TIMEOUT,
+            "fetched_total": fetcher.total,
+            "per_domain_counts": fetcher.per_domain_count,
+        },
+        "note": "Dates normalized to America/Chicago; sources filtered; capped JSON-LD enrichment applied only when needed.",
     }
     with open(os.path.join(root, "state", "validation.json"), "w", encoding="utf-8") as f:
         json.dump(validation, f, ensure_ascii=False, indent=2)
 
-    # 3) Build ICS from normalized events (best effort)
+    # Build ICS
     try:
         from ics import Calendar, Event
         cal = Calendar()
         for ev in kept.values():
-            name = (ev.get("title") or "Untitled").strip()
-            start_iso = ev.get("start_iso")
-            if not start_iso:
-                continue
             e = Event()
-            e.name = name
-            e.begin = start_iso
+            e.name = (ev.get("title") or "Untitled").strip()
+            e.begin = ev.get("start_iso")
             if ev.get("end_iso"):
                 e.end = ev["end_iso"]
             e.make_all_day = bool(ev.get("all_day", False))
@@ -280,25 +321,24 @@ def main():
             if ev.get("description"):
                 e.description = ev["description"]
             cal.events.add(e)
-        ics_text = str(cal)
         with open(os.path.join(root, "northwoods.ics"), "w", encoding="utf-8") as f:
-            f.write(ics_text)
+            f.write(str(cal))
     except Exception as e:
         print("ICS generation skipped:", repr(e))
 
-    # Copy public artifacts (the workflow also copies, but doing it here makes local runs easier)
+    # Copy to public for Pages
     try:
         import shutil
         shutil.copy(canonical, os.path.join(root, "public", "state", "events.json"))
-        shutil.copy(os.path.join(root, "state", "validation.json"), os.path.join(root, "public", "state", "validation.json"))
         if os.path.exists(os.path.join(root, "state", "last_run_report.json")):
             shutil.copy(os.path.join(root, "state", "last_run_report.json"), os.path.join(root, "public", "state", "last_run_report.json"))
+        shutil.copy(os.path.join(root, "state", "validation.json"), os.path.join(root, "public", "state", "validation.json"))
         if os.path.exists(os.path.join(root, "northwoods.ics")):
             shutil.copy(os.path.join(root, "northwoods.ics"), os.path.join(root, "public", "ics", "northwoods.ics"))
     except Exception:
         pass
 
-    print(f"Postprocess complete. Input: {len(store)}  Output: {len(kept)}  Dropped: {sum(dropped.values())}")
+    print(f"Postprocess complete. Input: {len(store)}  Output: {len(kept)}  Dropped: {sum(dropped.values())}  JSONLD fetched: {fetcher.total}")
     return 0
 
 if __name__ == "__main__":

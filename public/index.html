@@ -1,94 +1,248 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Northwoods Events – Validation Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;line-height:1.4;margin:1rem;max-width:1200px}
-    h1{font-size:1.5rem;margin:0 0 .5rem}
-    .status{padding:.5rem;border:1px solid #ccc;border-radius:6px;background:#fafafa;margin:.5rem 0}
-    table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.95rem}
-    th,td{border:1px solid #ddd;padding:.4rem .5rem;vertical-align:top}
-    th{background:#f3f3f3;text-align:left;position:sticky;top:0}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-    .small{font-size:.85rem;color:#555}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Northwoods Events</title>
+<style>
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+  #status { padding: 8px 10px; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; }
+  label { font-weight: 600; margin-right: 6px; }
+  select, input { padding: 6px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+  th, td { border: 1px solid #d0d7de; padding: 8px; vertical-align: top; }
+  th { background: #f6f8fa; text-align: left; }
+  tfoot td { font-size: 12px; color: #57606a; }
+  .muted { color: #57606a; }
+  .wrap { word-break: break-word; }
+</style>
 </head>
 <body>
-  <h1>Northwoods Events – Validation Viewer</h1>
+<header>
+  <div id="status">Loading…</div>
+  <div>
+    <label for="sourceSelect">Source</label>
+    <select id="sourceSelect" aria-label="Filter by source">
+      <option value="*">All sources</option>
+    </select>
+  </div>
+  <div>
+    <label for="q">Search</label>
+    <input id="q" type="search" placeholder="title or location">
+  </div>
+  <div class="muted">Download: <a href="ics/northwoods.ics">northwoods.ics</a></div>
+</header>
 
-  <div id="status" class="status">Loading…</div>
-
-  <table id="tbl" aria-label="Events table">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Start (CT)</th>
-        <th>End (CT)</th>
-        <th>Location</th>
-        <th>Source</th>
-        <th>URL</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-
-  <p class="small">Data files: <span class="mono">/state/events.json</span>, <span class="mono">/state/last_run_report.json</span>, <span class="mono">/state/validation.json</span></p>
+<table id="eventsTable" aria-describedby="status">
+  <thead>
+    <tr>
+      <th style="width: 16ch;">Start</th>
+      <th style="width: 16ch;">End</th>
+      <th>Title</th>
+      <th style="width: 28ch;">Location</th>
+      <th style="width: 28ch;">Source</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+  <tfoot>
+    <tr><td colspan="5" class="muted">Times shown in America/Chicago (local).</td></tr>
+  </tfoot>
+</table>
 
 <script>
-(function(){
-  var status = document.getElementById('status');
-  var tbody  = document.getElementById('tbody');
+(function () {
+  "use strict";
 
-  function esc(s){ return s==null ? "" : String(s); }
+  var statusEl = document.getElementById("status");
+  var tableBody = document.querySelector("#eventsTable tbody");
+  var sourceSelect = document.getElementById("sourceSelect");
+  var qInput = document.getElementById("q");
 
-  function row(ev){
-    var tr = document.createElement('tr');
-    function td(html){
-      var d=document.createElement('td'); d.innerHTML=html; tr.appendChild(d);
-    }
-    td(esc(ev.title||""));
-    td(esc(ev.start_iso||""));
-    td(esc(ev.end_iso||""));
-    td(esc(ev.location||""));
-    td(esc(ev.source||""));
-    var u = esc(ev.url||"");
-    td(u?('<a rel="noopener" target="_blank" href="'+u+'">link</a>'):"");
-    return tr;
+  var allEvents = [];
+  var tz = "America/Chicago";
+
+  function setStatus(msg) {
+    statusEl.textContent = msg;
   }
 
-  function setStatus(t){ status.textContent = t; }
-
-  function render(events, report, validation){
-    tbody.innerHTML = "";
-    var arr = Object.values(events||{});
-    arr.sort(function(a,b){ return String(a.start_iso||"").localeCompare(String(b.start_iso||"")); });
-    arr.forEach(function(ev){ tbody.appendChild(row(ev)); });
-
-    var parts = [];
-    parts.push("Events: "+arr.length);
-    if (validation){
-      parts.push("Dropped: "+(validation.dropped_by_reason ? Object.values(validation.dropped_by_reason).reduce(function(a,b){return a+b;},0) : 0));
-    }
-    if (report && report.sources){
-      var ok = report.sources.map(function(s){ return s.name+" (added "+(s.added||0)+")"; }).join("; ");
-      parts.push("Sources: "+report.sources.length);
-      parts.push("Added by source: "+ok);
-    }
-    setStatus(parts.join(" · "));
+  function fmt(dt) {
+    if (!dt) return "";
+    try {
+      var d = new Date(dt);
+      if (String(d) === "Invalid Date") return dt;
+      return d.toLocaleString("en-US", {
+        timeZone: tz,
+        year: "numeric", month: "short", day: "2-digit",
+        hour: "2-digit", minute: "2-digit"
+      });
+    } catch (e) { return dt; }
   }
 
-  Promise.all([
-    fetch("./state/events.json",{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("events "+r.status); return r.json(); }),
-    fetch("./state/last_run_report.json",{cache:"no-store"}).then(function(r){ return r.ok?r.json():{}; }),
-    fetch("./state/validation.json",{cache:"no-store"}).then(function(r){ return r.ok?r.json():{}; })
-  ])
-  .then(function(all){ render(all[0], all[1], all[2]); })
-  .catch(function(err){
-    setStatus("Failed to load one or more JSON files: "+err.message);
-  });
-})();
+  function uniqueSources(events) {
+    var seen = {};
+    var list = [];
+    for (var i = 0; i < events.length; i++) {
+      var s = (events[i].source || "").trim();
+      if (!s) continue;
+      if (!seen[s]) { seen[s] = true; list.push(s); }
+    }
+    list.sort(function(a,b){ return a.localeCompare(b); });
+    return list;
+  }
+
+  function applyFilters() {
+    var sel = sourceSelect.value;
+    var q = qInput.value.trim().toLowerCase();
+    var rows = [];
+    var shown = 0;
+
+    // Filter + sort by start date (missing dates sorted last)
+    var data = allEvents.slice().sort(function(a, b) {
+      var A = a.start_iso ? Date.parse(a.start_iso) : Infinity;
+      var B = b.start_iso ? Date.parse(b.start_iso) : Infinity;
+      return A - B;
+    });
+
+    for (var i = 0; i < data.length; i++) {
+      var ev = data[i];
+      if (sel !== "*" && (ev.source || "") !== sel) continue;
+
+      if (q) {
+        var hay = ((ev.title || "") + " " + (ev.location || "")).toLowerCase();
+        if (hay.indexOf(q) === -1) continue;
+      }
+
+      var title = ev.title || "Untitled";
+      var url = ev.url || "";
+      var titleHtml = url ? '<a href="' + url + '">' + escapeHtml(title) + '</a>' : escapeHtml(title);
+
+      rows.push(
+        "<tr>" +
+          "<td>" + escapeHtml(fmt(ev.start_iso)) + "</td>" +
+          "<td>" + escapeHtml(fmt(ev.end_iso || "")) + "</td>" +
+          "<td class='wrap'>" + titleHtml + "</td>" +
+          "<td class='wrap'>" + escapeHtml(ev.location || "") + "</td>" +
+          "<td class='wrap'>" + escapeHtml(ev.source || "") + "</td>" +
+        "</tr>"
+      );
+      shown++;
+    }
+
+    tableBody.innerHTML = rows.join("");
+    setStatus("Events shown: " + shown + " of " + allEvents.length);
+  }
+
+  function populateSources() {
+    var sources = uniqueSources(allEvents);
+    // Clear (keep the first "All sources")
+    sourceSelect.options.length = 1;
+    for (var i = 0; i < sources.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = sources[i];
+      opt.textContent = sources[i];
+      sourceSelect.appendChild(opt);
+    }
+    // If ?source=... present in URL, select it if available
+    var params = new URLSearchParams(location.search);
+    var s = params.get("source");
+    if (s) {
+      for (var j = 0; j < sourceSelect.options.length; j++) {
+        if (sourceSelect.options[j].value === s) {
+          sourceSelect.selectedIndex = j;
+          break;
+        }
+      }
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  // Try to fetch from a few safe, repo-aware paths
+  function guessPaths() {
+    // index.html is at /<repo>/index.html, so relative "state/events.json" is normally enough.
+    var candidates = ["state/events.json"];
+
+    // Add an absolute path based on first path segment (the repo name on GitHub Pages)
+    try {
+      var parts = location.pathname.split("/").filter(Boolean);
+      if (parts.length > 0) {
+        var repo = "/" + parts[0];
+        candidates.push(repo + "/state/events.json");
+      }
+    } catch (e) { /* no-op */ }
+
+    // Ensure uniqueness
+    var u = {};
+    var out = [];
+    for (var i = 0; i < candidates.length; i++) {
+      var p = candidates[i];
+      if (!u[p]) { u[p] = true; out.push(p); }
+    }
+    return out;
+  }
+
+  function fetchFirst(paths, done) {
+    if (!paths.length) { done(new Error("No valid paths to try")); return; }
+    var p = paths[0];
+    fetch(p, { cache: "no-store" }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " for " + p);
+      return r.json();
+    }).then(function (j) {
+      done(null, j, p);
+    }).catch(function () {
+      fetchFirst(paths.slice(1), done);
+    });
+  }
+
+  function normalizeStoreToArray(storeObj) {
+    // store is an object keyed by composite key; use values
+    var arr = [];
+    for (var k in storeObj) {
+      if (Object.prototype.hasOwnProperty.call(storeObj, k)) {
+        arr.push(storeObj[k]);
+      }
+    }
+    return arr;
+  }
+
+  function init() {
+    setStatus("Loading events…");
+    var paths = guessPaths();
+    fetchFirst(paths, function (err, json, usedPath) {
+      if (err) {
+        setStatus("Failed to load events.json (" + err.message + ")");
+        tableBody.innerHTML = "<tr><td colspan='5'>Could not load <code>state/events.json</code>. Check that your GitHub Pages artifact includes the <code>state</code> folder and that paths are correct.</td></tr>";
+        return;
+      }
+      try {
+        allEvents = normalizeStoreToArray(json);
+      } catch (e) {
+        setStatus("Loaded events but could not read them.");
+        return;
+      }
+      populateSources();
+      applyFilters();
+      // keep user params in sync when they change the selector
+      sourceSelect.addEventListener("change", function () {
+        var params = new URLSearchParams(location.search);
+        if (sourceSelect.value === "*" ) { params.delete("source"); }
+        else { params.set("source", sourceSelect.value); }
+        var newUrl = location.pathname + "?" + params.toString();
+        history.replaceState(null, "", newUrl);
+        applyFilters();
+      });
+      qInput.addEventListener("input", function () { applyFilters(); });
+      setStatus("Loaded " + allEvents.length + " events from " + usedPath + ". Use the Source filter to narrow the list.");
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+}());
 </script>
 </body>
 </html>

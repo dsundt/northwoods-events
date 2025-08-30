@@ -1,26 +1,18 @@
-name: Build ICS and Deploy
+name: scrape-build-and-deploy
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   build-deploy:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    env:
-      USE_PLAYWRIGHT: "1"
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,56 +20,39 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
 
-      - name: Install Python deps
-        run: pip install -r requirements.txt
-
-      - name: Install Playwright Chromium (with system deps)
-        run: python -m playwright install --with-deps chromium
-
-      - name: Ensure src package exists
+      - name: Ensure package init
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
-      - name: Run scraper
+      - name: Scrape
+        env:
+          USE_PLAYWRIGHT: 1
         run: python -m src.main
 
-      - name: Create public folders
-        run: mkdir -p public/state public/ics
+      - name: Postprocess and stage
+        run: |
+          python -m src.postprocess
+          mkdir -p public/state public/ics
+          cp -f state/last_run_report.json public/state/last_run_report.json || true
+          cp -f state/events.json public/state/events.json || true
+          cp -f northwoods.ics public/ics/northwoods.ics || true
 
-      - name: Stage reports to public
-        run: cp -f state/last_run_report.json public/state/last_run_report.json || true
-
-      - name: Stage events to public
-        run: cp -f state/events.json public/state/events.json || true
-
-      - name: Stage ICS to public
-        run: cp -f northwoods.ics public/ics/northwoods.ics || true
-
-      # --- Verification steps you asked for ---
-      - name: Verify index.html exists
-        run: test -f public/index.html
-
-      - name: Verify diag.html exists
-        run: test -f public/diag.html
-
-      - name: List public contents
-        run: ls -laR public || true
-      # ---------------------------------------
-
-      - name: Setup Pages
+      - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
           name: github-pages
           retention-days: 1
 
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - name: Deploy to Pages
         uses: actions/deploy-pages@v4

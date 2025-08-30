@@ -2,172 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Northwoods Events – Viewer</title>
+  <title>Northwoods Events – Validation Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:16px}
-    h1{margin:0 0 8px}
-    .muted{color:#666}
-    table{border-collapse:collapse;width:100%;margin-top:12px}
-    th,td{border:1px solid #e2e2e2;padding:6px 8px;text-align:left;vertical-align:top}
-    th{background:#fafafa}
-    pre{background:#f7f7f7;border:1px solid #e2e2e2;padding:8px;overflow:auto}
-    .pill{display:inline-block;padding:2px 6px;border-radius:999px;background:#eef}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;line-height:1.4;margin:1rem;max-width:1200px}
+    h1{font-size:1.5rem;margin:0 0 .5rem}
+    .status{padding:.5rem;border:1px solid #ccc;border-radius:6px;background:#fafafa;margin:.5rem 0}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.95rem}
+    th,td{border:1px solid #ddd;padding:.4rem .5rem;vertical-align:top}
+    th{background:#f3f3f3;text-align:left;position:sticky;top:0}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .small{font-size:.85rem;color:#555}
   </style>
 </head>
 <body>
-  <h1>Northwoods Events – Viewer</h1>
-  <p class="muted">Reads <code>state/last_run_report.json</code> and <code>state/events.json</code> from the Pages artifact.</p>
+  <h1>Northwoods Events – Validation Viewer</h1>
 
-  <div id="status">
-    <p><b>Report:</b> <span id="sReport">Loading…</span></p>
-    <p><b>Events:</b> <span id="sEvents">Loading…</span></p>
-    <p><b>Base path:</b> <code id="sBase">–</code></p>
-    <details>
-      <summary>Debug URLs</summary>
-      <pre id="debugUrls"></pre>
-    </details>
-  </div>
+  <div id="status" class="status">Loading…</div>
 
-  <p>
-    <a id="lnkReport" href="#">last_run_report.json</a> ·
-    <a id="lnkEvents" href="#">events.json</a> ·
-    <a id="lnkIcs" href="#">northwoods.ics</a>
-  </p>
-
-  <div class="controls">
-    <label>Search: <input id="q" type="search" placeholder="title or location"></label>
-    <label>Source:
-      <select id="src"><option value="">All</option></select>
-    </label>
-  </div>
-
-  <table>
+  <table id="tbl" aria-label="Events table">
     <thead>
-      <tr><th>Title</th><th>Start</th><th>End</th><th>All-day</th><th>Location</th><th>Source</th></tr>
+      <tr>
+        <th>Title</th>
+        <th>Start (CT)</th>
+        <th>End (CT)</th>
+        <th>Location</th>
+        <th>Source</th>
+        <th>URL</th>
+      </tr>
     </thead>
-    <tbody id="rows"><tr><td colspan="6">Waiting…</td></tr></tbody>
+    <tbody id="tbody"></tbody>
   </table>
 
-  <p class="muted"><span id="counts"></span></p>
+  <p class="small">Data files: <span class="mono">/state/events.json</span>, <span class="mono">/state/last_run_report.json</span>, <span class="mono">/state/validation.json</span></p>
 
-  <script>
-  (function(){
-    // Robust base for project pages like /northwoods-events or /northwoods-events/
-    var parts = location.pathname.split('/').filter(Boolean);
-    var BASE = parts.length ? ('/' + parts[0] + '/') : '/';
-    document.getElementById('sBase').textContent = BASE;
+<script>
+(function(){
+  var status = document.getElementById('status');
+  var tbody  = document.getElementById('tbody');
 
-    var urls = {
-      report: BASE + 'state/last_run_report.json',
-      events: BASE + 'state/events.json',
-      ics:    BASE + 'ics/northwoods.ics'
-    };
-    document.getElementById('lnkReport').href = urls.report;
-    document.getElementById('lnkEvents').href = urls.events;
-    document.getElementById('lnkIcs').href    = urls.ics;
+  function esc(s){ return s==null ? "" : String(s); }
 
-    document.getElementById('debugUrls').textContent =
-      'report: ' + urls.report + '\n' +
-      'events: ' + urls.events + '\n' +
-      'ics:    ' + urls.ics;
-
-    var sReport = document.getElementById('sReport');
-    var sEvents = document.getElementById('sEvents');
-    var rowsEl  = document.getElementById('rows');
-    var counts  = document.getElementById('counts');
-    var srcSel  = document.getElementById('src');
-    var qInput  = document.getElementById('q');
-
-    function fmt(dt){ if(!dt) return ''; var d=new Date(dt); return isNaN(d)? String(dt) : d.toLocaleString(); }
-    function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-    function parseFlexible(text){
-      try{
-        var j = JSON.parse(text);
-        if(Array.isArray(j)) return j;
-        if(j && Array.isArray(j.events)) return j.events;
-        if(j && Array.isArray(j.data)) return j.data;
-        if(j && typeof j==='object') return Object.keys(j).map(k=>j[k]);
-      }catch(e){
-        var lines = text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-        var out=[], ok=true;
-        for(var i=0;i<lines.length;i++){ try{ out.push(JSON.parse(lines[i])); }catch(_){ ok=false; break; } }
-        if(ok && out.length) return out;
-        throw e;
-      }
-      return [];
+  function row(ev){
+    var tr = document.createElement('tr');
+    function td(html){
+      var d=document.createElement('td'); d.innerHTML=html; tr.appendChild(d);
     }
+    td(esc(ev.title||""));
+    td(esc(ev.start_iso||""));
+    td(esc(ev.end_iso||""));
+    td(esc(ev.location||""));
+    td(esc(ev.source||""));
+    var u = esc(ev.url||"");
+    td(u?('<a rel="noopener" target="_blank" href="'+u+'">link</a>'):"");
+    return tr;
+  }
 
-    function loadReport(){
-      return fetch(urls.report + '?t=' + Date.now(), {cache:'no-store'})
-        .then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)))
-        .then(j=>{
-          var parsed = j && j.totals ? j.totals.parsed : 0;
-          var added  = j && j.totals ? j.totals.added : 0;
-          sReport.textContent = 'OK — parsed ' + parsed + ', added ' + added;
-        })
-        .catch(e=>{ sReport.textContent = 'Error: ' + e.message; sReport.style.color = '#b00'; });
+  function setStatus(t){ status.textContent = t; }
+
+  function render(events, report, validation){
+    tbody.innerHTML = "";
+    var arr = Object.values(events||{});
+    arr.sort(function(a,b){ return String(a.start_iso||"").localeCompare(String(b.start_iso||"")); });
+    arr.forEach(function(ev){ tbody.appendChild(row(ev)); });
+
+    var parts = [];
+    parts.push("Events: "+arr.length);
+    if (validation){
+      parts.push("Dropped: "+(validation.dropped_by_reason ? Object.values(validation.dropped_by_reason).reduce(function(a,b){return a+b;},0) : 0));
     }
-
-    var all=[];
-    function loadEvents(){
-      return fetch(urls.events + '?t=' + Date.now(), {cache:'no-store'})
-        .then(r => r.text().then(t => ({ ok:r.ok, t:t, status:r.status })))
-        .then(({ok,t,status})=>{
-          if(!ok) throw new Error('HTTP '+status+' fetching events.json (bytes '+(t||'').length+')');
-          try{ all = parseFlexible(t); }
-          catch(e){ throw new Error('Parse error: '+e.message+' (first 200 chars: '+(t||'').slice(0,200).replace(/\s+/g,' ')+')'); }
-          sEvents.textContent = 'OK — ' + all.length + ' events';
-          populateSources();
-          render();
-        })
-        .catch(e=>{ sEvents.textContent = 'Error: ' + e.message; sEvents.style.color = '#b00'; rowsEl.innerHTML = '<tr><td colspan="6">Failed to load events.</td></tr>'; });
+    if (report && report.sources){
+      var ok = report.sources.map(function(s){ return s.name+" (added "+(s.added||0)+")"; }).join("; ");
+      parts.push("Sources: "+report.sources.length);
+      parts.push("Added by source: "+ok);
     }
+    setStatus(parts.join(" · "));
+  }
 
-    function populateSources(){
-      var seen = {};
-      all.forEach(e=>{
-        var s = e && (e.source && (e.source.name || e.source) || '');
-        if(s) seen[s]=true;
-      });
-      var names = Object.keys(seen).sort();
-      srcSel.innerHTML = '<option value="">All</option>' + names.map(n=>'<option>'+esc(n)+'</option>').join('');
-    }
-
-    function render(){
-      var q = (qInput.value||'').toLowerCase();
-      var src = srcSel.value;
-      var list = all.filter(e=>{
-        var title = (e.title||'') + ' ' + (e.location||'');
-        if(q && title.toLowerCase().indexOf(q)===-1) return false;
-        var s = e && (e.source && (e.source.name || e.source) || '');
-        if(src && s !== src) return false;
-        return true;
-      });
-      counts.textContent = list.length + ' row(s)';
-      rowsEl.innerHTML = list.slice(0,200).map(e=>{
-        var allDay = (e.all_day===true || e.allDay===true) ? 'Yes' : '';
-        return '<tr>'
-          + '<td>'+esc(e.title||'(untitled)')+'</td>'
-          + '<td title="'+esc(e.start||'')+'">'+esc(fmt(e.start))+'</td>'
-          + '<td title="'+esc(e.end||'')  +'">'+esc(fmt(e.end))  +'</td>'
-          + '<td>'+allDay+'</td>'
-          + '<td>'+esc(e.location||'')+'</td>'
-          + '<td>'+(e.source?('<span class="pill">'+esc(e.source.name||e.source)+'</span>'):'')+'</td>'
-          + '</tr>';
-      }).join('') || '<tr><td colspan="6">No events match your filter.</td></tr>';
-    }
-
-    qInput.addEventListener('input', render);
-    srcSel.addEventListener('change', render);
-
-    loadReport();
-    loadEvents();
-  })();
-  </script>
+  Promise.all([
+    fetch("./state/events.json",{cache:"no-store"}).then(function(r){ if(!r.ok) throw new Error("events "+r.status); return r.json(); }),
+    fetch("./state/last_run_report.json",{cache:"no-store"}).then(function(r){ return r.ok?r.json():{}; }),
+    fetch("./state/validation.json",{cache:"no-store"}).then(function(r){ return r.ok?r.json():{}; })
+  ])
+  .then(function(all){ render(all[0], all[1], all[2]); })
+  .catch(function(err){
+    setStatus("Failed to load one or more JSON files: "+err.message);
+  });
+})();
+</script>
 </body>
 </html>

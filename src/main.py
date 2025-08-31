@@ -1,136 +1,128 @@
-# src/main.py
-from __future__ import annotations
+import sys, os, json, yaml, datetime as dt
+from typing import List, Dict
 
-import io
-import json
-import os
-import sys
-from datetime import datetime
-
-import yaml
-
-from .resolve_sources import get_parser
-from .state_store import load_events, save_events, merge_events, to_runtime_events
-from .icsbuild import build_ics
+# local imports
+from .scrapers.growthzone import scrape as scrape_growthzone
+from .scrapers.modern_tribe import scrape as scrape_modern_tribe
+from .scrapers.icsfeed import scrape as scrape_ics
 
 STATE_DIR = "state"
+EVENTS_PATH = os.path.join(STATE_DIR, "events.json")
 REPORT_PATH = os.path.join(STATE_DIR, "last_run_report.json")
+ICS_PATH = "northwoods.ics"
 
-def _read_sources_from_stdin_or_file():
-    raw = sys.stdin.read()
-    data = None
-    if raw.strip():
-        try:
-            data = yaml.safe_load(raw)
-        except Exception:
-            try:
-                data = json.loads(raw)
-            except Exception:
-                data = None
-    if data is None:
-        try:
-            with io.open("sources.yml", "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
-        except Exception:
-            data = None
+def now_utc_iso() -> str:
+    return dt.datetime.now(dt.timezone.utc).isoformat()
 
-    if data is None:
-        return [], {}
-
-    if isinstance(data, list):
-        return data, {}
-    if isinstance(data, dict):
-        return (data.get("sources") or []), (data.get("defaults") or {})
-    return [], {}
-
-def _sanitize_source(src: dict, defaults: dict) -> dict:
-    out = dict(src or {})
-    for k, v in (defaults or {}).items():
-        out.setdefault(k, v)
-    # allow legacy wait_for_selectors
-    if "wait_selector" not in out and isinstance(out.get("wait_for_selectors"), list):
-        out["wait_selector"] = ", ".join(x for x in out["wait_for_selectors"] if x)
-    return out
-
-def main() -> int:
+def ensure_dirs():
     os.makedirs(STATE_DIR, exist_ok=True)
 
-    sources_raw, defaults = _read_sources_from_stdin_or_file()
-    report_sources = []
-    all_new = []
-    total_parsed = 0
+def normalize_kind(k: str) -> str:
+    k = (k or "").strip().lower()
+    if "growth" in k:
+        return "growthzone"
+    if "tribe" in k or "modern" in k:
+        return "modern_tribe"
+    if "ics" in k:
+        return "ics"
+    return k
 
-    for src in sources_raw:
-        if not isinstance(src, dict):
-            continue
-        s = _sanitize_source(src, defaults)
-        name = str(s.get("name") or "Unnamed")
-        kind = str(s.get("kind") or "").strip().lower()
-        parsed = 0
-        err = None
+def run(sources: List[Dict]) -> Dict:
+    all_events: List[Dict] = []
+    per = []
 
-        def add_event(e: dict):
-            nonlocal parsed, all_new
-            if isinstance(e, dict):
-                parsed += 1
-                all_new.append(e)
+    print(f"Sources: {len(sources)}")
+    for s in sources:
+        name = s.get("name") or s.get("id") or "unknown"
+        url = s.get("url")
+        tzname = s.get("tzname") or "America/Chicago"
+        kind = normalize_kind(s.get("kind"))
 
+        parsed = added = 0
         try:
-            parser = get_parser(kind)
-            parser(s, add_event)
+            if kind == "growthzone":
+                items = scrape_growthzone(url, name=name, tzname=tzname, limit=150)
+            elif kind == "modern_tribe":
+                items = scrape_modern_tribe(url, name=name, tzname=tzname, limit=150)
+            elif kind == "ics":
+                items = scrape_ics(url, name=name, tzname=tzname, limit=500)
+            else:
+                items = []
+                print(f"- {name} (unknown kind '{kind}') parsed: 0 added: 0")
+                per.append({"name": name, "kind": kind, "url": url, "parsed": 0, "added": 0})
+                continue
+
+            parsed = len(items)
+            # de-dup by (title,start,url)
+            seen = set()
+            keep = []
+            for e in items:
+                key = (e.get("title","").strip(), e.get("start",""), e.get("url","").strip())
+                if key in seen: 
+                    continue
+                seen.add(key)
+                keep.append(e)
+
+            added = len(keep)
+            all_events.extend(keep)
+            print(f"- {name} ({s.get('kind')}) parsed: {parsed} added: {added}")
         except Exception as ex:
-            err = f"{type(ex).__name__}: {ex}"
+            print(f"- {name} ERROR: {ex}")
+        finally:
+            per.append({"name": name, "kind": kind, "url": url, "parsed": parsed, "added": added})
 
-        total_parsed += parsed
-        report_sources.append({
-            "name": name,
-            "url": s.get("url", ""),
-            "parser_kind": kind,
-            "parsed": parsed,
-            "added": 0,  # filled after merge
-            "error": err,
-        })
+    # sort by start date
+    def sort_key(e):
+        return (e.get("start") or "9999-12-31T00:00:00Z", e.get("title",""))
+    all_events.sort(key=sort_key)
 
-    now = datetime.now().astimezone()
-    store_path = os.path.join(STATE_DIR, "events.json")
-    store = load_events(store_path)
-    before = len(store)
-    store = merge_events(store, all_new, now)
-    after = len(store)
-    save_events(store, store_path)
-    delta = max(0, after - before)
-
-    # attribute "added" roughly proportionally to parsed counts
-    total_weight = sum(max(1, s["parsed"]) for s in report_sources) or 1
-    rest = delta
-    for i, rs in enumerate(report_sources):
-        share = int(round(delta * (max(1, rs["parsed"]) / total_weight)))
-        if i == len(report_sources) - 1:
-            share = rest
-        rs["added"] = max(0, share)
-        rest -= share
-
-    # Build ICS (best-effort)
-    try:
-        build_ics(to_runtime_events(store), "northwoods.ics")
-    except Exception:
-        pass
-
-    report = {
-        "when": now.isoformat(),
-        "timezone": str(now.tzinfo),
-        "sources": report_sources,
-        "totals": {"parsed": total_parsed, "added": delta, "store_size": after},
+    return {
+        "when": now_utc_iso(),
+        "total_events": len(all_events),
+        "per_source": per,
+        "events": all_events,
     }
-    with io.open(REPORT_PATH, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
 
-    # console summary
-    print(f"Sources: {len(report_sources)}")
-    for s in report_sources[:10]:
-        tail = f" ERR: {s['error']}" if s.get("error") else ""
-        print(f"- {s['name']} parsed: {s['parsed']} added: {s['added']}{tail}")
-    return 0
+def write_json(path: str, obj):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=2)
+
+def maybe_emit_ics(events: List[Dict]):
+    try:
+        from ics import Calendar, Event
+        cal = Calendar()
+        for e in events:
+            ev = Event()
+            ev.name = e.get("title")
+            ev.begin = e.get("start")  # ISO8601 string
+            if e.get("end"): ev.end = e["end"]
+            ev.location = e.get("location")
+            ev.url = e.get("url")
+            ev.description = (e.get("description") or "")[:1000]
+            cal.events.add(ev)
+        with open(ICS_PATH, "w", encoding="utf-8") as w:
+            w.writelines(cal.serialize_iter())
+    except Exception as ex:
+        print(f"[warn] could not build ICS: {ex}")
+
+def main():
+    ensure_dirs()
+    raw = yaml.safe_load(sys.stdin.read()) if not sys.stdin.closed else {}
+    sources = (raw or {}).get("sources", [])
+    if not sources:
+        print("ERROR: no sources on stdin")
+        write_json(EVENTS_PATH, [])
+        write_json(REPORT_PATH, {"when": now_utc_iso(), "total_events": 0, "per_source": []})
+        return
+
+    report = run(sources)
+    events = report.pop("events", [])
+    write_json(EVENTS_PATH, events)
+    write_json(REPORT_PATH, {**report})  # without events (keeps file small)
+
+    # Optional: emit combined ICS
+    if events:
+        maybe_emit_ics(events)
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

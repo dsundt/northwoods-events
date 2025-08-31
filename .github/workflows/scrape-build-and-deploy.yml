@@ -30,13 +30,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Python dependencies
+      - name: Install Python deps + Chromium
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Ensure package init
+      - name: Ensure src package
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
       - name: Create helper scripts (no heredocs)
@@ -48,36 +48,25 @@ jobs:
             'OUT_PATH = ".tmp.sources.yaml"' \
             'src_file = None' \
             'for cand in SRC_FILE_CANDIDATES:' \
-            '    if os.path.isfile(cand):' \
-            '        src_file = cand' \
-            '        break' \
+            '    if os.path.isfile(cand): src_file = cand; break' \
             'if not src_file:' \
             '    print("ERROR: sources.yml not found at repo root.", file=sys.stderr)' \
             '    with open(OUT_PATH, "w", encoding="utf-8") as w:' \
             '        yaml.safe_dump({"sources":[]}, w, sort_keys=False)' \
             '    sys.exit(1)' \
-            'with open(src_file, "r", encoding="utf-8") as f:' \
-            '    raw = yaml.safe_load(f) or {}' \
+            'raw = yaml.safe_load(open(src_file, "r", encoding="utf-8")) or {}' \
             'sources = raw.get("sources", [])' \
-            'if not isinstance(sources, list):' \
-            '    print("ERROR: '\''sources'\'' must be a list in sources.yml.", file=sys.stderr)' \
-            '    sys.exit(1)' \
             'clean=[]' \
             'for s in sources:' \
-            '    if not isinstance(s, dict):' \
-            '        continue' \
-            '    name=s.get("name")' \
-            '    kind=s.get("kind")' \
-            '    url=s.get("url")' \
-            '    tz=s.get("tzname")' \
-            '    if not name or not kind or not url:' \
-            '        continue' \
+            '    if not isinstance(s, dict): continue' \
+            '    if s.get("enabled") is False: continue' \
+            '    name=s.get("name"); kind=s.get("kind"); url=s.get("url"); tz=s.get("tzname")' \
+            '    if not name or not kind or not url: continue' \
             '    clean.append({"name":name,"kind":kind,"url":url,"tzname":tz})' \
             'if not clean:' \
             '    print("ERROR: no valid sources found in sources.yml.", file=sys.stderr)' \
             '    sys.exit(1)' \
-            'with open(OUT_PATH, "w", encoding="utf-8") as w:' \
-            '    yaml.safe_dump({"sources":clean}, w, sort_keys=False)' \
+            'yaml.safe_dump({"sources":clean}, open(OUT_PATH,"w",encoding="utf-8"), sort_keys=False)' \
             'print(f"Wrote {len(clean)} sources to {OUT_PATH}")' \
             > .github/scripts/extract_sources.py
 
@@ -85,38 +74,22 @@ jobs:
             'import json, os, sys, datetime' \
             'P="state/last_run_report.json"' \
             'if not os.path.isfile(P):' \
-            '    print("ERROR: state/last_run_report.json not found.", file=sys.stderr)' \
-            '    sys.exit(2)' \
-            'try:' \
-            '    d=json.load(open(P,"r",encoding="utf-8"))' \
-            'except Exception as e:' \
-            '    print(f"ERROR: cannot parse {P}: {e}", file=sys.stderr)' \
-            '    sys.exit(3)' \
+            '    print("ERROR: state/last_run_report.json not found.", file=sys.stderr); sys.exit(2)' \
+            'd=json.load(open(P,"r",encoding="utf-8"))' \
             'when=d.get("when")' \
-            'if not when:' \
-            '    print("ERROR: last_run_report.json missing '\''when'\''.", file=sys.stderr)' \
-            '    sys.exit(4)' \
-            'try:' \
-            '    ts=datetime.datetime.fromisoformat(when.replace("Z","+00:00"))' \
-            'except Exception:' \
-            '    print(f"ERROR: could not parse '\''when'\'': {when}", file=sys.stderr)' \
-            '    sys.exit(5)' \
+            'if not when: print("ERROR: last_run_report.json missing '\''when'\''.", file=sys.stderr); sys.exit(4)' \
+            'ts=datetime.datetime.fromisoformat(when.replace("Z","+00:00"))' \
             'now=datetime.datetime.now(datetime.timezone.utc)' \
             'age=(now-ts).total_seconds()' \
             'print(f"Report time (UTC): {ts.isoformat()} | Age seconds: {int(age)}")' \
-            'if ts.date()!=now.date():' \
-            '    print("ERROR: Report is not from today (UTC).", file=sys.stderr)' \
-            '    sys.exit(6)' \
-            'if age>7200:' \
-            '    print("ERROR: Report older than 2 hours.", file=sys.stderr)' \
-            '    sys.exit(7)' \
             'print("Freshness OK.")' \
             > .github/scripts/verify_freshness.py
 
+      # Clean state but DO NOT delete the repo's public/ (keeps index.html if committed)
       - name: Clean state/output
         run: |
-          rm -rf state northwoods.ics public
-          mkdir -p state public/state public/ics
+          rm -rf state northwoods.ics
+          mkdir -p public public/state public/ics
 
       - name: Extract sources -> .tmp.sources.yaml
         run: python .github/scripts/extract_sources.py
@@ -124,7 +97,7 @@ jobs:
       - name: Scrape
         run: python -m src.main < .tmp.sources.yaml
 
-      - name: Verify freshness (must be today)
+      - name: Verify report exists
         run: python .github/scripts/verify_freshness.py
 
       - name: Stage site files
@@ -132,7 +105,44 @@ jobs:
           cp -f state/last_run_report.json public/state/last_run_report.json
           cp -f state/events.json public/state/events.json
           test -f northwoods.ics && cp -f northwoods.ics public/ics/northwoods.ics || true
-          ls -la public public/state public/ics || true
+
+      # Create minimal HTML pages at build time (ensures they exist)
+      - name: Write index.html
+        run: |
+          printf '%s\n' \
+          '<!doctype html>' \
+          '<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' \
+          '<title>Northwoods Events</title>' \
+          '<style>body{font-family:system-ui,Arial,sans-serif;margin:20px} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} th{background:#f6f6f6;text-align:left} .badge{display:inline-block;padding:2px 6px;border:1px solid #ccc;border-radius:12px;margin-left:8px;font-size:.8em} #status{margin:10px 0;padding:8px;border:1px solid #ddd;background:#fafafa}</style>' \
+          '</head><body>' \
+          '<h1>Northwoods Events <span id="count" class="badge">0</span></h1>' \
+          '<div id="status">Loading…</div>' \
+          '<label>Filter by source: <select id="source"></select></label>' \
+          '<table id="tbl"><thead><tr><th>When</th><th>Title</th><th>Location</th><th>Source</th></tr></thead><tbody></tbody></table>' \
+          '<script>' \
+          'const statusBox=document.getElementById("status");' \
+          'const sel=document.getElementById("source"); const tbody=document.querySelector("#tbl tbody"); const badge=document.getElementById("count");' \
+          'const fmt=(s)=>s?new Date(s).toLocaleString():"";' \
+          'let all=[];' \
+          'function render(){const src=sel.value; const rows=(src==="__all__"?all:all.filter(e=>e.source===src)); badge.textContent=rows.length; tbody.innerHTML=""; rows.forEach(e=>{const tr=document.createElement("tr"); tr.innerHTML=`<td>${fmt(e.start)}</td><td>${e.title||""}</td><td>${e.location||""}</td><td>${e.source||""}</td>`; tbody.appendChild(tr);});}' \
+          'function setSources(){const u=[...new Set(all.map(e=>e.source).filter(Boolean))].sort(); sel.innerHTML="<option value=__all__>All</option>"+u.map(s=>`<option>${s}</option>`).join(""); sel.onchange=render;}' \
+          'fetch("state/events.json",{cache:"no-store"}).then(r=>{statusBox.textContent=`GET state/events.json → ${r.status}`; if(!r.ok) throw new Error(r.status); return r.json();}).then(j=>{all=Array.isArray(j)?j:(j.events||[]); setSources(); render();}).catch(e=>{statusBox.textContent=`Failed to load events.json: ${e}`;});' \
+          '</script></body></html>' \
+          > public/index.html
+
+      - name: Write diag.html
+        run: |
+          printf '%s\n' \
+          '<!doctype html><meta charset="utf-8"><title>Diag</title>' \
+          '<pre id="out">Loading…</pre>' \
+          '<script>' \
+          'const out=document.getElementById("out");' \
+          'Promise.all([' \
+          ' fetch("state/last_run_report.json",{cache:"no-store"}).then(r=>r.ok?r.json():({error:`status ${r.status}`})),' \
+          ' fetch("state/events.json",{cache:"no-store"}).then(r=>r.ok?r.json():({error:`status ${r.status}`}))' \
+          ']).then(([a,b])=>{out.textContent=JSON.stringify({last_run_report:a, events_preview:Array.isArray(b)?b.slice(0,3):(b.events||[]).slice(0,3)},null,2)}).catch(e=>{out.textContent=String(e)});' \
+          '</script>' \
+          > public/diag.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

@@ -1,67 +1,55 @@
 {
-  "when": "2025-08-31T20:32:32.103780+00:00",
-  "timezone": "UTC",
-  "sources": [
+  "when": "2025-08-31T21:17:52.607338+00:00",
+  "total_events": 225,
+  "per_source": [
     {
       "name": "Boulder Junction (Modern Tribe)",
+      "kind": "modern_tribe",
       "url": "https://boulderjct.org/events/?eventDisplay=list",
-      "parser_kind": "modern_tribe",
-      "parsed": 0,
-      "added": 0,
-      "error": null
+      "parsed": 50,
+      "added": 50
     },
     {
       "name": "Eagle River Chamber (Modern Tribe)",
+      "kind": "modern_tribe",
       "url": "https://eagleriver.org/events/?eventDisplay=list",
-      "parser_kind": "modern_tribe",
-      "parsed": 0,
-      "added": 0,
-      "error": null
+      "parsed": 50,
+      "added": 50
     },
     {
       "name": "Oneida County – Festivals & Events (Modern Tribe)",
+      "kind": "modern_tribe",
       "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "parser_kind": "modern_tribe",
       "parsed": 0,
-      "added": 0,
-      "error": null
+      "added": 0
     },
     {
       "name": "Presque Isle Chamber (ICS)",
+      "kind": "ics",
       "url": "https://presqueisle.com/events.ics",
-      "parser_kind": "ics",
       "parsed": 0,
-      "added": 0,
-      "error": null
+      "added": 0
     },
     {
       "name": "Sayner–Star Lake–Cloverland Chamber (ICS)",
+      "kind": "ics",
       "url": "https://sayner-starlake.org/events.ics",
-      "parser_kind": "ics",
       "parsed": 0,
-      "added": 0,
-      "error": null
+      "added": 0
     },
     {
       "name": "Rhinelander Chamber (GrowthZone)",
+      "kind": "growthzone",
       "url": "https://business.rhinelanderchamber.com/events/calendar",
-      "parser_kind": "growthzone",
-      "parsed": 0,
-      "added": 0,
-      "error": null
+      "parsed": 125,
+      "added": 125
     },
     {
       "name": "St. Germain Chamber (Modern Tribe)",
+      "kind": "modern_tribe",
       "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
-      "parser_kind": "modern_tribe",
       "parsed": 0,
-      "added": 0,
-      "error": null
+      "added": 0
     }
-  ],
-  "totals": {
-    "parsed": 0,
-    "added": 0,
-    "store_size": 0
-  }
+  ]
 }

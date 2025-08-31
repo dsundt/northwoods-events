@@ -1,253 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Northwoods Events</title>
 <style>
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
-  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
-  #status { padding: 8px 10px; background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; }
-  label { font-weight: 600; margin-right: 6px; }
-  select, input { padding: 6px; }
-  table { border-collapse: collapse; width: 100%; margin-top: 12px; }
-  th, td { border: 1px solid #d0d7de; padding: 8px; vertical-align: top; }
-  th { background: #f6f8fa; text-align: left; }
-  tfoot td { font-size: 12px; color: #57606a; }
-  .muted { color: #57606a; }
-  .wrap { word-break: break-word; }
-</style>
-</head>
-<body>
-<header>
-  <div id="status">Loading…</div>
-  <div>
-    <label for="sourceSelect">Source</label>
-    <select id="sourceSelect" aria-label="Filter by source">
-      <option value="*">All sources</option>
-    </select>
-  </div>
-  <div>
-    <label for="q">Search</label>
-    <input id="q" type="search" placeholder="title or location">
-  </div>
-  <div class="muted">Download: <a href="ics/northwoods.ics">northwoods.ics</a></div>
-</header>
-
-<table id="eventsTable" aria-describedby="status">
-  <thead>
-    <tr>
-      <th style="width: 16ch;">Start</th>
-      <th style="width: 16ch;">End</th>
-      <th>Title</th>
-      <th style="width: 28ch;">Location</th>
-      <th style="width: 28ch;">Source</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-  <tfoot>
-    <tr><td colspan="5" class="muted">Times shown in America/Chicago (local).</td></tr>
-  </tfoot>
-</table>
-
+body{font-family:system-ui,Arial,sans-serif;margin:20px}
+table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px}
+th{background:#f6f6f6;text-align:left}
+.badge{display:inline-block;padding:2px 6px;border:1px solid #ccc;border-radius:12px;margin-left:8px;font-size:.8em}
+#status{margin:10px 0;padding:8px;border:1px solid #ddd;background:#fafafa}
+</style></head><body>
+<h1>Northwoods Events <span id="count" class="badge">0</span></h1>
+<div id="status">Loading…</div>
+<label>Filter by source: <select id="source"></select></label>
+<table id="tbl"><thead><tr><th>When</th><th>Title</th><th>Location</th><th>Source</th></tr></thead><tbody></tbody></table>
 <script>
-(function () {
-  "use strict";
-
-  var statusEl = document.getElementById("status");
-  var tableBody = document.querySelector("#eventsTable tbody");
-  var sourceSelect = document.getElementById("sourceSelect");
-  var qInput = document.getElementById("q");
-
-  var allEvents = [];
-  var tz = "America/Chicago";
-
-  function setStatus(msg) {
-    statusEl.textContent = msg;
-  }
-
-  function fmt(dt) {
-    if (!dt) return "";
-    try {
-      var d = new Date(dt);
-      if (String(d) === "Invalid Date") return dt;
-      return d.toLocaleString("en-US", {
-        timeZone: tz,
-        year: "numeric", month: "short", day: "2-digit",
-        hour: "2-digit", minute: "2-digit"
-      });
-    } catch (e) { return dt; }
-  }
-
-  function uniqueSources(events) {
-    var seen = {};
-    var list = [];
-    for (var i = 0; i < events.length; i++) {
-      var s = (events[i].source || "").trim();
-      if (!s) continue;
-      if (!seen[s]) { seen[s] = true; list.push(s); }
-    }
-    list.sort(function(a,b){ return a.localeCompare(b); });
-    return list;
-  }
-
-  function deriveTitleFromUrl(url) {
-    if (!url) return "";
-    var parts = url.split("?")[0].split("#")[0].split("/").filter(Boolean);
-    if (!parts.length) return "";
-    var slug = parts[parts.length - 1];
-    slug = slug.replace(/[-_]+/g, " ").replace(/\b(all|series|category|tag)\b/ig, "").trim();
-    return slug ? slug.replace(/\b\w/g, function(m){ return m.toUpperCase(); }) : "";
-    // simple Title Case
-  }
-
-  function getTitle(ev) {
-    // Prefer 'title', then 'name' (common in JSON-LD), then derive from URL, else 'Untitled'
-    var t = (ev.title || "").trim();
-    if (!t) t = (ev.name || "").trim();
-    if (!t) t = deriveTitleFromUrl(ev.url || "");
-    return t || "Untitled";
-  }
-
-  function applyFilters() {
-    var sel = sourceSelect.value;
-    var q = qInput.value.trim().toLowerCase();
-    var rows = [];
-    var shown = 0;
-
-    var data = allEvents.slice().sort(function(a, b) {
-      var A = a.start_iso ? Date.parse(a.start_iso) : Infinity;
-      var B = b.start_iso ? Date.parse(b.start_iso) : Infinity;
-      return A - B;
-    });
-
-    for (var i = 0; i < data.length; i++) {
-      var ev = data[i];
-      if (sel !== "*" && (ev.source || "") !== sel) continue;
-
-      var titleText = getTitle(ev);
-      if (q) {
-        var hay = (titleText + " " + (ev.location || "")).toLowerCase();
-        if (hay.indexOf(q) === -1) continue;
-      }
-
-      var url = ev.url || "";
-      var titleHtml = url ? '<a href="' + url + '">' + escapeHtml(titleText) + '</a>' : escapeHtml(titleText);
-
-      rows.push(
-        "<tr>" +
-          "<td>" + escapeHtml(fmt(ev.start_iso)) + "</td>" +
-          "<td>" + escapeHtml(fmt(ev.end_iso || "")) + "</td>" +
-          "<td class='wrap'>" + titleHtml + "</td>" +
-          "<td class='wrap'>" + escapeHtml(ev.location || "") + "</td>" +
-          "<td class='wrap'>" + escapeHtml(ev.source || "") + "</td>" +
-        "</tr>"
-      );
-      shown++;
-    }
-
-    tableBody.innerHTML = rows.join("");
-    setStatus("Events shown: " + shown + " of " + allEvents.length);
-    // reflect selected source in the document title for clarity
-    if (sourceSelect.value === "*") {
-      document.title = "Northwoods Events";
-    } else {
-      document.title = "Northwoods Events – " + sourceSelect.value;
-    }
-  }
-
-  function populateSources() {
-    var sources = uniqueSources(allEvents);
-    sourceSelect.options.length = 1; // keep "All sources"
-    for (var i = 0; i < sources.length; i++) {
-      var opt = document.createElement("option");
-      opt.value = sources[i];
-      opt.textContent = sources[i];
-      sourceSelect.appendChild(opt);
-    }
-    var params = new URLSearchParams(location.search);
-    var s = params.get("source");
-    if (s) {
-      for (var j = 0; j < sourceSelect.options.length; j++) {
-        if (sourceSelect.options[j].value === s) {
-          sourceSelect.selectedIndex = j;
-          break;
-        }
-      }
-    }
-  }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
-    });
-  }
-
-  function guessPaths() {
-    var candidates = ["state/events.json"];
-    try {
-      var parts = location.pathname.split("/").filter(Boolean);
-      if (parts.length > 0) {
-        var repo = "/" + parts[0];
-        candidates.push(repo + "/state/events.json");
-      }
-    } catch (e) {}
-    var u = {}, out = [];
-    for (var i = 0; i < candidates.length; i++) if (!u[candidates[i]]) { u[candidates[i]] = true; out.push(candidates[i]); }
-    return out;
-  }
-
-  function fetchFirst(paths, done) {
-    if (!paths.length) { done(new Error("No valid paths to try")); return; }
-    var p = paths[0];
-    fetch(p, { cache: "no-store" }).then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status + " for " + p);
-      return r.json();
-    }).then(function (j) {
-      done(null, j, p);
-    }).catch(function () {
-      fetchFirst(paths.slice(1), done);
-    });
-  }
-
-  function normalizeStoreToArray(storeObj) {
-    var arr = [];
-    for (var k in storeObj) if (Object.prototype.hasOwnProperty.call(storeObj, k)) arr.push(storeObj[k]);
-    return arr;
-  }
-
-  function init() {
-    setStatus("Loading events…");
-    var paths = guessPaths();
-    fetchFirst(paths, function (err, json, usedPath) {
-      if (err) {
-        setStatus("Failed to load events.json (" + err.message + ")");
-        tableBody.innerHTML = "<tr><td colspan='5'>Could not load <code>state/events.json</code>. Ensure the Pages artifact includes <code>public/state/events.json</code>.</td></tr>";
-        return;
-      }
-      try {
-        allEvents = normalizeStoreToArray(json);
-      } catch (e) {
-        setStatus("Loaded events but could not read them.");
-        return;
-      }
-      populateSources();
-      applyFilters();
-      sourceSelect.addEventListener("change", function () {
-        var params = new URLSearchParams(location.search);
-        if (sourceSelect.value === "*" ) { params.delete("source"); }
-        else { params.set("source", sourceSelect.value); }
-        var newUrl = location.pathname + "?" + params.toString();
-        history.replaceState(null, "", newUrl);
-        applyFilters();
-      });
-      qInput.addEventListener("input", function () { applyFilters(); });
-      setStatus("Loaded " + allEvents.length + " events from " + usedPath + ". Use the Source filter to narrow the list.");
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", init);
-}());
-</script>
-</body>
-</html>
+const statusBox=document.getElementById("status");
+const sel=document.getElementById("source"); const tbody=document.querySelector("#tbl tbody"); const badge=document.getElementById("count");
+const fmt=(s)=>s?new Date(s).toLocaleString():"";
+let all=[];
+function render(){
+  const src=sel.value;
+  const rows=(src==="__all__"?all:all.filter(e=>e.source===src));
+  badge.textContent=rows.length; tbody.innerHTML="";
+  rows.forEach(e=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${fmt(e.start)}</td><td>${e.title||""}</td><td>${e.location||""}</td><td>${e.source||""}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function setSources(){
+  const u=[...new Set(all.map(e=>e.source).filter(Boolean))].sort();
+  sel.innerHTML="<option value=__all__>All</option>"+u.map(s=>`<option>${s}</option>`).join("");
+  sel.onchange=render;
+}
+fetch("state/events.json",{cache:"no-store"})
+  .then(r=>{statusBox.textContent=`GET state/events.json → ${r.status}`; if(!r.ok) throw new Error(r.status); return r.json();})
+  .then(j=>{all=Array.isArray(j)?j:(j.events||[]); setSources(); render();})
+  .catch(e=>{statusBox.textContent=`Failed to load events.json: ${e}`;});
+</script></body></html>

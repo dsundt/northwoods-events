@@ -1,19 +1,14 @@
-<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><title>Diag</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body>
+<!doctype html><meta charset="utf-8"><title>Diag</title>
 <pre id="out">Loading…</pre>
 <script>
-(function(){
-  var parts = location.pathname.split('/').filter(Boolean);
-  var BASE = parts.length ? ('/' + parts[0] + '/') : '/';
-  var url = BASE + 'state/events.json?t=' + Date.now();
-  fetch(url, {cache:'no-store'}).then(r=>r.text()).then(t=>{
-    document.getElementById('out').textContent = t.slice(0,2000);
-  }).catch(e=>{
-    document.getElementById('out').textContent = 'Error: ' + e.message;
-  });
-})();
+const out=document.getElementById("out");
+Promise.all([
+  fetch("state/last_run_report.json",{cache:"no-store"}).then(r=>r.ok?r.json():({error:`status ${r.status}`})),
+  fetch("state/events.json",{cache:"no-store"}).then(r=>r.ok?r.json():({error:`status ${r.status}`}))
+]).then(([a,b])=>{
+  out.textContent=JSON.stringify({
+    last_run_report:a,
+    events_preview:Array.isArray(b)?b.slice(0,3):(b.events||[]).slice(0,3)
+  },null,2)
+}).catch(e=>{out.textContent=String(e)});
 </script>
-</body>
-</html>

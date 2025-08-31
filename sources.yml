@@ -1,4 +1,3 @@
-# sources.yml — minimal keys, no anchors
 sources:
   - name: Boulder Junction (Modern Tribe)
     kind: modern_tribe
@@ -14,6 +13,7 @@ sources:
     kind: simpleview
     url: https://www.minocqua.org/events/
     tzname: America/Chicago
+    enabled: false   # disable until refactor
 
   - name: Oneida County – Festivals & Events (Modern Tribe)
     kind: modern_tribe
@@ -22,17 +22,29 @@ sources:
 
   - name: Presque Isle Chamber (ICS)
     kind: ics
-    url: https://calendar.google.com/calendar/ical/presqueisle.chamber%40gmail.com/public/basic.ics
+    url: https://presqueisle.com/events.ics
     tzname: America/Chicago
+
+  - name: Presque Isle Chamber (Modern Tribe)
+    kind: modern_tribe
+    url: https://presqueisle.com/events/?eventDisplay=list
+    tzname: America/Chicago
+    enabled: false   # use ICS only
+
+  - name: Sayner–Star Lake–Cloverland Chamber (ICS)
+    kind: ics
+    url: https://sayner-starlake.org/events.ics
+    tzname: America/Chicago
+
+  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
+    kind: modern_tribe
+    url: https://sayner-starlake.org/events/
+    tzname: America/Chicago
+    enabled: false   # use ICS only
 
   - name: Rhinelander Chamber (GrowthZone)
     kind: growthzone
     url: https://business.rhinelanderchamber.com/events/calendar
-    tzname: America/Chicago
-
-  - name: Sayner–Star Lake–Cloverland Chamber (ICS)
-    kind: ics
-    url: https://calendar.google.com/calendar/ical/3l01djb44oouaq81l3rb8rm93o%40group.calendar.google.com/public/basic.ics
     tzname: America/Chicago
 
   - name: St. Germain Chamber (Modern Tribe)
@@ -40,7 +52,8 @@ sources:
     url: https://st-germain.com/events-calendar/?eventDisplay=list
     tzname: America/Chicago
 
-  - name: Vilas County (Modern Tribe)
-    kind: modern_tribe
-    url: https://vilaswi.com/events/?eventDisplay=list
+  - name: Town of Arbor Vitae (Municipal Calendar)
+    kind: ai1ec
+    url: https://www.townofarborvitae.org/calendar/
     tzname: America/Chicago
+    enabled: false   # remove from feed

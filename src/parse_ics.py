@@ -1,37 +1,45 @@
 # src/parse_ics.py
-from __future__ import annotations
-
 from ics import Calendar
-from .normalize import normalize_event, parse_dt, clean_text
 from .fetch import fetch_text
+from datetime import datetime
+from dateutil import tz
 
-def parse_ics(source, add_event):
-    url = source["url"]
-    tzname = source.get("tzname")
-    ics_text = fetch_text(url, source=source)
-    if not ics_text:
-        return
-    try:
-        cal = Calendar(ics_text)
-    except Exception:
-        return
+def parse_ics(source_name: str, url: str, tzname: str | None = None):
+    """
+    Yield dict events from an ICS feed.
+    Guaranteed fields: title, start, end, location, source, url
+    """
+    raw = fetch_text(url=url)  # be explicit: url=
+    cal = Calendar(raw)
 
-    for ve in cal.events:
-        title = clean_text(ve.name or "")
-        if not title:
+    local_tz = tz.gettz(tzname) if tzname else tz.UTC
+
+    def ensure_dt(dt):
+        if not dt:
+            return None
+        if isinstance(dt, datetime):
+            d = dt
+        else:
+            d = dt.datetime if hasattr(dt, "datetime") else None
+        if not d:
+            return None
+        # If floating or naive, attach provided tz
+        if d.tzinfo is None:
+            d = d.replace(tzinfo=local_tz)
+        return d.astimezone(tz.UTC)
+
+    for ev in cal.events:
+        title = (ev.name or "").strip()
+        start = ensure_dt(ev.begin)
+        end = ensure_dt(ev.end)
+        # Drop entries that still have no start
+        if not start:
             continue
-        # ics Event.begin/end may be arrow objects; normalize via parse_dt for consistency
-        start_iso = (ve.begin.to('UTC').isoformat() if getattr(ve, "begin", None) else "") or ""
-        end_iso   = (ve.end.to('UTC').isoformat()   if getattr(ve, "end", None)   else "") or ""
-
-        evt = normalize_event(
-            title=title,
-            url=getattr(ve, "url", None) or url,
-            where=clean_text(getattr(ve, "location", "") or ""),
-            start=parse_dt(start_iso, tzname),
-            end=parse_dt(end_iso, tzname) if end_iso else None,
-            tzname=tzname,
-            description=clean_text(getattr(ve, "description", "") or "")
-        )
-        if evt:
-            add_event(evt)
+        yield {
+            "title": title or "(untitled)",
+            "start": start.isoformat(),
+            "end": end.isoformat() if end else None,
+            "location": (getattr(ev, "location", None) or "").strip() or None,
+            "source": source_name,
+            "url": url,
+        }

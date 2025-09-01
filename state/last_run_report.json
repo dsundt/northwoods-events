@@ -1,5 +1,5 @@
 {
-  "when": "2025-09-01T17:32:36.943336+00:00",
+  "when": "2025-09-01T18:34:46.948296+00:00",
   "total_events": 186,
   "per_source": [
     {
@@ -17,23 +17,9 @@
       "added": 50
     },
     {
-      "name": "Oneida County – Festivals & Events (Modern Tribe)",
+      "name": "St. Germain Chamber (Modern Tribe)",
       "kind": "modern_tribe",
-      "url": "https://oneidacountywi.com/festivals-events/?eventDisplay=list",
-      "parsed": 0,
-      "added": 0
-    },
-    {
-      "name": "Presque Isle Chamber (ICS)",
-      "kind": "ics",
-      "url": "https://presqueisle.com/events.ics",
-      "parsed": 0,
-      "added": 0
-    },
-    {
-      "name": "Sayner–Star Lake–Cloverland Chamber (ICS)",
-      "kind": "ics",
-      "url": "https://sayner-starlake.org/events.ics",
+      "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
       "parsed": 0,
       "added": 0
     },
@@ -45,9 +31,23 @@
       "added": 86
     },
     {
-      "name": "St. Germain Chamber (Modern Tribe)",
-      "kind": "modern_tribe",
-      "url": "https://st-germain.com/events-calendar/?eventDisplay=list",
+      "name": "Let’s Minocqua (Simpleview)",
+      "kind": "simpleview",
+      "url": "https://www.minocqua.org/things-to-do/events/?view=list&perpage=100",
+      "parsed": 0,
+      "added": 0
+    },
+    {
+      "name": "Let’s Minocqua (Simpleview)",
+      "kind": "simpleview",
+      "url": "https://www.minocqua.org/things-to-do/events/?view=list&perpage=100",
+      "parsed": 0,
+      "added": 0
+    },
+    {
+      "name": "Presque Isle Chamber (ICS)",
+      "kind": "ics",
+      "url": "https://presqueisle.com/events.ics",
       "parsed": 0,
       "added": 0
     }

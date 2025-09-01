@@ -1,59 +1,50 @@
+# sources.yml (repo root) — Phase 1 set, others can be added later
 sources:
   - name: Boulder Junction (Modern Tribe)
     kind: modern_tribe
     url: https://boulderjct.org/events/?eventDisplay=list
     tzname: America/Chicago
+    enabled: true
 
   - name: Eagle River Chamber (Modern Tribe)
     kind: modern_tribe
     url: https://eagleriver.org/events/?eventDisplay=list
     tzname: America/Chicago
-
-  - name: Minocqua Area Chamber (Simpleview)
-    kind: simpleview
-    url: https://www.minocqua.org/events/
-    tzname: America/Chicago
-    enabled: false   # disable until refactor
-
-  - name: Oneida County – Festivals & Events (Modern Tribe)
-    kind: modern_tribe
-    url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
-    tzname: America/Chicago
-
-  - name: Presque Isle Chamber (ICS)
-    kind: ics
-    url: https://presqueisle.com/events.ics
-    tzname: America/Chicago
-
-  - name: Presque Isle Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://presqueisle.com/events/?eventDisplay=list
-    tzname: America/Chicago
-    enabled: false   # use ICS only
-
-  - name: Sayner–Star Lake–Cloverland Chamber (ICS)
-    kind: ics
-    url: https://sayner-starlake.org/events.ics
-    tzname: America/Chicago
-
-  - name: Sayner–Star Lake–Cloverland Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://sayner-starlake.org/events/
-    tzname: America/Chicago
-    enabled: false   # use ICS only
-
-  - name: Rhinelander Chamber (GrowthZone)
-    kind: growthzone
-    url: https://business.rhinelanderchamber.com/events/calendar
-    tzname: America/Chicago
+    enabled: true
 
   - name: St. Germain Chamber (Modern Tribe)
     kind: modern_tribe
     url: https://st-germain.com/events-calendar/?eventDisplay=list
     tzname: America/Chicago
+    enabled: true
 
-  - name: Town of Arbor Vitae (Municipal Calendar)
-    kind: ai1ec
-    url: https://www.townofarborvitae.org/calendar/
+  - name: Rhinelander Chamber (GrowthZone)
+    kind: growthzone
+    url: https://business.rhinelanderchamber.com/events/calendar
     tzname: America/Chicago
-    enabled: false   # remove from feed
+    enabled: true
+
+  - name: Let’s Minocqua (Simpleview)
+    kind: simpleview
+    url: https://www.minocqua.org/things-to-do/events/?view=list&perpage=100
+    tzname: America/Chicago
+    enabled: true
+
+  - name: Presque Isle Chamber (ICS)
+    kind: ics
+    url: https://presqueisle.com/events.ics
+    tzname: America/Chicago
+    enabled: true
+
+# Add the rest incrementally once the core six are healthy.
+# - name: Oneida County – Festivals & Events (Modern Tribe)
+#   kind: modern_tribe
+#   url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
+#   tzname: America/Chicago
+#   enabled: false
+#
+# - name: Sayner–Star Lake–Cloverland Chamber (ICS)
+#   kind: ics
+#   url: https://sayner-starlake.org/events.ics
+#   tzname: America/Chicago
+#   enabled: false

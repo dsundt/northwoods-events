@@ -1,116 +1,58 @@
-# -*- coding: utf-8 -*-
-"""
-Simpleview parser:
-- First tries rendered DOM (event cards/links).
-- Then tries to discover an ICS feed in-page.
-- Finally tries common ICS URLs or falls back to obvious anchors.
-"""
-
-from typing import List, Dict
-from urllib.parse import urljoin, urlparse
+from __future__ import annotations
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
+from .utils import soupify, clean_text, abs_url
+from urllib.parse import urljoin
 import re
-import requests
 
-def _abs(base: str, href: str) -> str:
-    return urljoin(base, href)
+def _find_ics_url(soup: BeautifulSoup, base_url: str) -> Optional[str]:
+    # Look for .ics links or export endpoints
+    for a in soup.select("a[href]"):
+        href = a.get("href")
+        if not href:
+            continue
+        h = href.lower()
+        if ".ics" in h or "ical" in h or "ics=" in h or "export" in h:
+            return abs_url(base_url, href)
+    return None
 
-def _ics_candidates(base_url: str) -> List[str]:
-    u = base_url.rstrip("/")
-    return [
-        f"{u}?format=ical",
-        f"{u}?format=ics",
-        f"{u}?ical=1",
-        f"{u}?ical=true",
-        f"{u}/?format=ical",
-        f"{u}/?format=ics",
-        f"{u}/?ical=1",
-        f"{u}/?ical=true",
-    ]
-
-def _parse_ics(url: str) -> List[Dict]:
-    try:
-        from ics import Calendar
-        import requests
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        cal = Calendar(r.text)
-        out = []
-        for e in cal.events:
-            start = ""
-            try:
-                # Prefer naive ISO (UTC or local naive acceptable for your pipeline)
-                start = e.begin.datetime.isoformat(timespec="seconds")
-            except Exception:
-                pass
+def _parse_cards(soup: BeautifulSoup, base_url: str, source_name: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    cards = soup.select("article, .event-card, li.event, .sv-event")
+    for c in cards:
+        a = c.select_one("a[href]")
+        title_el = c.select_one("h3, h2, .title")
+        time_el = c.select_one("time[datetime], meta[itemprop='startDate']")
+        title = clean_text((title_el or a).get_text() if (title_el or a) else "")
+        start = ""
+        if time_el and time_el.has_attr("datetime"):
+            start = time_el["datetime"]
+        elif time_el and time_el.has_attr("content"):
+            start = time_el["content"]
+        url = abs_url(base_url, a["href"]) if a and a.has_attr("href") else None
+        loc_el = c.select_one(".location, .venue")
+        loc = clean_text(loc_el.get_text()) if loc_el else ""
+        if title and start:
             out.append({
-                "title": (e.name or "").strip(),
+                "title": title,
                 "start": start,
-                "url": (e.url or url).strip(),
-                "location": (e.location or "").strip(),
+                "end": None,
+                "location": loc,
+                "url": url,
+                "source": source_name,
             })
-        return out
-    except Exception:
-        return []
+    return out
 
-def parse_simpleview(html: str, base_url: str) -> List[Dict]:
-    soup = BeautifulSoup(html, "lxml")
-
-    # Strategy 1: rendered DOM – find event anchors that look like /event/... pages
-    anchors = soup.select('a[href*="/event/"]')
-    items: List[Dict] = []
-    seen = set()
-    for a in anchors:
-        href = a.get("href") or ""
-        text = (a.get_text(" ", strip=True) or "").strip()
-        if not href:
-            continue
-        href_abs = _abs(base_url, href)
-        # Guard against nav/crumbs: require some non-trivial title text
-        if len(text) < 3:
-            continue
-        key = (text.lower(), href_abs)
-        if key in seen:
-            continue
-        seen.add(key)
-        items.append({
-            "title": text,
-            "start": "",           # date extraction differs by theme; leave blank if not obvious
-            "url": href_abs,
-            "location": "",
-        })
-
-    if items:
-        return items
-
-    # Strategy 2: discover ICS feed in page
-    ics_links = soup.select('a[href$=".ics"], a[href*="ical"], a[href*="ICS"], link[type="text/calendar"]')
-    for link in ics_links:
-        href = link.get("href") or ""
-        if not href:
-            continue
-        ics_url = _abs(base_url, href)
-        events = _parse_ics(ics_url)
-        if events:
-            return events
-
-    # Strategy 3: try common ICS URLs
-    for guess in _ics_candidates(base_url):
-        events = _parse_ics(guess)
-        if events:
-            return events
-
-    # Strategy 4: last resort – any on-page links that look like “events” section
-    more = soup.select('a[href*="/events/"]')
-    for a in more:
-        href = a.get("href") or ""
-        text = (a.get_text(" ", strip=True) or "").strip() or "Events |"
-        if not href:
-            continue
-        items.append({
-            "title": text,
-            "start": "",
-            "url": _abs(base_url, href),
-            "location": "",
-        })
-    return items
+def parse_simpleview(html: str, base_url: str, tzname: Optional[str], source_name: str) -> List[Dict[str, Any]]:
+    soup = soupify(html)
+    # Try ICS link first
+    ics_url = _find_ics_url(soup, base_url)
+    if ics_url:
+        # Defer to ICS parser by fetching content here to keep module-local
+        import requests
+        r = requests.get(ics_url, timeout=60)
+        if r.ok:
+            from .ics_feed import parse_ics
+            return parse_ics(r.text, tzname=tzname, source_name=source_name)
+    # Fallback to parsing visible cards
+    return _parse_cards(soup, base_url, source_name)

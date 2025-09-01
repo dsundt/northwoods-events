@@ -1,107 +1,87 @@
-import sys, os, json, io, datetime as dt, pytz, yaml, traceback
-from typing import List, Dict, Any, Tuple
+# src/main.py
+from __future__ import annotations
 
-from resolve_sources import resolve_sources
-from fetch import fetch_html, fetch_text
-from parsers.modern_tribe import parse_modern_tribe
-from parsers.growthzone import parse_growthzone
-from parsers.simpleview import parse_simpleview
-from parsers.ics_feed import parse_ics
+import sys, json, os, io, datetime as dt
+from typing import Any, Dict, List
 
-STATE_DIR = "state"
-EVENTS_PATH = os.path.join(STATE_DIR, "events.json")
-LAST_RUN_PATH = os.path.join(STATE_DIR, "last_run_report.json")
-DEBUG = bool(os.environ.get("DEBUG_SCRAPER"))
+# Support both "python -m src.main" and "python src/main.py"
+try:
+    from .resolve_sources import get_parser
+    from .normalize import normalize
+except ImportError:  # fallback when run as a script directly
+    from resolve_sources import get_parser
+    from normalize import normalize
 
-def ensure_dirs():
-    os.makedirs(STATE_DIR, exist_ok=True)
-    os.makedirs(os.path.join(STATE_DIR, "debug"), exist_ok=True)
 
-def write_json(path: str, data: Any):
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as w:
-        json.dump(data, w, ensure_ascii=False, indent=2)
-    os.replace(tmp, path)
-
-def summarize_print(name: str, kind: str, parsed: int, added: int, error: str = None):
-    if error:
-        print(f"- {name} ({kind}) ERROR: {error}")
+def _read_sources_from_stdin_or_file() -> List[Dict[str, Any]]:
+    """Read YAML piped in (preferred by CI), otherwise fall back to repo root sources.yml."""
+    import yaml
+    data: Dict[str, Any] = {}
+    buf = sys.stdin.read()
+    if buf.strip():
+        data = yaml.safe_load(io.StringIO(buf)) or {}
     else:
-        print(f"- {name} ({kind}) parsed: {parsed} added: {added}")
+        for cand in ("sources.yml", "sources.yaml"):
+            if os.path.isfile(cand):
+                data = yaml.safe_load(open(cand, "r", encoding="utf-8")) or {}
+                break
+    return data.get("sources", []) or []
 
-def load_sources_from_stdin() -> List[Dict[str, Any]]:
-    raw = sys.stdin.read()
-    cfg = yaml.safe_load(raw) or {}
-    return resolve_sources(cfg.get("sources", []))
 
-def parse_one(source: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], Dict[str, Any], str]:
-    """
-    Returns (events, report, error)
-    """
-    name = source["name"]
-    kind = source["kind"]
-    url  = source["url"]
-    tzname = source.get("tzname")
-
-    try:
-        if kind == "modern_tribe":
-            html, final_url = fetch_html(url, wait_for=":is(.tribe-events,.tec-events,.tribe-common)")
-            events = parse_modern_tribe(html, base_url=final_url, tzname=tzname, source_name=name)
-        elif kind == "growthzone":
-            html, final_url = fetch_html(url, wait_for="body")
-            events = parse_growthzone(html, base_url=final_url, tzname=tzname, source_name=name)
-        elif kind == "simpleview":
-            html, final_url = fetch_html(url, wait_for="body")
-            events = parse_simpleview(html, base_url=final_url, tzname=tzname, source_name=name)
-        elif kind == "ics":
-            text, final_url = fetch_text(url)
-            events = parse_ics(text, tzname=tzname, source_name=name)
-        else:
-            return [], {}, f"unknown kind '{kind}'"
-
-        parsed = len(events)
-        # Dedup by (title,start,url)
-        seen = set()
-        deduped = []
-        for e in events:
-            key = (e.get("title","").strip(), e.get("start"), e.get("url","").strip())
-            if key in seen: 
-                continue
-            seen.add(key)
-            deduped.append(e)
-
-        report = {"name": name, "kind": kind, "url": url, "parsed": parsed, "added": len(deduped)}
-        return deduped, report, None
-    except Exception as ex:
-        if DEBUG:
-            traceback.print_exc()
-        return [], {"name": name, "kind": kind, "url": url, "parsed": 0, "added": 0}, str(ex)
-
-def main():
-    ensure_dirs()
-    sources = load_sources_from_stdin()
-    print(f"Sources: {len(sources)}")
+def main() -> None:
+    sources = _read_sources_from_stdin_or_file()
 
     all_events: List[Dict[str, Any]] = []
-    per_source: List[Dict[str, Any]] = []
+    per_source_report: List[Dict[str, Any]] = []
 
+    print(f"Sources: {len(sources)}")
     for src in sources:
-        evs, rep, err = parse_one(src)
-        per_source.append(rep)
-        summarize_print(rep.get("name", "?"), rep.get("kind","?"), rep.get("parsed",0), rep.get("added",0), err)
-        # keep only added events
-        all_events.extend(evs)
+        if not isinstance(src, dict):
+            continue
+        if src.get("enabled") is False:
+            continue
 
-    # Sort by start datetime string (ISO sorts fine)
-    def _dt_key(v):
-        return v.get("start") or ""
-    all_events.sort(key=_dt_key)
+        name = src.get("name") or "(unnamed)"
+        kind = (src.get("kind") or "").strip().lower()
+        url = src.get("url")
 
-    # Write outputs
-    write_json(EVENTS_PATH, all_events)
-    now = dt.datetime.now(dt.timezone.utc).isoformat()
-    last = {"when": now, "total_events": len(all_events), "per_source": per_source}
-    write_json(LAST_RUN_PATH, last)
+        parser = get_parser(kind)
+        parsed: List[Dict[str, Any]] = []
+        try:
+            parsed = parser(src) if parser else []
+        except Exception as e:
+            # Be resilient: a single bad source shouldn't break the whole run
+            print(f"- {name} ({kind or 'unknown'}) ERROR: {e}")
+            parsed = []
+
+        added = normalize(parsed, source_name=name)
+        print(f"- {name} ({kind or 'unknown'}) parsed: {len(parsed)} added: {len(added)}")
+
+        all_events.extend(added)
+        per_source_report.append({
+            "name": name, "kind": kind or "unknown", "url": url,
+            "parsed": len(parsed), "added": len(added)
+        })
+
+    # Ensure state dir
+    os.makedirs("state", exist_ok=True)
+
+    # Write events.json (array of normalized events)
+    with open("state/events.json", "w", encoding="utf-8") as f:
+        json.dump(all_events, f, ensure_ascii=False, indent=2)
+
+    # Write last_run_report.json to help your diag page
+    report = {
+        "when": dt.datetime.utcnow().isoformat(timespec="microseconds") + "Z",
+        "total_events": len(all_events),
+        "per_source": per_source_report,
+    }
+    with open("state/last_run_report.json", "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+
+    # Optional: emit a summary line for logs
+    print(f"Total normalized events: {len(all_events)}")
+
 
 if __name__ == "__main__":
     main()

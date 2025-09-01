@@ -1,128 +1,107 @@
-import sys, os, json, yaml, datetime as dt
-from typing import List, Dict
+import sys, os, json, io, datetime as dt, pytz, yaml, traceback
+from typing import List, Dict, Any, Tuple
 
-# local imports
-from .scrapers.growthzone import scrape as scrape_growthzone
-from .scrapers.modern_tribe import scrape as scrape_modern_tribe
-from .scrapers.icsfeed import scrape as scrape_ics
+from resolve_sources import resolve_sources
+from fetch import fetch_html, fetch_text
+from parsers.modern_tribe import parse_modern_tribe
+from parsers.growthzone import parse_growthzone
+from parsers.simpleview import parse_simpleview
+from parsers.ics_feed import parse_ics
 
 STATE_DIR = "state"
 EVENTS_PATH = os.path.join(STATE_DIR, "events.json")
-REPORT_PATH = os.path.join(STATE_DIR, "last_run_report.json")
-ICS_PATH = "northwoods.ics"
-
-def now_utc_iso() -> str:
-    return dt.datetime.now(dt.timezone.utc).isoformat()
+LAST_RUN_PATH = os.path.join(STATE_DIR, "last_run_report.json")
+DEBUG = bool(os.environ.get("DEBUG_SCRAPER"))
 
 def ensure_dirs():
     os.makedirs(STATE_DIR, exist_ok=True)
+    os.makedirs(os.path.join(STATE_DIR, "debug"), exist_ok=True)
 
-def normalize_kind(k: str) -> str:
-    k = (k or "").strip().lower()
-    if "growth" in k:
-        return "growthzone"
-    if "tribe" in k or "modern" in k:
-        return "modern_tribe"
-    if "ics" in k:
-        return "ics"
-    return k
+def write_json(path: str, data: Any):
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as w:
+        json.dump(data, w, ensure_ascii=False, indent=2)
+    os.replace(tmp, path)
 
-def run(sources: List[Dict]) -> Dict:
-    all_events: List[Dict] = []
-    per = []
+def summarize_print(name: str, kind: str, parsed: int, added: int, error: str = None):
+    if error:
+        print(f"- {name} ({kind}) ERROR: {error}")
+    else:
+        print(f"- {name} ({kind}) parsed: {parsed} added: {added}")
 
-    print(f"Sources: {len(sources)}")
-    for s in sources:
-        name = s.get("name") or s.get("id") or "unknown"
-        url = s.get("url")
-        tzname = s.get("tzname") or "America/Chicago"
-        kind = normalize_kind(s.get("kind"))
+def load_sources_from_stdin() -> List[Dict[str, Any]]:
+    raw = sys.stdin.read()
+    cfg = yaml.safe_load(raw) or {}
+    return resolve_sources(cfg.get("sources", []))
 
-        parsed = added = 0
-        try:
-            if kind == "growthzone":
-                items = scrape_growthzone(url, name=name, tzname=tzname, limit=150)
-            elif kind == "modern_tribe":
-                items = scrape_modern_tribe(url, name=name, tzname=tzname, limit=150)
-            elif kind == "ics":
-                items = scrape_ics(url, name=name, tzname=tzname, limit=500)
-            else:
-                items = []
-                print(f"- {name} (unknown kind '{kind}') parsed: 0 added: 0")
-                per.append({"name": name, "kind": kind, "url": url, "parsed": 0, "added": 0})
-                continue
+def parse_one(source: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], Dict[str, Any], str]:
+    """
+    Returns (events, report, error)
+    """
+    name = source["name"]
+    kind = source["kind"]
+    url  = source["url"]
+    tzname = source.get("tzname")
 
-            parsed = len(items)
-            # de-dup by (title,start,url)
-            seen = set()
-            keep = []
-            for e in items:
-                key = (e.get("title","").strip(), e.get("start",""), e.get("url","").strip())
-                if key in seen: 
-                    continue
-                seen.add(key)
-                keep.append(e)
-
-            added = len(keep)
-            all_events.extend(keep)
-            print(f"- {name} ({s.get('kind')}) parsed: {parsed} added: {added}")
-        except Exception as ex:
-            print(f"- {name} ERROR: {ex}")
-        finally:
-            per.append({"name": name, "kind": kind, "url": url, "parsed": parsed, "added": added})
-
-    # sort by start date
-    def sort_key(e):
-        return (e.get("start") or "9999-12-31T00:00:00Z", e.get("title",""))
-    all_events.sort(key=sort_key)
-
-    return {
-        "when": now_utc_iso(),
-        "total_events": len(all_events),
-        "per_source": per,
-        "events": all_events,
-    }
-
-def write_json(path: str, obj):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, ensure_ascii=False, indent=2)
-
-def maybe_emit_ics(events: List[Dict]):
     try:
-        from ics import Calendar, Event
-        cal = Calendar()
+        if kind == "modern_tribe":
+            html, final_url = fetch_html(url, wait_for=":is(.tribe-events,.tec-events,.tribe-common)")
+            events = parse_modern_tribe(html, base_url=final_url, tzname=tzname, source_name=name)
+        elif kind == "growthzone":
+            html, final_url = fetch_html(url, wait_for="body")
+            events = parse_growthzone(html, base_url=final_url, tzname=tzname, source_name=name)
+        elif kind == "simpleview":
+            html, final_url = fetch_html(url, wait_for="body")
+            events = parse_simpleview(html, base_url=final_url, tzname=tzname, source_name=name)
+        elif kind == "ics":
+            text, final_url = fetch_text(url)
+            events = parse_ics(text, tzname=tzname, source_name=name)
+        else:
+            return [], {}, f"unknown kind '{kind}'"
+
+        parsed = len(events)
+        # Dedup by (title,start,url)
+        seen = set()
+        deduped = []
         for e in events:
-            ev = Event()
-            ev.name = e.get("title")
-            ev.begin = e.get("start")  # ISO8601 string
-            if e.get("end"): ev.end = e["end"]
-            ev.location = e.get("location")
-            ev.url = e.get("url")
-            ev.description = (e.get("description") or "")[:1000]
-            cal.events.add(ev)
-        with open(ICS_PATH, "w", encoding="utf-8") as w:
-            w.writelines(cal.serialize_iter())
+            key = (e.get("title","").strip(), e.get("start"), e.get("url","").strip())
+            if key in seen: 
+                continue
+            seen.add(key)
+            deduped.append(e)
+
+        report = {"name": name, "kind": kind, "url": url, "parsed": parsed, "added": len(deduped)}
+        return deduped, report, None
     except Exception as ex:
-        print(f"[warn] could not build ICS: {ex}")
+        if DEBUG:
+            traceback.print_exc()
+        return [], {"name": name, "kind": kind, "url": url, "parsed": 0, "added": 0}, str(ex)
 
 def main():
     ensure_dirs()
-    raw = yaml.safe_load(sys.stdin.read()) if not sys.stdin.closed else {}
-    sources = (raw or {}).get("sources", [])
-    if not sources:
-        print("ERROR: no sources on stdin")
-        write_json(EVENTS_PATH, [])
-        write_json(REPORT_PATH, {"when": now_utc_iso(), "total_events": 0, "per_source": []})
-        return
+    sources = load_sources_from_stdin()
+    print(f"Sources: {len(sources)}")
 
-    report = run(sources)
-    events = report.pop("events", [])
-    write_json(EVENTS_PATH, events)
-    write_json(REPORT_PATH, {**report})  # without events (keeps file small)
+    all_events: List[Dict[str, Any]] = []
+    per_source: List[Dict[str, Any]] = []
 
-    # Optional: emit combined ICS
-    if events:
-        maybe_emit_ics(events)
+    for src in sources:
+        evs, rep, err = parse_one(src)
+        per_source.append(rep)
+        summarize_print(rep.get("name", "?"), rep.get("kind","?"), rep.get("parsed",0), rep.get("added",0), err)
+        # keep only added events
+        all_events.extend(evs)
+
+    # Sort by start datetime string (ISO sorts fine)
+    def _dt_key(v):
+        return v.get("start") or ""
+    all_events.sort(key=_dt_key)
+
+    # Write outputs
+    write_json(EVENTS_PATH, all_events)
+    now = dt.datetime.now(dt.timezone.utc).isoformat()
+    last = {"when": now, "total_events": len(all_events), "per_source": per_source}
+    write_json(LAST_RUN_PATH, last)
 
 if __name__ == "__main__":
     main()

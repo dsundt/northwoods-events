@@ -1,48 +1,57 @@
-name: scrape-build-and-deploy
+name: Scrape • Build • Deploy
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "18 * * * *" # hourly-ish
   push:
     branches: [ main ]
+    paths:
+      - "sources.yml"
+      - "sources.yaml"
+      - "requirements.txt"
+      - "src/**"
+      - ".github/workflows/scrape-build-deploy.yml"
+  schedule:
+    # run twice daily; tweak as you like
+    - cron: "5 3,15 * * *"
 
-# IMPORTANT: allow pushing back to the repo and deploying pages
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: write        # commit state + site back to the repo
+  pages: write           # deploy Pages
+  id-token: write        # needed by deploy-pages
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
+env:
+  USE_PLAYWRIGHT: 1
+  PYTHONUNBUFFERED: 1
+
 jobs:
   build-deploy:
     runs-on: ubuntu-24.04
-    env:
-      USE_PLAYWRIGHT: 1
-      PYTHONUNBUFFERED: 1
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Python deps + Playwright
+      - name: Upgrade pip & install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
-      - name: Ensure package/init
+      - name: Ensure src/__init__.py exists
         run: test -f src/__init__.py || printf "" > src/__init__.py
 
-      - name: Prepare helper scripts
+      # These tiny helpers are created inline (keeps traceability with your previous logs)
+      - name: Drop helper scripts used by workflow
         run: |
           mkdir -p .github/scripts
           cat > .github/scripts/extract_sources.py << 'PY'
@@ -81,30 +90,28 @@ jobs:
           print("Freshness OK.")
           PY
 
-      - name: Clean output dirs
+      - name: Prep output dirs (state/ and public/)
         run: |
           rm -rf state northwoods.ics
           mkdir -p public public/state public/ics
-          # keep a static site-friendly flag
           printf "" > public/.nojekyll
 
-      - name: Extract sources
+      - name: Extract sources from repo config
         run: python .github/scripts/extract_sources.py
 
-      - name: Run scraper
+      - name: Run scraper (python -m src.main)
         run: python -m src.main < .tmp.sources.yaml
 
-      - name: Verify output exists
+      - name: Verify last run report
         run: python .github/scripts/verify_freshness.py
 
-      - name: Stage site assets
+      - name: Stage site outputs (state → public)
         run: |
           cp -f state/last_run_report.json public/state/last_run_report.json
           cp -f state/events.json public/state/events.json  || printf "[]" > public/state/events.json
           test -f northwoods.ics && cp -f northwoods.ics public/ics/northwoods.ics || true
 
-      # OPTIONAL: overwrite if you prefer generating these in CI; remove if checked into repo
-      - name: Write index.html + diag.html
+      - name: Generate simple index & diag pages
         run: |
           cat > public/index.html << 'HTML'
           <!doctype html>
@@ -147,6 +154,7 @@ jobs:
             .catch(e=>{statusBox.textContent=`Failed to load events.json: ${e}`;});
           </script></body></html>
           HTML
+
           cat > public/diag.html << 'HTML'
           <!doctype html><meta charset="utf-8"><title>Diag</title>
           <pre id="out">Loading…</pre>
@@ -164,8 +172,7 @@ jobs:
           </script>
           HTML
 
-      - name: Commit state back to repo
-        if: ${{ github.event_name != 'pull_request' }}
+      - name: Commit state + site back to repo (if changed)
         run: |
           set -e
           git config user.name  "github-actions[bot]"
@@ -181,6 +188,7 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
+          # if this repo hasn't enabled Pages yet, set enablement: true once
           enablement: false
 
       - name: Upload Pages artifact
@@ -190,14 +198,7 @@ jobs:
           name: github-pages
           retention-days: 1
 
-      - name: Upload debug artifact (state + inputs)
-        uses: actions/upload-artifact@v4
-        with:
-          name: state-debug
-          path: |
-            state
-            northwoods.ics
-            .tmp.sources.yaml
-
-      - name: Deploy to Pages
+      - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages

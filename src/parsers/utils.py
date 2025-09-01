@@ -1,12 +1,19 @@
 from __future__ import annotations
+from typing import Optional
+from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import re
 
-def clean(s: str | None) -> str:
+def soupify(html: str) -> BeautifulSoup:
+    return BeautifulSoup(html, "lxml")
+
+def clean_text(s: Optional[str]) -> str:
     if not s:
         return ""
-    return " ".join(s.split())
+    s = re.sub(r'\s+', ' ', s)
+    return s.strip()
 
-def absolutize(base: str, href: str | None) -> str:
+def abs_url(base: str, href: Optional[str]) -> Optional[str]:
     if not href:
-        return base
+        return None
     return urljoin(base, href)

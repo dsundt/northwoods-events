@@ -1,95 +1,87 @@
 from __future__ import annotations
-import re
-from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
+from .utils import soupify, clean_text, abs_url
+from urllib.parse import urljoin
+import json, datetime as dt
 
-from utils.dates import parse_datetime_range, combine_date_and_time
-
-__all__ = ["parse_modern_tribe"]
-
-def _text(el) -> str:
-    return " ".join(el.stripped_strings) if el else ""
-
-BAD_TITLE = {"recurring", "view all", "view calendar"}
-
-def _pick_title_anchor(card) -> Optional[Dict[str, str]]:
-    anchors = card.select(
-        ".tribe-events-calendar-list__event-title a, .tribe-events-event-title a, h3 a, h2 a"
-    ) or card.select("a")
-    chosen = None
-    for a in anchors:
-        href = a.get("href") or ""
-        txt = a.get_text(strip=True)
-        if not txt or txt.lower() in BAD_TITLE:
-            continue
-        if "/event/" in href and not href.endswith("/all/"):
-            chosen = a
-            break
-        if chosen is None:
-            chosen = a
-    if not chosen:
-        return None
-    return {"title": chosen.get_text(strip=True), "href": chosen.get("href", "")}
-
-def _pick_date_time(card) -> Optional[str]:
-    # Only use <time datetime=...> when datetime *is* a date (YYYY-MM-DD...)
-    t = card.find("time", attrs={"datetime": True})
-    if t and t["datetime"]:
-        date_attr = t["datetime"]
-        # Must match a full date, not just a time string
-        if re.match(r"^\d{4}-\d{2}-\d{2}", date_attr):
-            time_text = t.get_text(" ", strip=True)
-            iso = combine_date_and_time(date_attr, time_text)
-            if iso:
-                return iso
-
-    # Fallback: look for the first string in card text that parses as a full date (and, optionally, time)
-    body = _text(card)
-    try:
-        return parse_datetime_range(body)
-    except Exception:
-        pass
-
-    # Try title string as last-ditch
-    t_anchor = _pick_title_anchor(card)
-    if t_anchor:
+def _parse_jsonld_events(soup: BeautifulSoup, base_url: str, tzname: Optional[str], source_name: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    for tag in soup.select('script[type="application/ld+json"]'):
         try:
-            return parse_datetime_range(t_anchor["title"])
+            data = json.loads(tag.string or "")
         except Exception:
-            pass
+            continue
+        items = []
+        if isinstance(data, dict):
+            if data.get("@type") in ("Event","Festival","EducationEvent","ExhibitionEvent","MusicEvent","TheaterEvent","ComedyEvent"):
+                items = [data]
+            elif "@graph" in data and isinstance(data["@graph"], list):
+                items = [x for x in data["@graph"] if isinstance(x, dict) and x.get("@type") in ("Event","Festival","EducationEvent","ExhibitionEvent","MusicEvent","TheaterEvent","ComedyEvent")]
+        elif isinstance(data, list):
+            items = [x for x in data if isinstance(x, dict) and x.get("@type") in ("Event","Festival","EducationEvent","ExhibitionEvent","MusicEvent","TheaterEvent","ComedyEvent")]
 
-    return None
+        for e in items:
+            title = clean_text(e.get("name"))
+            start = e.get("startDate") or e.get("startTime")
+            end   = e.get("endDate") or e.get("endTime")
+            url   = e.get("url")
+            loc_name = ""
+            loc = e.get("location")
+            if isinstance(loc, dict):
+                loc_name = clean_text(loc.get("name") or "")
+            elif isinstance(loc, str):
+                loc_name = clean_text(loc)
+            if not url:
+                # sometimes URL is nested
+                url = e.get("mainEntityOfPage") or None
+            url = abs_url(base_url, url)
+            if not start and e.get("eventSchedule"):
+                # Some JSON-LD uses eventSchedule with repeat; skip for now
+                continue
+            if title and start:
+                out.append({
+                    "title": title,
+                    "start": start,
+                    "end": end,
+                    "location": loc_name,
+                    "url": url,
+                    "source": source_name,
+                })
+    return out
 
-def parse_modern_tribe(html: str, base_url: str) -> List[Dict[str, Any]]:
-    soup = BeautifulSoup(html, "html.parser")
-    items: List[Dict[str, Any]] = []
-
-    cards = soup.select(
-        "article.tribe-events-calendar-list__event, .tribe-events-calendar-list__event, .tribe-events-event-card, article"
+def _parse_card_list(soup: BeautifulSoup, base_url: str, tzname: Optional[str], source_name: str) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    # The Events Calendar common list item selectors
+    candidates = soup.select(
+        "article.tribe-events-calendar-list__event, "
+        "div.tribe-events-calendar-list__event, "
+        "div.tec-list__item, "
+        "div.tec-event-card, "
+        "div.tribe-common-event"
     )
-    if not cards:
-        cards = soup.select("li.tribe-events-list-event, .tribe-common-g-row")
+    for el in candidates:
+        title_el = el.select_one("h3 a, h2 a, a.tribe-event-url, a.tec-event__title-link")
+        dt_el = el.select_one("time[datetime], .tribe-event-date-start, .tec-event-datetime__start")
+        url = abs_url(base_url, title_el["href"]) if title_el and title_el.has_attr("href") else None
+        title = clean_text(title_el.get_text()) if title_el else ""
+        start = dt_el["datetime"] if dt_el and dt_el.has_attr("datetime") else ""
+        loc_el = el.select_one(".tribe-events-venue__name, .tec-venue__name, .tribe-event-venue")
+        location = clean_text(loc_el.get_text()) if loc_el else ""
+        if title and start:
+            out.append({
+                "title": title,
+                "start": start,
+                "end": None,
+                "location": location,
+                "url": url,
+                "source": source_name,
+            })
+    return out
 
-    for c in cards:
-        title_info = _pick_title_anchor(c)
-        if not title_info:
-            continue
-        title = title_info["title"]
-        href = urljoin(base_url, title_info["href"])
-
-        start_iso = _pick_date_time(c)
-        if not start_iso:
-            continue
-
-        loc_el = c.find(class_=re.compile(r"(venue|location|address)", re.I))
-        location = _text(loc_el) if loc_el else ""
-
-        items.append({
-            "title": title,
-            "start": start_iso,
-            "url": href,
-            "location": location,
-        })
-
-    return items
+def parse_modern_tribe(html: str, base_url: str, tzname: Optional[str], source_name: str) -> List[Dict[str, Any]]:
+    soup = soupify(html)
+    events = _parse_jsonld_events(soup, base_url, tzname, source_name)
+    if not events:
+        events = _parse_card_list(soup, base_url, tzname, source_name)
+    return events

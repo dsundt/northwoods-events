@@ -1,93 +1,44 @@
 # src/parse_simpleview.py
-import json
-from typing import List
-from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
-
+from __future__ import annotations
+import requests
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
+from .utils.jsonld import extract_events_from_jsonld
+from .utils import norm_event, clean_text, save_debug_html
 
-from .fetch import fetch_html
-from .utils import norm_event, parse_date, clean_text, save_debug_html
+UA = "Mozilla/5.0 (compatible; NorthwoodsEventsBot/1.0; +https://example.invalid)"
 
+def _fetch_html(url: str) -> str:
+    r = requests.get(url, headers={"User-Agent": UA}, timeout=30)
+    r.raise_for_status()
+    return r.text
 
-def parse_simpleview(url: str, name: str, tzname: str) -> List[dict]:
-    """
-    Simpleview (Let's Minocqua, etc.). We normalize the listing view and
-    parse via JSON-LD (preferred) with a card fallback.
-    """
-    # Force a predictable listing view
-    u = urlparse(url)
-    q = dict(parse_qsl(u.query))
-    q.setdefault("view", "list")
-    q.setdefault("perpage", "100")
-    url = urlunparse(u._replace(query=urlencode(q)))
+def parse_simpleview(name: str, url: str, tzname: Optional[str] = None) -> List[Dict[str, Any]]:
+    html = _fetch_html(url)
+    save_debug_html(html, filename=f"simpleview_{name.replace(' ','_')}")
+    # 1) Prefer JSON-LD
+    events = extract_events_from_jsonld(html, source_name=name, default_tz=tzname)
+    if events:
+        return [norm_event(e) for e in events]
 
-    html = fetch_html(url, source={"kind": "simpleview", "name": name})
+    # 2) Gentle HTML fallback for Simpleview "list" view
     soup = BeautifulSoup(html, "lxml")
-
-    out: List[dict] = []
-
-    # 1) JSON-LD: can be an array or repeated tags
-    for tag in soup.select('script[type="application/ld+json"]'):
-        txt = tag.get_text(strip=True)
-        if not txt:
-            continue
-        try:
-            data = json.loads(txt)
-        except Exception:
-            continue
-        blocks = data if isinstance(data, list) else [data]
-        for b in blocks:
-            at = b.get("@type")
-            is_event = (isinstance(at, str) and at == "Event") or (isinstance(at, list) and "Event" in at)
-            if not (isinstance(b, dict) and is_event):
-                continue
-            loc = b.get("location") or {}
-            addr = (loc.get("address") or {}) if isinstance(loc, dict) else {}
-            image = b.get("image")
-            image_url = image[0] if isinstance(image, list) else image
-            out.append(
-                norm_event(
-                    source=name,
-                    title=b.get("name"),
-                    url=b.get("url") or url,
-                    start=b.get("startDate"),
-                    end=b.get("endDate"),
-                    tzname=tzname,
-                    location=clean_text(loc.get("name")),
-                    city=clean_text(addr.get("addressLocality")),
-                    description=clean_text(b.get("description")),
-                    image=image_url,
-                )
-            )
-
-    # 2) Card fallback for common Simpleview grids
-    if not out:
-        for card in soup.select(".event-card, .event, .lv-event, .listing .event"):
-            a = card.select_one("a[href]")
-            title = clean_text(a.get_text()) if a else None
-            href = a["href"] if a else url
-            date_el = card.select_one(".event-card__date, .date, .event-date, time[datetime]")
-            date_txt = (
-                date_el.get("datetime")
-                if date_el and date_el.has_attr("datetime")
-                else (date_el.get_text() if date_el else None)
-            )
-            out.append(
-                norm_event(
-                    source=name,
-                    title=title,
-                    url=href,
-                    start=parse_date(clean_text(date_txt), tzname),
-                    end=None,
-                    tzname=tzname,
-                    location=None,
-                    city=None,
-                    description=None,
-                    image=None,
-                )
-            )
-
-    if not out:
-        save_debug_html(name, html)
-
+    cards = soup.select("li.grid__item, .card, .event")
+    out: List[Dict[str, Any]] = []
+    for c in cards:
+        a = c.select_one("a[href]")
+        title = clean_text(a.get_text(" ", strip=True)) if a else ""
+        href = a["href"] if a and a.has_attr("href") else url
+        date = c.get("data-date") or ""
+        place = c.select_one(".location, .event__location, .card__location")
+        loc = clean_text(place.get_text(" ", strip=True)) if place else ""
+        if title:
+            out.append(norm_event({
+                "title": title,
+                "start": date or None,
+                "end": None,
+                "url": href,
+                "location": loc,
+                "source": name,
+            }))
     return out

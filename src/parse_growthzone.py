@@ -1,84 +1,70 @@
 # src/parse_growthzone.py
 from __future__ import annotations
-
+import requests, re, json
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
-from .fetch import fetch_html
-from .normalize import normalize_event, parse_dt, clean_text
 from .utils.jsonld import extract_events_from_jsonld
-from .utils.filters import is_date_like_title
+from .utils import norm_event, clean_text, save_debug_html
 
-def _loc_from_jsonld(loc):
-    if not loc:
-        return ""
-    if isinstance(loc, str):
-        return loc
-    if isinstance(loc, dict):
-        name = loc.get("name") or ""
-        addr = loc.get("address") or {}
-        if isinstance(addr, dict):
-            parts = [addr.get("streetAddress"), addr.get("addressLocality"), addr.get("addressRegion")]
-            addr_s = ", ".join(p for p in parts if p)
-        else:
-            addr_s = str(addr or "")
-        return ", ".join(p for p in [name, addr_s] if p)
-    if isinstance(loc, list):
-        return ", ".join(_loc_from_jsonld(x) for x in loc if x)
-    return ""
+UA = "Mozilla/5.0 (compatible; NorthwoodsEventsBot/1.0; +https://example.invalid)"
 
-def parse_growthzone(source, add_event):
-    url = source["url"]
-    tzname = source.get("tzname")
-    html = fetch_html(url, source=source)
+def _fetch_html(url: str) -> str:
+    r = requests.get(url, headers={"User-Agent": UA}, timeout=30)
+    r.raise_for_status()
+    return r.text
+
+def parse_growthzone(name: str, url: str, tzname: Optional[str] = None) -> List[Dict[str, Any]]:
+    html = _fetch_html(url)
+    save_debug_html(html, filename=f"growthzone_{name.replace(' ','_')}")
+    # 1) Prefer JSON-LD (GrowthZone usually includes it)
+    events = extract_events_from_jsonld(html, source_name=name, default_tz=tzname)
+    if events:
+        return [norm_event(e) for e in events]
+
+    # 2) Fallback: some GrowthZone pages embed a JSON variable with events
+    #    Look for window.__INITIAL_STATE__ or similar.
+    m = re.search(r"__INITIAL_STATE__\s*=\s*(\{.*?\});", html, re.DOTALL)
+    out: List[Dict[str, Any]] = []
+    if m:
+        try:
+            state = json.loads(m.group(1))
+            # Heuristic path search for "events"
+            def walk(obj):
+                if isinstance(obj, dict):
+                    for k, v in obj.items():
+                        if k.lower() == "events" and isinstance(v, list):
+                            yield v
+                        else:
+                            yield from walk(v)
+                elif isinstance(obj, list):
+                    for it in obj:
+                        yield from walk(it)
+            for evlist in walk(state):
+                for ev in evlist:
+                    title = clean_text(str(ev.get("title") or ev.get("name") or ""))
+                    start = ev.get("start") or ev.get("startDate")
+                    end = ev.get("end") or ev.get("endDate")
+                    href = ev.get("url") or url
+                    venue = ev.get("venue") or ev.get("location") or ""
+                    if title and start:
+                        out.append(norm_event({
+                            "title": title,
+                            "start": start,
+                            "end": end,
+                            "url": href,
+                            "location": clean_text(str(venue)),
+                            "source": name,
+                        }))
+            if out:
+                return out
+        except Exception:
+            pass
+
+    # 3) Minimal HTML fallback to avoid returning nothing
     soup = BeautifulSoup(html, "lxml")
-
-    # 1) JSON-LD if present (often available, safest)
-    had = False
-    for ev in extract_events_from_jsonld(soup):
-        title = clean_text(ev.get("name") or "")
-        if not title or is_date_like_title(title):
-            continue
-        start_iso = ev.get("startDate") or ""
-        end_iso   = ev.get("endDate") or ""
-        where     = _loc_from_jsonld(ev.get("location"))
-        link      = ev.get("url") or url
-
-        evt = normalize_event(
-            title=title,
-            url=link,
-            where=where,
-            start=parse_dt(start_iso, tzname),
-            end=parse_dt(end_iso, tzname) if end_iso else None,
-            tzname=tzname,
-            description=clean_text(ev.get("description") or "")
-        )
-        if evt:
-            add_event(evt)
-            had = True
-
-    if had:
-        return
-
-    # 2) Defensive fallback for GrowthZone list
-    rows = soup.select('[data-eventid], .gz_event, .gz-event, .event-list-item')
-    for row in rows:
-        a = row.select_one("a[href*='/events/details/'], a[href*='/events/'], a[href]")
-        title = clean_text(a.get_text(" ", strip=True) if a else row.get_text(" ", strip=True))
-        if not title or is_date_like_title(title):
-            continue
-        link = a["href"] if a and a.has_attr("href") else url
-
-        t = row.select_one("time[datetime], .date, .event-date, .gz-date")
-        start_iso = t.get("datetime") if t and t.has_attr("datetime") else (t.get_text(" ", strip=True) if t else "")
-        loc_el = row.select_one(".location, .venue, .gz-location")
-        where = clean_text(loc_el.get_text(" ", strip=True) if loc_el else "")
-
-        evt = normalize_event(
-            title=title,
-            url=link,
-            where=where,
-            start=parse_dt(start_iso, tzname),
-            end=None,
-            tzname=tzname,
-        )
-        if evt:
-            add_event(evt)
+    for a in soup.select("a[href*='/events/details/']"):
+        title = clean_text(a.get_text(" ", strip=True))
+        href = a["href"]
+        if title:
+            out.append(norm_event({"title": title, "url": href, "start": None, "end": None, "location": "", "source": name}))
+    return out

@@ -1,52 +1,56 @@
-# src/parse_modern_tribe.py
+# -*- coding: utf-8 -*-
+"""
+Compatibility wrapper for Modern Tribe parser.
+
+This module supports BOTH legacy and new call styles:
+
+Legacy (used by older `main.py`):
+    parse_modern_tribe(source: Mapping, add_event: Callable) -> int
+
+New/streaming style (generator):
+    parse_modern_tribe(source_name: str, url: str, tzname: str | None = None) -> Iterator[dict]
+
+Internally this delegates to `src.scrapers.modern_tribe.scrape`, so the single source
+of scraping logic lives in one place.
+"""
 from __future__ import annotations
-import requests
-from bs4 import BeautifulSoup
-from typing import List, Dict, Any, Optional
-from .utils.jsonld import extract_events_from_jsonld
-from .utils import norm_event, clean_text, save_debug_html
+from typing import Callable, Iterator, Mapping, Optional, Any, Iterable
+from .scrapers.modern_tribe import scrape as _scrape
 
-UA = "Mozilla/5.0 (compatible; NorthwoodsEventsBot/1.0; +https://example.invalid)"
 
-def _fetch_html(url: str) -> str:
-    r = requests.get(url, headers={"User-Agent": UA}, timeout=30)
-    r.raise_for_status()
-    return r.text
+def _emit(events: Iterable[dict], add_event: Callable[[dict], Any]) -> int:
+    n = 0
+    for ev in events:
+        add_event(ev)
+        n += 1
+    return n
 
-def parse_modern_tribe(name: str, url: str, tzname: Optional[str] = None) -> List[Dict[str, Any]]:
-    html = _fetch_html(url)
-    save_debug_html(html, filename=f"modern_tribe_{name.replace(' ','_')}")
-    events = extract_events_from_jsonld(html, source_name=name, default_tz=tzname)
-    if events:
-        return [norm_event(e) for e in events]
 
-    # Fallback: light HTML scrape for The Events Calendar v6 list view
-    soup = BeautifulSoup(html, "lxml")
-    items = soup.select("li.tribe-events-calendar-list__event, article.tribe-common-g-row")
-    out: List[Dict[str, Any]] = []
-    for it in items:
-        title_el = it.select_one("h3 a, h2 a, a.tribe-events-calendar-list__event-title-link")
-        title = clean_text(title_el.get_text(" ", strip=True)) if title_el else ""
-        href = title_el["href"].strip() if title_el and title_el.has_attr("href") else url
+def parse_modern_tribe(*args, **kwargs):
+    # Legacy style: parse_modern_tribe(source, add_event)
+    if args and isinstance(args[0], Mapping):
+        source: Mapping[str, Any] = args[0]
+        add_event: Optional[Callable[[dict], Any]] = kwargs.get("add_event")
+        if add_event is None and len(args) >= 2 and callable(args[1]):
+            add_event = args[1]
+        if add_event is None:
+            raise TypeError("parse_modern_tribe(source, add_event) requires an add_event callback")
+        name = source.get("name") or source.get("source_name") or "Modern Tribe"
+        url = source.get("url")
+        tzname = source.get("tzname")
+        if not url:
+            raise ValueError("source['url'] is required")
+        # Delegate to scraper (positional args to avoid name mismatches)
+        return _emit(_scrape(url, name, tzname), add_event)
 
-        # Dates in list view are often present as data attributes; if not, let main normalize later
-        dt_el = it.select_one("[data-tribe-common-event-start], time.tribe-event-date-start")
-        start = (dt_el.get("data-tribe-common-event-start") or dt_el.get("datetime")) if dt_el else None
-        end_el = it.select_one("[data-tribe-common-event-end], time.tribe-event-date-end")
-        end = (end_el.get("data-tribe-common-event-end") or end_el.get("datetime")) if end_el else None
-
-        loc_el = it.select_one(".tribe-events-calendar-list__event-venue, .tribe-venue, .tribe-events-venue-details")
-        location = clean_text(loc_el.get_text(" ", strip=True)) if loc_el else ""
-
-        if not title:
-            continue
-
-        out.append(norm_event({
-            "title": title,
-            "start": start,
-            "end": end,
-            "url": href,
-            "location": location,
-            "source": name,
-        }))
-    return out
+    # New style: parse_modern_tribe(source_name, url, tzname=None) -> Iterator[dict]
+    # Accept keywords or positionals.
+    if args:
+        source_name = args[0]
+        url = args[1]
+        tzname = args[2] if len(args) > 2 else None
+    else:
+        source_name = kwargs["source_name"]
+        url = kwargs["url"]
+        tzname = kwargs.get("tzname")
+    return _scrape(url, source_name, tzname)

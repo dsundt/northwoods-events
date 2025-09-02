@@ -1,41 +1,46 @@
-# src/parse_ics.py
+# -*- coding: utf-8 -*-
+"""
+Compatibility wrapper for ICS parser.
+
+Supports both legacy and new call styles by delegating to `src.scrapers.icsfeed.scrape`.
+"""
 from __future__ import annotations
-import requests
-from typing import List, Dict, Any, Optional
-from ics import Calendar
-from datetime import datetime
-import pytz
-from .utils import norm_event, save_debug_html
+from typing import Callable, Iterator, Mapping, Optional, Any, Iterable
+from .scrapers.icsfeed import scrape as _scrape
 
-UA = "Mozilla/5.0 (compatible; NorthwoodsEventsBot/1.0; +https://example.invalid)"
 
-def parse_ics(name: str, url: str, tzname: Optional[str] = None) -> List[Dict[str, Any]]:
-    r = requests.get(url, headers={"User-Agent": UA}, timeout=30)
-    if r.status_code == 404:
-        # known transient for Presque Isle; return empty but don't crash pipeline
-        return []
-    r.raise_for_status()
-    text = r.text
-    # keep a copy for debugging
-    save_debug_html(text, filename=f"ics_{name.replace(' ','_')}", subdir="ics")
-    cal = Calendar(text)
-    tz = pytz.timezone(tzname) if tzname else None
-    out: List[Dict[str, Any]] = []
-    for e in cal.events:
-        start = e.begin
-        end = e.end
-        if tz:
-            # if naive, localize
-            if start and start.tzinfo is None:
-                start = tz.localize(start)
-            if end and end.tzinfo is None:
-                end = tz.localize(end)
-        out.append(norm_event({
-            "title": e.name or "",
-            "start": start.isoformat() if start else None,
-            "end": end.isoformat() if end else None,
-            "url": (e.url or "").strip(),
-            "location": (e.location or "").strip(),
-            "source": name,
-        }))
-    return out
+def _emit(events: Iterable[dict], add_event: Callable[[dict], Any]) -> int:
+    n = 0
+    for ev in events:
+        add_event(ev)
+        n += 1
+    return n
+
+
+def parse_ics(*args, **kwargs):
+    # Legacy style: parse_ics(source, add_event)
+    if args and isinstance(args[0], Mapping):
+        source: Mapping[str, Any] = args[0]
+        add_event: Optional[Callable[[dict], Any]] = kwargs.get("add_event")
+        if add_event is None and len(args) >= 2 and callable(args[1]):
+            add_event = args[1]
+        if add_event is None:
+            raise TypeError("parse_ics(source, add_event) requires an add_event callback")
+        name = source.get("name") or source.get("source_name") or "ICS"
+        url = source.get("url")
+        tzname = source.get("tzname")
+        if not url:
+            raise ValueError("source['url'] is required")
+        # Delegate to scraper (positional args to avoid name mismatches)
+        return _emit(_scrape(url, name, tzname), add_event)
+
+    # New style: parse_ics(source_name, url, tzname=None) -> Iterator[dict]
+    if args:
+        source_name = args[0]
+        url = args[1]
+        tzname = args[2] if len(args) > 2 else None
+    else:
+        source_name = kwargs["source_name"]
+        url = kwargs["url"]
+        tzname = kwargs.get("tzname")
+    return _scrape(url, source_name, tzname)

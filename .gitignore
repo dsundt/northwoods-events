@@ -1,72 +1,13 @@
-# --- OS / editors ---
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-
-# --- Python artifacts ---
+# Byte-compiled / cache
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
+*.pyc
 
-# --- Packaging / build ---
-build/
-dist/
-.eggs/
-*.egg-info/
-pip-wheel-metadata/
-*.whl
-
-# --- Virtual envs / secrets ---
-.env
-.env.*
+# Virtual envs
 .venv/
-venv/
-ENV/
 env/
+venv/
 
-# --- Caches / logs / coverage ---
-.cache/
-.ruff_cache/
-pytestdebug.log
-.pytest_cache/
-.mypy_cache/
-coverage.xml
-.htmlcov/
-.coverage
-.coverage.*
-
-# --- Playwright (local runs) ---
-.playwright/
-playwright-report/
-test-results/
-
-# --- Temp files ---
-tmp/
-.temp/
-*.tmp
-*.bak
-*.orig
-*.log
-
-# --- CI scratch files ---
-.tmp.sources.yaml
-
-# --- ICS at repo root is generated; keep the one in public/ics only ---
-northwoods.ics
-!public/ics/
-!public/ics/northwoods.ics
-
-# --- Ensure these are versioned (even if parent dirs get ignored elsewhere) ---
-!state/
-!state/*.json
-!public/state/
-!public/state/*.json
-
-# --- Keep static site files tracked ---
-!public/
-!public/index.html
-!public/diag.html
-!public/.nojekyll
+# OS junk
+.DS_Store
+Thumbs.db

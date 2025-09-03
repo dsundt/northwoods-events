@@ -1,50 +1,17 @@
-# sources.yml (repo root) — Phase 1 set, others can be added later
 sources:
-  - name: Boulder Junction (Modern Tribe)
-    kind: modern_tribe
-    url: https://boulderjct.org/events/?eventDisplay=list
-    tzname: America/Chicago
-    enabled: true
-
-  - name: Eagle River Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://eagleriver.org/events/?eventDisplay=list
-    tzname: America/Chicago
-    enabled: true
-
-  - name: St. Germain Chamber (Modern Tribe)
-    kind: modern_tribe
-    url: https://st-germain.com/events-calendar/?eventDisplay=list
-    tzname: America/Chicago
-    enabled: true
-
-  - name: Rhinelander Chamber (GrowthZone)
-    kind: growthzone
-    url: https://business.rhinelanderchamber.com/events/calendar
-    tzname: America/Chicago
-    enabled: true
-
-  - name: Let’s Minocqua (Simpleview)
-    kind: simpleview
-    url: https://www.minocqua.org/things-to-do/events/?view=list&perpage=100
-    tzname: America/Chicago
-    enabled: true
-
-  - name: Presque Isle Chamber (ICS)
-    kind: ics
-    url: https://presqueisle.com/events.ics
-    tzname: America/Chicago
-    enabled: true
-
-# Add the rest incrementally once the core six are healthy.
-# - name: Oneida County – Festivals & Events (Modern Tribe)
-#   kind: modern_tribe
-#   url: https://oneidacountywi.com/festivals-events/?eventDisplay=list
-#   tzname: America/Chicago
-#   enabled: false
-#
-# - name: Sayner–Star Lake–Cloverland Chamber (ICS)
-#   kind: ics
-#   url: https://sayner-starlake.org/events.ics
-#   tzname: America/Chicago
-#   enabled: false
+  minocqua:
+    type: rss_jsonld
+    rss: https://www.minocqua.org/event/rss/
+    homepage: https://www.minocqua.org/events/
+  vilas:
+    type: ics_auto
+    page: https://vilaswi.com/events/
+  oneida:
+    type: ics_or_html
+    page: https://oneidacountywi.com/festivals-events/
+  st_germain:
+    type: ics_auto
+    page: https://stgermainwi.chambermaster.com/events/calendarcatgid/3
+  manitowish_waters:
+    type: html_jsonld
+    page: https://manitowishwaters.org/events/

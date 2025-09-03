@@ -1,0 +1,17 @@
+sources:
+  minocqua:
+    type: rss_jsonld
+    rss: https://www.minocqua.org/event/rss/
+    homepage: https://www.minocqua.org/events/
+  vilas:
+    type: ics_auto
+    page: https://vilaswi.com/events/
+  oneida:
+    type: ics_or_html
+    page: https://oneidacountywi.com/festivals-events/
+  st_germain:
+    type: ics_auto
+    page: https://stgermainwi.chambermaster.com/events/calendarcatgid/3
+  manitowish_waters:
+    type: html_jsonld
+    page: https://manitowishwaters.org/events/
